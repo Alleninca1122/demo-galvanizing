@@ -20,15 +20,80 @@ const RACK_OPTIONS = Array.from({ length: 30 }, (_, i) => {
   return { value: num, label: `Rack #${num}` };
 });
 
-// Rigging Specifications (SWL per strand in lbs)
+// ============================================================
+// RIGGING HARDWARE SPECIFICATIONS - shop-confirmed data only
+// Wire: shop operating standard (12 Gauge only, 75 lb/strand SWL)
+// Chain & Anchor Shackle: per official supplier spec sheets provided
+// (Suncor Stainless - Grade 50 Lifting Chain S5 316L;
+//  Suncor Stainless - Anchor Shackle w/ Oversize Screw Pin 316-NM,
+//  WLL values below already reflect the 20% reduction shown on the sheet)
+// ============================================================
 const RIGGING_SPECS = [
-  { id: '14_WIRE', label: '14 Gauge Wire', type: 'WIRE', swl: 50 },
-  { id: '12_WIRE', label: '12 Gauge Wire', type: 'WIRE', swl: 75 },
-  { id: '10_WIRE', label: '10 Gauge Wire', type: 'WIRE', swl: 150 },
-  { id: '38_CHAIN', label: '3/8" High Test Chain', type: 'CHAIN', swl: 4000 },
-  { id: '12_CHAIN', label: '1/2" High Test Chain', type: 'CHAIN', swl: 6500 },
-  { id: 'CLAMP', label: 'Heavy Duty Lifting Clamp', type: 'CLAMP', swl: 10000 },
+  { id: '12_WIRE',    label: '12 Gauge Wire',      type: 'WIRE',  swl: 75 },
+  { id: 'CHAIN_3_16', label: '3/16" Chain',        type: 'CHAIN', swl: 880 },
+  { id: 'CHAIN_1_4',  label: '1/4" (9/32) Chain',  type: 'CHAIN', swl: 1760 },
+  { id: 'CHAIN_5_16', label: '5/16" Chain',        type: 'CHAIN', swl: 2160 },
+  { id: 'CHAIN_3_8',  label: '3/8" Chain',         type: 'CHAIN', swl: 3520 },
+  { id: 'CHAIN_1_2',  label: '1/2" Chain',         type: 'CHAIN', swl: 5840 },
+  { id: 'CHAIN_5_8',  label: '5/8" Chain',         type: 'CHAIN', swl: 7840 },
 ];
+
+const WIRE_SPEC = RIGGING_SPECS[0]; // 12 Gauge Wire, 75 lb/strand
+
+// Anchor Shackle w/ Oversize Screw Pin, 316-NM Stainless (WLL after 20% reduction)
+const ANCHOR_SHACKLE_SPECS = [
+  { id: 'NONE',          label: '-- None (Direct Chain / Slot Hooking) --', wll: null },
+  { id: 'SHACKLE_3_16',  label: '3/16" Anchor Shackle',   wll: 520 },
+  { id: 'SHACKLE_1_4',   label: '1/4" Anchor Shackle',    wll: 800 },
+  { id: 'SHACKLE_5_16',  label: '5/16" Anchor Shackle',   wll: 1040 },
+  { id: 'SHACKLE_3_8',   label: '3/8" Anchor Shackle',    wll: 1200 },
+  { id: 'SHACKLE_7_16',  label: '7/16" Anchor Shackle',   wll: 1600 },
+  { id: 'SHACKLE_1_2',   label: '1/2" Anchor Shackle',    wll: 2400 },
+  { id: 'SHACKLE_5_8',   label: '5/8" Anchor Shackle',    wll: 3200 },
+  { id: 'SHACKLE_3_4',   label: '3/4" Anchor Shackle',    wll: 4800 },
+  { id: 'SHACKLE_7_8',   label: '7/8" Anchor Shackle',    wll: 6400 },
+  { id: 'SHACKLE_1',     label: '1" Anchor Shackle',      wll: 8000 },
+  { id: 'SHACKLE_1_1_4', label: '1-1/4" Anchor Shackle',  wll: 11200 },
+];
+
+// Reo Engineering & Testing - Job No. 23-R-4105 "Wire Hangers Capacity Certification"
+// (30-Mar-2023, PEng stamped) - recommended 12 Ga wire count by workpiece weight bracket.
+// The UPPER bound of the matched bracket is what the app should check against.
+// Scheme One - Single Hanger (1 hanging point)
+const WIRE_BRACKETS_SINGLE = [
+  { maxLb: 75,  wires: 1 },
+  { maxLb: 150, wires: 2 },
+  { maxLb: 250, wires: 3 },
+  { maxLb: 350, wires: 4 },
+  { maxLb: 450, wires: 5 },
+  { maxLb: 550, wires: 6 },
+  { maxLb: 650, wires: 7 },
+];
+
+// Scheme Two - Double Hanger (2 hanging points, symmetric each side)
+const WIRE_BRACKETS_DOUBLE = [
+  { maxLb: 150,  wires: 2,  perSide: 1 },
+  { maxLb: 350,  wires: 4,  perSide: 2 },
+  { maxLb: 550,  wires: 6,  perSide: 3 },
+  { maxLb: 750,  wires: 8,  perSide: 4 },
+  { maxLb: 950,  wires: 10, perSide: 5 },
+  { maxLb: 1050, wires: 12, perSide: 6 }, // as printed on the certified sign; flagged for on-site verification, see notes
+];
+
+// Looks up the certified wire-count bracket for a given design weight + hanging point count.
+// Falls back to a generic 75 lb/strand calc only if the weight exceeds the certified table range.
+function getRequiredWireCount(designWeightLb, hangingPoints) {
+  if (hangingPoints === 2) {
+    const match = WIRE_BRACKETS_DOUBLE.find(b => designWeightLb <= b.maxLb);
+    if (match) return { total: match.wires, perPoint: match.perSide };
+    const perPoint = Math.max(1, Math.ceil((designWeightLb / 2) / WIRE_SPEC.swl));
+    return { total: perPoint * 2, perPoint };
+  }
+  const match = WIRE_BRACKETS_SINGLE.find(b => designWeightLb <= b.maxLb);
+  if (match) return { total: match.wires, perPoint: match.wires };
+  const perPoint = Math.max(1, Math.ceil(designWeightLb / WIRE_SPEC.swl));
+  return { total: perPoint, perPoint };
+}
 
 // Surface Condition Rating Options (Clean & Standardized)
 const SURFACE_CONDITION_OPTIONS = [
@@ -211,7 +276,10 @@ const [assistantPin, setAssistantPin] = useState('');
     return rawShift.toLowerCase().includes('shift') ? rawShift : `${rawShift} Shift`;
   };
 
-  // Wire Strand Safety Check Warnings (Non-blocking warning)
+  // Rigging Safety Check Warnings (Non-blocking warning - operator can override & confirm)
+  // WIRE points are checked against the Reo-certified weight-bracket tables (upper bound of the
+  // matched bracket, per Scheme One/Two). CHAIN points and Anchor Shackle are checked against the
+  // supplier WLL figures directly.
   const checkSafetyDeficiencies = () => {
     let deficiencies = [];
     jobs.forEach((job, jIdx) => {
@@ -221,21 +289,41 @@ const [assistantPin, setAssistantPin] = useState('');
         const unitW = totalW / qty;
         const pts = parseInt(wp.hangingPoints, 10) || 1;
 
-        const loadPerPt = wp.hangingMode === 'STRING' ? (totalW / pts) : (unitW / pts);
+        // designW = the weight actually carried by this rigging setup:
+        // String mode -> whole batch shares one set of points; Individual mode -> one piece's own points
+        const designW = wp.hangingMode === 'STRING' ? totalW : unitW;
+        const loadPerPt = designW / pts;
+        const wireRec = getRequiredWireCount(designW, pts);
+        const label = `Job #${jIdx + 1} Line #${wIdx + 1} (${wp.workpieceType || 'Item'})`;
 
-        const p1Obj = RIGGING_SPECS.find(r => r.id === wp.point1SpecId) || RIGGING_SPECS[0];
-        const p1Req = Math.max(1, Math.ceil(loadPerPt / p1Obj.swl));
-        const p1User = parseInt(wp.point1Strands, 10) || 0;
-        if (p1Obj.type === 'WIRE' && p1User > 0 && p1User < p1Req) {
-          deficiencies.push(`Job #${jIdx + 1} Line #${wIdx + 1} (${wp.workpieceType || 'Item'}): Point 1 wire count (${p1User}) is lower than recommended (${p1Req}).`);
+        const checkPoint = (specId, userStrandsRaw, pointLabel) => {
+          const specObj = RIGGING_SPECS.find(r => r.id === specId) || RIGGING_SPECS[0];
+          const userStrands = parseInt(userStrandsRaw, 10) || 0;
+          if (userStrands <= 0) return;
+
+          if (specObj.type === 'WIRE') {
+            if (userStrands < wireRec.perPoint) {
+              deficiencies.push(`${label}: ${pointLabel} wire count (${userStrands}) is below the Reo-certified recommendation (${wireRec.perPoint}) for a design weight of ${Math.round(designW)} lb.`);
+            }
+          } else if (specObj.type === 'CHAIN') {
+            const req = Math.max(1, Math.ceil(loadPerPt / specObj.swl));
+            if (userStrands < req) {
+              deficiencies.push(`${label}: ${pointLabel} chain strand count (${userStrands}) is below the required (${req}) for a ${specObj.label} rated at ${specObj.swl} lb WLL.`);
+            }
+          }
+        };
+
+        checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
+        if (pts === 2) {
+          checkPoint(wp.point2SpecId, wp.point2Strands, 'Point 2');
         }
 
-        if (pts === 2) {
-          const p2Obj = RIGGING_SPECS.find(r => r.id === wp.point2SpecId) || RIGGING_SPECS[0];
-          const p2Req = Math.max(1, Math.ceil(loadPerPt / p2Obj.swl));
-          const p2User = parseInt(wp.point2Strands, 10) || 0;
-          if (p2Obj.type === 'WIRE' && p2User > 0 && p2User < p2Req) {
-            deficiencies.push(`Job #${jIdx + 1} Line #${wIdx + 1} (${wp.workpieceType || 'Item'}): Point 2 wire count (${p2User}) is lower than recommended (${p2Req}).`);
+        // Anchor Shackle WLL check (one shackle spec per workpiece line, checked against the
+        // heaviest single-point load it will carry)
+        if (wp.anchorShackle && wp.anchorShackle !== 'NONE') {
+          const shackleSpec = ANCHOR_SHACKLE_SPECS.find(s => s.id === wp.anchorShackle);
+          if (shackleSpec && shackleSpec.wll != null && loadPerPt > shackleSpec.wll) {
+            deficiencies.push(`${label}: Anchor Shackle (${shackleSpec.label}, ${shackleSpec.wll} lb WLL) is under the ${Math.round(loadPerPt)} lb load it would carry at each point.`);
           }
         }
       });
@@ -943,12 +1031,11 @@ const [assistantPin, setAssistantPin] = useState('');
         onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'anchorShackle', e.target.value)}
         className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-cyan-500"
       >
-        <option value="NONE">-- None (Direct Chain / Slot Hooking) --</option>
-        <option value="1.0T">1.0 Ton WLL Anchor Shackle (2,200 lbs)</option>
-        <option value="2.0T">2.0 Ton WLL Anchor Shackle (4,400 lbs)</option>
-        <option value="3.25T">3.25 Ton WLL Anchor Shackle (7,150 lbs)</option>
-        <option value="4.75T">4.75 Ton WLL Anchor Shackle (10,450 lbs)</option>
-        <option value="6.5T">6.5 Ton WLL Anchor Shackle (14,300 lbs)</option>
+        {ANCHOR_SHACKLE_SPECS.map(s => (
+          <option key={s.id} value={s.id}>
+            {s.wll != null ? `${s.label} (${s.wll.toLocaleString()} lb WLL)` : s.label}
+          </option>
+        ))}
       </select>
     </div>
 
