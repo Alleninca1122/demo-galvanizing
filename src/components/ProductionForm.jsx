@@ -977,7 +977,7 @@ const [assistantPin, setAssistantPin] = useState('');
                                 className="shrink-0 px-1.5 rounded border border-slate-700 text-[9px] text-slate-400 hover:text-cyan-300 font-bold"
                                 title="Switch between total weight and per-unit weight entry"
                               >
-                                {wp.weightInputMode === 'PER_UNIT' ? '单件→总' : '总→单件'}
+                                {wp.weightInputMode === 'PER_UNIT' ? 'Unit \u2192 Total' : 'Total \u2192 Unit'}
                               </button>
                             </div>
                           )}
