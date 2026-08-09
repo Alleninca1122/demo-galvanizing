@@ -61,23 +61,23 @@ const ANCHOR_SHACKLE_SPECS = [
 // The UPPER bound of the matched bracket is what the app should check against.
 // Scheme One - Single Hanger (1 hanging point)
 const WIRE_BRACKETS_SINGLE = [
-  { maxLb: 75,  wires: 1 },
-  { maxLb: 150, wires: 2 },
-  { maxLb: 250, wires: 3 },
-  { maxLb: 350, wires: 4 },
-  { maxLb: 450, wires: 5 },
-  { maxLb: 550, wires: 6 },
-  { maxLb: 650, wires: 7 },
+  { minLb: 0,   maxLb: 75,  wires: 1 },
+  { minLb: 75,  maxLb: 150, wires: 2 },
+  { minLb: 150, maxLb: 250, wires: 3 },
+  { minLb: 250, maxLb: 350, wires: 4 },
+  { minLb: 350, maxLb: 450, wires: 5 },
+  { minLb: 450, maxLb: 550, wires: 6 },
+  { minLb: 550, maxLb: 650, wires: 7 },
 ];
 
 // Scheme Two - Double Hanger (2 hanging points, symmetric each side)
 const WIRE_BRACKETS_DOUBLE = [
-  { maxLb: 150,  wires: 2,  perSide: 1 },
-  { maxLb: 350,  wires: 4,  perSide: 2 },
-  { maxLb: 550,  wires: 6,  perSide: 3 },
-  { maxLb: 750,  wires: 8,  perSide: 4 },
-  { maxLb: 950,  wires: 10, perSide: 5 },
-  { maxLb: 1050, wires: 12, perSide: 6 }, // as printed on the certified sign; flagged for on-site verification, see notes
+  { minLb: 0,   maxLb: 150,  wires: 2,  perSide: 1 },
+  { minLb: 150, maxLb: 350,  wires: 4,  perSide: 2 },
+  { minLb: 350, maxLb: 550,  wires: 6,  perSide: 3 },
+  { minLb: 550, maxLb: 750,  wires: 8,  perSide: 4 },
+  { minLb: 750, maxLb: 950,  wires: 10, perSide: 5 },
+  { minLb: 950, maxLb: 1150, wires: 12, perSide: 6 }, // confirmed on-site: 950-1150 lb
 ];
 
 // Looks up the certified wire-count bracket for a given design weight + hanging point count.
@@ -93,6 +93,50 @@ function getRequiredWireCount(designWeightLb, hangingPoints) {
   if (match) return { total: match.wires, perPoint: match.wires };
   const perPoint = Math.max(1, Math.ceil(designWeightLb / WIRE_SPEC.swl));
   return { total: perPoint, perPoint };
+}
+
+// ============================================================
+// RACK / BEAM STRUCTURAL CAPACITY (shop-confirmed)
+// Beam itself rated 18,000 lb; the two end support arms are the tighter limit at
+// 6,700 lb each (13,400 lb combined) - that combined figure is the binding constraint.
+// ============================================================
+const BEAM_CAPACITY_LBS = 18000;
+const SUPPORT_ARM_CAPACITY_LBS = 6700;
+const RACK_LIMIT_LBS = SUPPORT_ARM_CAPACITY_LBS * 2; // 13,400 lb - hard submission block
+
+// Custom, shop-built hanging fixtures (not wire/chain) - e.g. a Railing Comb Rack or a row of
+// hooks for small parts. These bypass wire/chain/shackle spec checks but still count toward the
+// rack's total weight.
+const CUSTOM_FIXTURE_TYPES = [
+  { value: '', label: '-- Select Fixture --' },
+  { value: 'RAILING_COMB_RACK', label: 'Railing Comb Rack' },
+  { value: 'HOOK_ROW', label: 'Hook Row (Small Parts)' },
+  { value: 'OTHER', label: 'Other Custom Fixture' },
+];
+
+// Resolves a workpiece line's weight, accounting for both weight-input modes:
+// - isUniformWeight (default true): operator enters either the TOTAL weight for the line, or a
+//   single-piece weight (weightInputMode) which the app multiplies out by quantity.
+// - Not uniform: pieces vary, so instead of weighing each one the operator selects a certified
+//   weight bracket (Reo table) and the app conservatively uses the UPPER bound of that bracket.
+function getWorkpieceTotalWeight(wp) {
+  const qty = parseInt(wp.quantity, 10) || 0;
+
+  if (wp.isUniformWeight === false) {
+    const pts = wp.hangingPoints === '2' ? 2 : 1;
+    const brackets = pts === 2 ? WIRE_BRACKETS_DOUBLE : WIRE_BRACKETS_SINGLE;
+    const bracket = brackets.find(b => String(b.maxLb) === String(wp.weightBracketId));
+    const totalW = bracket ? bracket.maxLb : 0;
+    return { totalW, unitW: qty > 0 ? totalW / qty : 0 };
+  }
+
+  if (wp.weightInputMode === 'PER_UNIT') {
+    const unitW = parseFloat(wp.unitWeightInput) || 0;
+    return { totalW: unitW * qty, unitW };
+  }
+
+  const totalW = parseFloat(wp.weightLb) || 0;
+  return { totalW, unitW: qty > 0 ? totalW / qty : 0 };
 }
 
 // Surface Condition Rating Options (Clean & Standardized)
@@ -156,7 +200,13 @@ const [assistantPin, setAssistantPin] = useState('');
         workpieceType: '',
         quantity: '',
         unit: 'pcs',
-        weightLb: '', 
+        weightLb: '',
+        isUniformWeight: true,      // false = pieces vary; use a certified weight bracket instead
+        weightInputMode: 'TOTAL',   // 'TOTAL' | 'PER_UNIT'
+        unitWeightInput: '',
+        weightBracketId: '',
+        riggingCategory: 'WIRE_CHAIN', // 'WIRE_CHAIN' | 'CUSTOM_FIXTURE'
+        customFixtureType: '',
         hangingMode: 'INDIVIDUAL',
         hangingPoints: '2',
         point1SpecId: '12_WIRE',
@@ -254,6 +304,12 @@ const [assistantPin, setAssistantPin] = useState('');
       quantity: '',
       unit: 'pcs',
       weightLb: '',
+      isUniformWeight: true,
+      weightInputMode: 'TOTAL',
+      unitWeightInput: '',
+      weightBracketId: '',
+      riggingCategory: 'WIRE_CHAIN',
+      customFixtureType: '',
       hangingMode: 'INDIVIDUAL',
       hangingPoints: '2',
       point1SpecId: '12_WIRE',
@@ -284,14 +340,16 @@ const [assistantPin, setAssistantPin] = useState('');
     let deficiencies = [];
     jobs.forEach((job, jIdx) => {
       job.workpieces.forEach((wp, wIdx) => {
-        const totalW = parseFloat(wp.weightLb) || 0;
-        const qty = parseInt(wp.quantity, 10) || 1;
-        const unitW = totalW / qty;
+        // Custom fixtures (Comb Rack / Hook Row) aren't rated by strand count - nothing to check here
+        if (wp.riggingCategory === 'CUSTOM_FIXTURE') return;
+
+        const { totalW, unitW } = getWorkpieceTotalWeight(wp);
         const pts = parseInt(wp.hangingPoints, 10) || 1;
 
         // designW = the weight actually carried by this rigging setup:
         // String mode -> whole batch shares one set of points; Individual mode -> one piece's own points
-        const designW = wp.hangingMode === 'STRING' ? totalW : unitW;
+        // (when isUniformWeight is false, totalW/unitW are already both the same bracket ceiling)
+        const designW = wp.hangingMode === 'STRING' ? totalW : (wp.isUniformWeight === false ? totalW : unitW);
         const loadPerPt = designW / pts;
         const wireRec = getRequiredWireCount(designW, pts);
         const label = `Job #${jIdx + 1} Line #${wIdx + 1} (${wp.workpieceType || 'Item'})`;
@@ -331,6 +389,19 @@ const [assistantPin, setAssistantPin] = useState('');
     return deficiencies;
   };
 
+  // Sums the design weight of every workpiece line on this Load (all Jobs, both WIRE_CHAIN and
+  // CUSTOM_FIXTURE lines) - this is what the Beam Rack's support arms actually have to carry.
+  const getRackTotalWeight = () => {
+    let total = 0;
+    jobs.forEach(job => {
+      job.workpieces.forEach(wp => {
+        const { totalW } = getWorkpieceTotalWeight(wp);
+        total += totalW;
+      });
+    });
+    return total;
+  };
+
   // Severe Safety Violations Check (Hard Blocking Logic) - now based on the single global checklist
   const checkCriticalSafetyViolations = () => {
     let severeErrors = [];
@@ -346,12 +417,18 @@ const [assistantPin, setAssistantPin] = useState('');
     if (!safetyChecklist.maxHangDepthValid) {
       severeErrors.push(`Total hang depth exceeds 300 cm. Risk of bottom collision or crane overhead snagging.`);
     }
+    // Check 4: Rack support-arm capacity (13,400 lb combined) - hard limit, no override
+    const rackTotal = getRackTotalWeight();
+    if (rackTotal > RACK_LIMIT_LBS) {
+      severeErrors.push(`Total rack load (${Math.round(rackTotal).toLocaleString()} lb) exceeds the support arm capacity of ${RACK_LIMIT_LBS.toLocaleString()} lb. Remove workpieces or split onto another rack before submitting.`);
+    }
     return severeErrors;
   };
 
   const deficiencies = checkSafetyDeficiencies();
   const criticalViolations = checkCriticalSafetyViolations();
   const isFormBlocked = criticalViolations.length > 0;
+  const rackTotalWeight = getRackTotalWeight();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -390,7 +467,12 @@ const [assistantPin, setAssistantPin] = useState('');
         entryDate: currentDateFormatted,
         createdAt: new Date().toISOString(),
         // Job Safety & Submersion Checklist (SOP Inspection) - one shared checklist for the whole load
-        safetyChecklist: { ...safetyChecklist }
+        safetyChecklist: { ...safetyChecklist },
+        // Rack structural capacity check, recorded for audit trail
+        rackCapacityCheck: {
+          totalLoadLb: Math.round(rackTotalWeight),
+          limitLb: RACK_LIMIT_LBS
+        }
       },
       jobs: jobs.map(job => ({
         customerName: job.customerName,
@@ -401,20 +483,36 @@ const [assistantPin, setAssistantPin] = useState('');
           rustLevel: job.rustLevel
         },
         workpieces: job.workpieces.map(wp => {
-          const totalW = parseInt(wp.weightLb, 10) || 0;
+          const { totalW, unitW } = getWorkpieceTotalWeight(wp);
           const qty = parseInt(wp.quantity, 10) || 0;
-          const unitW = qty > 0 ? Math.round(totalW / qty) : 0;
-          return {
+          const base = {
             workpieceType: wp.workpieceType,
             quantity: qty,
             unit: wp.unit || 'pcs',
-            totalWeightLb: totalW,
-            unitWeightLb: unitW,
+            totalWeightLb: Math.round(totalW),
+            unitWeightLb: Math.round(unitW),
+            weightSource: wp.isUniformWeight === false ? 'WEIGHT_BRACKET' : (wp.weightInputMode === 'PER_UNIT' ? 'PER_UNIT_INPUT' : 'TOTAL_INPUT')
+          };
+
+          if (wp.riggingCategory === 'CUSTOM_FIXTURE') {
+            return {
+              ...base,
+              rigging: {
+                category: 'CUSTOM_FIXTURE',
+                fixtureType: wp.customFixtureType || null
+              }
+            };
+          }
+
+          return {
+            ...base,
             rigging: {
+              category: 'WIRE_CHAIN',
               hangingMode: wp.hangingMode,
               hangingPoints: parseInt(wp.hangingPoints, 10),
               point1: { spec: wp.point1SpecId, strands: parseInt(wp.point1Strands, 10) || 0 },
-              point2: wp.hangingPoints === '2' ? { spec: wp.point2SpecId, strands: parseInt(wp.point2Strands, 10) || 0 } : null
+              point2: wp.hangingPoints === '2' ? { spec: wp.point2SpecId, strands: parseInt(wp.point2Strands, 10) || 0 } : null,
+              anchorShackle: wp.anchorShackle && wp.anchorShackle !== 'NONE' ? wp.anchorShackle : null
             }
           };
         })
@@ -599,6 +697,35 @@ const [assistantPin, setAssistantPin] = useState('');
               </span>
             </div>
           </div>
+
+          {/* Rack Support-Arm Capacity Gauge - live total across every Job/Workpiece on this Load */}
+          {(() => {
+            const pct = Math.min(100, (rackTotalWeight / RACK_LIMIT_LBS) * 100);
+            const isOver = rackTotalWeight > RACK_LIMIT_LBS;
+            const isWarn = !isOver && pct >= 70;
+            const barColor = isOver ? 'bg-rose-500' : isWarn ? 'bg-amber-500' : 'bg-emerald-500';
+            const textColor = isOver ? 'text-rose-300' : isWarn ? 'text-amber-300' : 'text-emerald-300';
+            return (
+              <div className="mt-4 pt-3 border-t border-slate-800/80">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    ⚖️ Rack Support-Arm Load
+                  </span>
+                  <span className={`text-xs font-mono font-bold ${textColor}`}>
+                    {Math.round(rackTotalWeight).toLocaleString()} / {RACK_LIMIT_LBS.toLocaleString()} lb
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                  <div className={`h-full ${barColor} transition-all`} style={{ width: `${pct}%` }} />
+                </div>
+                {isOver && (
+                  <p className="text-[10px] text-rose-400 font-semibold mt-1">
+                    🚨 Over the {SUPPORT_ARM_CAPACITY_LBS.toLocaleString()} lb/side support arm capacity ({RACK_LIMIT_LBS.toLocaleString()} lb combined) - submission blocked until reduced.
+                  </p>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* 2. JOB BREAKDOWN SECTION */}
@@ -756,9 +883,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 </div>
 
                 {job.workpieces.map((wp, wpIndex) => {
-                  const totalW = parseFloat(wp.weightLb) || 0;
-                  const qty = parseInt(wp.quantity, 10) || 0;
-                  const unitW = qty > 0 && totalW > 0 ? Math.round(totalW / qty) : 0;
+                  const { totalW, unitW } = getWorkpieceTotalWeight(wp);
 
                   return (
                     <div key={wp.id} className="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 space-y-3 relative">
@@ -811,20 +936,57 @@ const [assistantPin, setAssistantPin] = useState('');
 
                         <div>
                           <div className="flex justify-between items-center mb-1">
-                            <label className="block text-[11px] text-slate-400">Total Weight (lb)</label>
-                            {unitW > 0 && (
-                              <span className="text-[10px] text-cyan-400 font-mono font-bold">
-                                {unitW} lb/pc
-                              </span>
-                            )}
+                            <label className="block text-[11px] text-slate-400">
+                              {wp.isUniformWeight === false ? 'Weight Bracket' : (wp.weightInputMode === 'PER_UNIT' ? 'Unit Weight (lb)' : 'Total Weight (lb)')}
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'isUniformWeight', wp.isUniformWeight === false)}
+                              className="text-[9px] font-bold text-slate-500 hover:text-cyan-300 underline decoration-dotted"
+                              title="Are all pieces on this line the same weight?"
+                            >
+                              {wp.isUniformWeight === false ? 'Varied → Identical' : 'Identical → Varied'}
+                            </button>
                           </div>
-                          <input
-                            type="number"
-                            placeholder="Total lbs"
-                            value={wp.weightLb}
-                            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'weightLb', e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-cyan-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          />
+
+                          {wp.isUniformWeight === false ? (
+                            <select
+                              value={wp.weightBracketId || ''}
+                              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'weightBracketId', e.target.value)}
+                              className="w-full bg-slate-900 border border-amber-700/60 rounded-lg px-2 py-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-500"
+                            >
+                              <option value="">-- Select Weight Range --</option>
+                              {(wp.hangingPoints === '2' ? WIRE_BRACKETS_DOUBLE : WIRE_BRACKETS_SINGLE).map(b => (
+                                <option key={b.maxLb} value={b.maxLb}>
+                                  {b.minLb}–{b.maxLb} lb
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <div className="flex gap-1">
+                              <input
+                                type="number"
+                                placeholder={wp.weightInputMode === 'PER_UNIT' ? 'Unit lbs' : 'Total lbs'}
+                                value={wp.weightInputMode === 'PER_UNIT' ? (wp.unitWeightInput || '') : wp.weightLb}
+                                onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, wp.weightInputMode === 'PER_UNIT' ? 'unitWeightInput' : 'weightLb', e.target.value)}
+                                className="flex-1 w-full min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-cyan-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'weightInputMode', wp.weightInputMode === 'PER_UNIT' ? 'TOTAL' : 'PER_UNIT')}
+                                className="shrink-0 px-1.5 rounded border border-slate-700 text-[9px] text-slate-400 hover:text-cyan-300 font-bold"
+                                title="Switch between total weight and per-unit weight entry"
+                              >
+                                {wp.weightInputMode === 'PER_UNIT' ? '单件→总' : '总→单件'}
+                              </button>
+                            </div>
+                          )}
+
+                          {wp.isUniformWeight !== false && unitW > 0 && (
+                            <span className="text-[10px] text-cyan-400 font-mono font-bold block mt-0.5">
+                              {wp.weightInputMode === 'PER_UNIT' ? `= ${Math.round(totalW)} lb total` : `${Math.round(unitW)} lb/pc`}
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -852,7 +1014,53 @@ const [assistantPin, setAssistantPin] = useState('');
 
 {/* Rigging & Hanging Setup for THIS Workpiece */}
 <div className="pt-2.5 border-t border-slate-800/80 bg-slate-950/40 p-3 rounded-lg space-y-3">
-  
+
+  {/* Rigging Category Toggle: how is this workpiece actually hung? */}
+  <div className="inline-flex bg-slate-900 p-0.5 rounded border border-slate-800">
+    <button
+      type="button"
+      onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'riggingCategory', 'WIRE_CHAIN')}
+      className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
+        wp.riggingCategory !== 'CUSTOM_FIXTURE'
+          ? 'bg-cyan-600 text-slate-950 shadow'
+          : 'text-slate-400 hover:text-slate-200'
+      }`}
+    >
+      🔗 Wire / Chain (Beam Rack)
+    </button>
+    <button
+      type="button"
+      onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'riggingCategory', 'CUSTOM_FIXTURE')}
+      className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
+        wp.riggingCategory === 'CUSTOM_FIXTURE'
+          ? 'bg-cyan-600 text-slate-950 shadow'
+          : 'text-slate-400 hover:text-slate-200'
+      }`}
+    >
+      🧱 Custom Fixture
+    </button>
+  </div>
+
+  {wp.riggingCategory === 'CUSTOM_FIXTURE' ? (
+    <div className="space-y-2 pt-1">
+      <label className="block text-[10px] font-semibold text-slate-300 uppercase tracking-wide">
+        Fixture Type <span className="text-rose-400">*</span>
+      </label>
+      <select
+        value={wp.customFixtureType || ''}
+        onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'customFixtureType', e.target.value)}
+        className="w-full sm:w-64 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+      >
+        {CUSTOM_FIXTURE_TYPES.map(f => (
+          <option key={f.value} value={f.value}>{f.label}</option>
+        ))}
+      </select>
+      <p className="text-[10px] text-slate-500">
+        Certified shop fixture - no wire/chain/shackle spec needed. Its weight still counts toward the Rack's total load below.
+      </p>
+    </div>
+  ) : (
+    <>
   {/* Top Mode Selection */}
   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-slate-800/60">
     <span className="text-[11px] font-bold text-cyan-400 flex items-center gap-1">
@@ -1082,6 +1290,8 @@ const [assistantPin, setAssistantPin] = useState('');
         The system has automatically switched the overall load bottleneck to the top wire's rated capacity, to prevent a "strong chain, weak wire" failure!
       </div>
     </div>
+  )}
+    </>
   )}
 
 </div>
