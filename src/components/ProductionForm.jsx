@@ -74,7 +74,7 @@ const [assistantPin, setAssistantPin] = useState('');
     drilledOnsite: true,          // 3. Drilled on site if missing
     isAngleCompliant: true,       // 4. Tilt angle 15°-30°
     minTopClearanceValid: true,   // 5. Min top clearance >= 50cm
-    maxHangDepthValid: true,      // 6. Max hang depth <= 400cm
+    maxHangDepthValid: true,      // 6. Max hang depth <= 300cm
     workpieces: [
       {
         id: Date.now() + 1,
@@ -245,9 +245,9 @@ const [assistantPin, setAssistantPin] = useState('');
       if (!job.minTopClearanceValid) {
         severeErrors.push(`Job #${jIdx + 1}: Top clearance is less than 50 cm. Material cannot be fully submerged in acid/zinc bath.`);
       }
-      // Check 3: Maximum Hang Depth violation (> 400cm)
+      // Check 3: Maximum Hang Depth violation (> 300cm)
       if (!job.maxHangDepthValid) {
-        severeErrors.push(`Job #${jIdx + 1}: Total hang depth exceeds 400 cm. Risk of bottom collision or crane overhead snagging.`);
+        severeErrors.push(`Job #${jIdx + 1}: Total hang depth exceeds 300 cm. Risk of bottom collision or crane overhead snagging.`);
       }
     });
     return severeErrors;
@@ -431,7 +431,7 @@ const [assistantPin, setAssistantPin] = useState('');
               <div className="font-bold text-cyan-400">4. Physical Clearance Limits</div>
               <p className="text-[11px] text-slate-300">
                 • <strong>Min Top Clearance &ge; 50 cm</strong>: Ensures full submersion in tank.<br/>
-                • <strong>Max Hang Depth &le; 400 cm</strong>: Prevents bottoming out or overhead crane snagging.
+                • <strong>Max Hang Depth &le; 300 cm</strong>: Prevents bottoming out or overhead crane snagging.
               </p>
             </div>
           </div>
@@ -780,7 +780,7 @@ const [assistantPin, setAssistantPin] = useState('');
 
                   {/* 6. Max Hang Depth Check */}
                   <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">6. Max hang depth &le; 400 cm?</span>
+                    <span className="text-slate-300">6. Max hang depth &le; 300 cm?</span>
                     <div className="flex gap-2">
                       <button
                         type="button"
@@ -789,7 +789,7 @@ const [assistantPin, setAssistantPin] = useState('');
                           job.maxHangDepthValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
                         }`}
                       >
-                        YES (&le; 400 cm)
+                        YES (&le; 300 cm)
                       </button>
                       <button
                         type="button"
@@ -798,7 +798,7 @@ const [assistantPin, setAssistantPin] = useState('');
                           !job.maxHangDepthValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
                         }`}
                       >
-                        NO (&gt; 400 cm)
+                        NO (&gt; 300 cm)
                       </button>
                     </div>
                   </div>
