@@ -51,6 +51,22 @@ const [primaryPin, setPrimaryPin] = useState('');
 const [assistantOperatorId, setAssistantOperatorId] = useState('');
 const [assistantPin, setAssistantPin] = useState(''); 
 
+  // Global Job Safety & Submersion Checklist (SOP Inspection) - shared across ALL jobs on this load
+  const [safetyChecklist, setSafetyChecklist] = useState({
+    hasEnclosedCavity: false,      // 1. Enclosed cavity/pipe structure
+    hasAdequateVenting: true,      // 2. Adequate venting/drainage holes
+    drilledOnsite: true,           // 3. Drilled on site if missing
+    isAngleCompliant: true,        // 4. Tilt angle 15°-30°
+    minTopClearanceValid: true,    // 5. Min top clearance >= 50cm
+    maxHangDepthValid: true,       // 6. Max hang depth <= 300cm
+    hasTightContact: false,        // 7. Tight contact between workpieces
+    hasMaskingAgent: false         // 8. Coated with masking/stop-off agent
+  });
+
+  const handleSafetyFieldChange = (field, value) => {
+    setSafetyChecklist(prev => ({ ...prev, [field]: value }));
+  };
+
   // Formatted Current Date & Day of Week
   const currentDateFormatted = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -68,13 +84,7 @@ const [assistantPin, setAssistantPin] = useState('');
     // Surface Condition Inspection
     oilPaintLevel: '',
     rustLevel: '',
-    // SOP & Safety Checklist
-    hasEnclosedCavity: false,      // 1. Enclosed cavity/pipe structure
-    hasAdequateVenting: true,     // 2. Adequate venting/drainage holes
-    drilledOnsite: true,          // 3. Drilled on site if missing
-    isAngleCompliant: true,       // 4. Tilt angle 15°-30°
-    minTopClearanceValid: true,   // 5. Min top clearance >= 50cm
-    maxHangDepthValid: true,      // 6. Max hang depth <= 300cm
+    // Note: SOP & Safety Checklist moved to global `safetyChecklist` state (shared across all jobs)
     workpieces: [
       {
         id: Date.now() + 1,
@@ -233,23 +243,21 @@ const [assistantPin, setAssistantPin] = useState('');
     return deficiencies;
   };
 
-  // Severe Safety Violations Check (Hard Blocking Logic)
+  // Severe Safety Violations Check (Hard Blocking Logic) - now based on the single global checklist
   const checkCriticalSafetyViolations = () => {
     let severeErrors = [];
-    jobs.forEach((job, jIdx) => {
-      // Check 1: Cavity without venting & without onsite drilling
-      if (job.hasEnclosedCavity && (!job.hasAdequateVenting && !job.drilledOnsite)) {
-        severeErrors.push(`Job #${jIdx + 1}: Enclosed cavity detected without sufficient venting/drainage holes, and not drilled on site! (Explosion Risk in Kettle)`);
-      }
-      // Check 2: Minimum Top Clearance violation (< 50cm)
-      if (!job.minTopClearanceValid) {
-        severeErrors.push(`Job #${jIdx + 1}: Top clearance is less than 50 cm. Material cannot be fully submerged in acid/zinc bath.`);
-      }
-      // Check 3: Maximum Hang Depth violation (> 300cm)
-      if (!job.maxHangDepthValid) {
-        severeErrors.push(`Job #${jIdx + 1}: Total hang depth exceeds 300 cm. Risk of bottom collision or crane overhead snagging.`);
-      }
-    });
+    // Check 1: Cavity without venting & without onsite drilling
+    if (safetyChecklist.hasEnclosedCavity && (!safetyChecklist.hasAdequateVenting && !safetyChecklist.drilledOnsite)) {
+      severeErrors.push(`Enclosed cavity detected without sufficient venting/drainage holes, and not drilled on site! (Explosion Risk in Kettle)`);
+    }
+    // Check 2: Minimum Top Clearance violation (< 50cm)
+    if (!safetyChecklist.minTopClearanceValid) {
+      severeErrors.push(`Top clearance is less than 50 cm. Material cannot be fully submerged in acid/zinc bath.`);
+    }
+    // Check 3: Maximum Hang Depth violation (> 300cm)
+    if (!safetyChecklist.maxHangDepthValid) {
+      severeErrors.push(`Total hang depth exceeds 300 cm. Risk of bottom collision or crane overhead snagging.`);
+    }
     return severeErrors;
   };
 
@@ -269,8 +277,8 @@ const [assistantPin, setAssistantPin] = useState('');
       return;
     }
 
-    if (!operatorSignoffId.trim()) {
-      alert('Please enter your Employee ID as Confirm & Sign-off before submitting.');
+    if (!primaryOperatorId.trim()) {
+      alert('Please enter the Primary Operator Employee ID to Confirm & Sign-off before submitting.');
       return;
     }
 
@@ -288,10 +296,13 @@ const [assistantPin, setAssistantPin] = useState('');
         loadId: loadId.trim(),
         rackNo: rackNo === 'HOOK' ? 'HOOK' : `Rack #${rackNo}`,
         operatorId: currentUser?.id || 'UNKNOWN',
-        signedOffByEmployeeId: operatorSignoffId.trim(),
+        signedOffByEmployeeId: primaryOperatorId.trim(),
+        assistantOperatorId: assistantOperatorId.trim() || null,
         shift: getShiftDisplay(),
         entryDate: currentDateFormatted,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        // Job Safety & Submersion Checklist (SOP Inspection) - one shared checklist for the whole load
+        safetyChecklist: { ...safetyChecklist }
       },
       jobs: jobs.map(job => ({
         customerName: job.customerName,
@@ -300,14 +311,6 @@ const [assistantPin, setAssistantPin] = useState('');
         surfaceAssessment: {
           oilPaintLevel: job.oilPaintLevel,
           rustLevel: job.rustLevel
-        },
-        safetyChecklist: {
-          hasEnclosedCavity: job.hasEnclosedCavity,
-          hasAdequateVenting: job.hasAdequateVenting,
-          drilledOnsite: job.drilledOnsite,
-          isAngleCompliant: job.isAngleCompliant,
-          minTopClearanceValid: job.minTopClearanceValid,
-          maxHangDepthValid: job.maxHangDepthValid
         },
         workpieces: job.workpieces.map(wp => {
           const totalW = parseInt(wp.weightLb, 10) || 0;
@@ -331,13 +334,26 @@ const [assistantPin, setAssistantPin] = useState('');
     };
 
     console.log('Submitting Production Load Payload:', payload);
-    alert(`Load [${loadId.trim()}] recorded and signed off by ID [${operatorSignoffId.trim()}] successfully!`);
+    alert(`Load [${loadId.trim()}] recorded and signed off by ID [${primaryOperatorId.trim()}] successfully!`);
 
     // Reset Form
     setRackNo('');
     setLoadId('');
     setAutoLoadId('');
-    setOperatorSignoffId('');
+    setPrimaryOperatorId('');
+    setPrimaryPin('');
+    setAssistantOperatorId('');
+    setAssistantPin('');
+    setSafetyChecklist({
+      hasEnclosedCavity: false,
+      hasAdequateVenting: true,
+      drilledOnsite: true,
+      isAngleCompliant: true,
+      minTopClearanceValid: true,
+      maxHangDepthValid: true,
+      hasTightContact: false,
+      hasMaskingAgent: false
+    });
     setJobs([createNewJob()]);
   };
 
@@ -635,244 +651,6 @@ const [assistantPin, setAssistantPin] = useState('');
                 </div>
               </div>
 
-              {/* SOP Safety Checklist Section */}
-              <div className="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3">
-                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block">
-                  🛡️ Job Safety & Submersion Checklist (SOP Inspection)
-                </span>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                  
-                  {/* 1. Cavity Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">1. Has enclosed cavity / hollow structure?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'hasEnclosedCavity', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          job.hasEnclosedCavity ? 'bg-amber-600 text-slate-950' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'hasEnclosedCavity', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !job.hasEnclosedCavity ? 'bg-slate-700 text-slate-200' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 2 & 3. Venting & Drilling (Only if Cavity = YES) */}
-                  {job.hasEnclosedCavity ? (
-                    <div className="space-y-2 col-span-1 md:col-span-1">
-                      <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                        <span className="text-slate-300">2. All cavities have adequate vent/drain holes?</span>
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleJobFieldChange(jobIndex, 'hasAdequateVenting', true)}
-                            className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                              job.hasAdequateVenting ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                            }`}
-                          >
-                            YES
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleJobFieldChange(jobIndex, 'hasAdequateVenting', false)}
-                            className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                              !job.hasAdequateVenting ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                            }`}
-                          >
-                            NO
-                          </button>
-                        </div>
-                      </div>
-
-                      {!job.hasAdequateVenting && (
-                        <div className="flex items-center justify-between bg-amber-950/40 p-2.5 rounded border border-amber-800">
-                          <span className="text-amber-200">3. If missing, drilled on site?</span>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleJobFieldChange(jobIndex, 'drilledOnsite', true)}
-                              className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                                job.drilledOnsite ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                              }`}
-                            >
-                              YES (Drilled)
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleJobFieldChange(jobIndex, 'drilledOnsite', false)}
-                              className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                                !job.drilledOnsite ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                              }`}
-                            >
-                              NO (Not Drilled)
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between bg-slate-950/40 p-2.5 rounded border border-slate-800/50 text-slate-500">
-                      <span>2/3. Venting & Drainage Check</span>
-                      <span className="text-[11px]">N/A (No Cavity)</span>
-                    </div>
-                  )}
-
-                  {/* 4. Angle Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">4. Tilt angle compliant (15°-30°)?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'isAngleCompliant', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          job.isAngleCompliant ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'isAngleCompliant', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !job.isAngleCompliant ? 'bg-amber-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 5. Top Clearance Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">5. Min top clearance &ge; 50 cm?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'minTopClearanceValid', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          job.minTopClearanceValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES (&ge; 50 cm)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'minTopClearanceValid', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !job.minTopClearanceValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO (&lt; 50 cm)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 6. Max Hang Depth Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">6. Max hang depth &le; 300 cm?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'maxHangDepthValid', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          job.maxHangDepthValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES (&le; 300 cm)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'maxHangDepthValid', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !job.maxHangDepthValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO (&gt; 300 cm)
-                      </button>
-                    </div>
-                  </div>
-
- {/* 7. Workpiece Surface Contact Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">7. Tight contact between workpieces?</span>
-                    <div className="flex gap-2">
-                     <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'hasTightContact', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          job.hasTightContact === false ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO
-                      </button>
-                     {/* YES button: turns red and shows "Action Required" once selected */}
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'hasTightContact', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold transition-colors ${
-                          job.hasTightContact === true
-                            ? 'bg-rose-600 text-white' 
-                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
-                        }`}
-                      >
-                        {job.hasTightContact === true ? 'YES (Action Required)' : 'YES'}
-                      </button>
-                    </div>
-                  </div>
-
-{/* 8. Anti-Galvanizing Masking Agent Check */}
-<div className="space-y-2 col-span-1 md:col-span-2">
-  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-    <span className="text-slate-300">8. Coated with Masking / Stop-off Agent?</span>
-    <div className="flex gap-2">
-      <button
-        type="button"
-        onClick={() => handleJobFieldChange(jobIndex, 'hasMaskingAgent', true)}
-        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-          job.hasMaskingAgent ? 'bg-amber-600 text-slate-950' : 'bg-slate-900 text-slate-400'
-        }`}
-      >
-        YES
-      </button>
-      <button
-        type="button"
-        onClick={() => handleJobFieldChange(jobIndex, 'hasMaskingAgent', false)}
-        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-          !job.hasMaskingAgent ? 'bg-slate-700 text-slate-200' : 'bg-slate-900 text-slate-400'
-        }`}
-      >
-        NO
-      </button>
-    </div>
-  </div>
-
-  {/* Racking Direction Notice Card */}
-  {job.hasMaskingAgent && (
-    <div className="bg-amber-950/40 border border-amber-600/50 rounded p-2.5 text-xs text-amber-200 flex items-start gap-2">
-      <span className="text-amber-400 font-bold">⚠️ SOP Notice:</span>
-      <div>
-        <p className="font-semibold">Position masked areas at the BOTTOM or SIDES during racking.</p>
-        <p className="text-[11px] text-amber-300/80 mt-0.5">
-          Prevent pre-treatment runoff from dripping onto unmasked steel surfaces.
-        </p>
-      </div>
-    </div>
-  )}
-</div>
-
-                </div>
-              </div>
 
               {/* Dynamic Workpiece Lines */}
               <div className="pt-2 space-y-4">
@@ -1230,7 +1008,247 @@ const [assistantPin, setAssistantPin] = useState('');
 
         {/* 3. SIGN-OFF & SUBMIT SECTION */}
         <div className="pt-4 border-t border-slate-800 space-y-4">
-          
+
+              {/* Global Job Safety & Submersion Checklist (SOP Inspection) - applies to the whole load, confirmed once at sign-off */}
+              <div className="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3">
+                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block">
+                  🛡️ Job Safety & Submersion Checklist (SOP Inspection)
+                </span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  
+                  {/* 1. Cavity Check */}
+                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                    <span className="text-slate-300">1. Has enclosed cavity / hollow structure?</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('hasEnclosedCavity', true)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          safetyChecklist.hasEnclosedCavity ? 'bg-amber-600 text-slate-950' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        YES
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('hasEnclosedCavity', false)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          !safetyChecklist.hasEnclosedCavity ? 'bg-slate-700 text-slate-200' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        NO
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 2 & 3. Venting & Drilling (Only if Cavity = YES) */}
+                  {safetyChecklist.hasEnclosedCavity ? (
+                    <div className="space-y-2 col-span-1 md:col-span-1">
+                      <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                        <span className="text-slate-300">2. All cavities have adequate vent/drain holes?</span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleSafetyFieldChange('hasAdequateVenting', true)}
+                            className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                              safetyChecklist.hasAdequateVenting ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                            }`}
+                          >
+                            YES
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSafetyFieldChange('hasAdequateVenting', false)}
+                            className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                              !safetyChecklist.hasAdequateVenting ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
+                            }`}
+                          >
+                            NO
+                          </button>
+                        </div>
+                      </div>
+
+                      {!safetyChecklist.hasAdequateVenting && (
+                        <div className="flex items-center justify-between bg-amber-950/40 p-2.5 rounded border border-amber-800">
+                          <span className="text-amber-200">3. If missing, drilled on site?</span>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleSafetyFieldChange('drilledOnsite', true)}
+                              className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                                safetyChecklist.drilledOnsite ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                              }`}
+                            >
+                              YES (Drilled)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSafetyFieldChange('drilledOnsite', false)}
+                              className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                                !safetyChecklist.drilledOnsite ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
+                              }`}
+                            >
+                              NO (Not Drilled)
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-slate-950/40 p-2.5 rounded border border-slate-800/50 text-slate-500">
+                      <span>2/3. Venting & Drainage Check</span>
+                      <span className="text-[11px]">N/A (No Cavity)</span>
+                    </div>
+                  )}
+
+                  {/* 4. Angle Check */}
+                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                    <span className="text-slate-300">4. Tilt angle compliant (15°-30°)?</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('isAngleCompliant', true)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          safetyChecklist.isAngleCompliant ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        YES
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('isAngleCompliant', false)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          !safetyChecklist.isAngleCompliant ? 'bg-amber-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        NO
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 5. Top Clearance Check */}
+                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                    <span className="text-slate-300">5. Min top clearance &ge; 50 cm?</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('minTopClearanceValid', true)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          safetyChecklist.minTopClearanceValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        YES (&ge; 50 cm)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('minTopClearanceValid', false)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          !safetyChecklist.minTopClearanceValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        NO (&lt; 50 cm)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 6. Max Hang Depth Check */}
+                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                    <span className="text-slate-300">6. Max hang depth &le; 300 cm?</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('maxHangDepthValid', true)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          safetyChecklist.maxHangDepthValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        YES (&le; 300 cm)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('maxHangDepthValid', false)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          !safetyChecklist.maxHangDepthValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        NO (&gt; 300 cm)
+                      </button>
+                    </div>
+                  </div>
+
+ {/* 7. Workpiece Surface Contact Check */}
+                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                    <span className="text-slate-300">7. Tight contact between workpieces?</span>
+                    <div className="flex gap-2">
+                     <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('hasTightContact', false)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          safetyChecklist.hasTightContact === false ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        NO
+                      </button>
+                     {/* YES button: turns red and shows "Action Required" once selected */}
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('hasTightContact', true)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold transition-colors ${
+                          safetyChecklist.hasTightContact === true
+                            ? 'bg-rose-600 text-white' 
+                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                        }`}
+                      >
+                        {safetyChecklist.hasTightContact === true ? 'YES (Action Required)' : 'YES'}
+                      </button>
+                    </div>
+                  </div>
+
+{/* 8. Anti-Galvanizing Masking Agent Check */}
+<div className="space-y-2 col-span-1 md:col-span-2">
+  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+    <span className="text-slate-300">8. Coated with Masking / Stop-off Agent?</span>
+    <div className="flex gap-2">
+      <button
+        type="button"
+        onClick={() => handleSafetyFieldChange('hasMaskingAgent', true)}
+        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+          safetyChecklist.hasMaskingAgent ? 'bg-amber-600 text-slate-950' : 'bg-slate-900 text-slate-400'
+        }`}
+      >
+        YES
+      </button>
+      <button
+        type="button"
+        onClick={() => handleSafetyFieldChange('hasMaskingAgent', false)}
+        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+          !safetyChecklist.hasMaskingAgent ? 'bg-slate-700 text-slate-200' : 'bg-slate-900 text-slate-400'
+        }`}
+      >
+        NO
+      </button>
+    </div>
+  </div>
+
+  {/* Racking Direction Notice Card */}
+  {safetyChecklist.hasMaskingAgent && (
+    <div className="bg-amber-950/40 border border-amber-600/50 rounded p-2.5 text-xs text-amber-200 flex items-start gap-2">
+      <span className="text-amber-400 font-bold">⚠️ SOP Notice:</span>
+      <div>
+        <p className="font-semibold">Position masked areas at the BOTTOM or SIDES during racking.</p>
+        <p className="text-[11px] text-amber-300/80 mt-0.5">
+          Prevent pre-treatment runoff from dripping onto unmasked steel surfaces.
+        </p>
+      </div>
+    </div>
+  )}
+</div>
+
+                </div>
+              </div>
+
+
 {/* Employee ID & PIN Sign-off Input Box */}
 <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
   <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider">
