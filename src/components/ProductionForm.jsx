@@ -1182,7 +1182,9 @@ const [assistantPin, setAssistantPin] = useState('');
           className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
           required
         >
-          {RIGGING_SPECS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+          {RIGGING_SPECS.map(r => (
+            <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
+          ))}
         </select>
       </div>
       <div>
@@ -1209,7 +1211,9 @@ const [assistantPin, setAssistantPin] = useState('');
             className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
             required
           >
-            {RIGGING_SPECS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+            {RIGGING_SPECS.map(r => (
+              <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
+            ))}
           </select>
         </div>
         <div>
