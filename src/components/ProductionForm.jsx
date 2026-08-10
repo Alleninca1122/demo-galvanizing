@@ -147,6 +147,14 @@ const SURFACE_CONDITION_OPTIONS = [
   { value: 'HEAVY', label: 'Heavy' }
 ];
 
+// Corrosion grade lookup (A = lightest, D = heaviest) - used to flag mixed-batch warnings
+// when workpieces on the same rack span too wide a rust/corrosion range.
+const SURFACE_CONDITION_GRADE = { NONE: 'A', LIGHT: 'B', MEDIUM: 'C', HEAVY: 'D' };
+
+// If the max and min levels on the rack are this many steps apart or more (on the
+// NONE < LIGHT < MEDIUM < HEAVY scale), warn the operator about mixed-corrosion batching.
+const SURFACE_SPREAD_WARNING_THRESHOLD = 2;
+
 export default function ProductionForm({ currentUser, supabase }) {
   // Global Rack & Load Session
   const [rackNo, setRackNo] = useState('');
@@ -190,10 +198,9 @@ const [assistantPin, setAssistantPin] = useState('');
     customerName: '',
     customerOrderNo: '',
     customerBatchNo: '',
-    // Surface Condition Inspection
-    oilPaintLevel: '',
-    rustLevel: '',
-    // Note: SOP & Safety Checklist moved to global `safetyChecklist` state (shared across all jobs)
+    // Note: Surface Condition Inspection moved to per-workpiece fields (oilPaintLevel/rustLevel
+    // below), with a global summary shown once for the whole Load. SOP & Safety Checklist is
+    // also global (shared `safetyChecklist` state).
     workpieces: [
       {
         id: Date.now() + 1,
@@ -205,6 +212,8 @@ const [assistantPin, setAssistantPin] = useState('');
         weightInputMode: 'TOTAL',   // 'TOTAL' | 'PER_UNIT'
         unitWeightInput: '',
         weightBracketId: '',
+        oilPaintLevel: '',          // Surface Condition Inspection - per workpiece
+        rustLevel: '',
         riggingCategory: 'WIRE_CHAIN', // 'WIRE_CHAIN' | 'CUSTOM_FIXTURE'
         customFixtureType: '',
         hangingMode: 'INDIVIDUAL',
@@ -308,6 +317,8 @@ const [assistantPin, setAssistantPin] = useState('');
       weightInputMode: 'TOTAL',
       unitWeightInput: '',
       weightBracketId: '',
+      oilPaintLevel: '',
+      rustLevel: '',
       riggingCategory: 'WIRE_CHAIN',
       customFixtureType: '',
       hangingMode: 'INDIVIDUAL',
@@ -402,6 +413,39 @@ const [assistantPin, setAssistantPin] = useState('');
     return total;
   };
 
+  // Scans every workpiece line on this Load and returns the highest/lowest Oil/Paint Level and
+  // Rust Level entered, plus whether the spread between them is wide enough to warrant a
+  // mixed-corrosion batching warning.
+  const getSurfaceAssessmentSummary = () => {
+    const levelIndex = (val) => SURFACE_CONDITION_OPTIONS.findIndex(o => o.value === val);
+    const summarize = (values) => {
+      const indices = values.map(levelIndex).filter(i => i >= 0);
+      if (indices.length === 0) return { min: null, max: null, spread: 0, hasWarning: false };
+      const minIdx = Math.min(...indices);
+      const maxIdx = Math.max(...indices);
+      return {
+        min: SURFACE_CONDITION_OPTIONS[minIdx],
+        max: SURFACE_CONDITION_OPTIONS[maxIdx],
+        spread: maxIdx - minIdx,
+        hasWarning: (maxIdx - minIdx) >= SURFACE_SPREAD_WARNING_THRESHOLD
+      };
+    };
+
+    const oilPaintValues = [];
+    const rustValues = [];
+    jobs.forEach(job => {
+      job.workpieces.forEach(wp => {
+        if (wp.oilPaintLevel) oilPaintValues.push(wp.oilPaintLevel);
+        if (wp.rustLevel) rustValues.push(wp.rustLevel);
+      });
+    });
+
+    return {
+      oilPaint: summarize(oilPaintValues),
+      rust: summarize(rustValues)
+    };
+  };
+
   // Severe Safety Violations Check (Hard Blocking Logic) - now based on the single global checklist
   const checkCriticalSafetyViolations = () => {
     let severeErrors = [];
@@ -429,6 +473,7 @@ const [assistantPin, setAssistantPin] = useState('');
   const criticalViolations = checkCriticalSafetyViolations();
   const isFormBlocked = criticalViolations.length > 0;
   const rackTotalWeight = getRackTotalWeight();
+  const surfaceAssessmentSummary = getSurfaceAssessmentSummary();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -472,16 +517,25 @@ const [assistantPin, setAssistantPin] = useState('');
         rackCapacityCheck: {
           totalLoadLb: Math.round(rackTotalWeight),
           limitLb: RACK_LIMIT_LBS
+        },
+        // Surface Assessment (Oil, Paint & Rust Level) - global summary across every workpiece on this Load
+        surfaceAssessmentSummary: {
+          oilPaint: {
+            min: surfaceAssessmentSummary.oilPaint.min?.value || null,
+            max: surfaceAssessmentSummary.oilPaint.max?.value || null,
+            mixedBatchWarning: surfaceAssessmentSummary.oilPaint.hasWarning
+          },
+          rust: {
+            min: surfaceAssessmentSummary.rust.min?.value || null,
+            max: surfaceAssessmentSummary.rust.max?.value || null,
+            mixedBatchWarning: surfaceAssessmentSummary.rust.hasWarning
+          }
         }
       },
       jobs: jobs.map(job => ({
         customerName: job.customerName,
         customerOrderNo: job.customerOrderNo,
         customerBatchNo: job.customerBatchNo || '#1',
-        surfaceAssessment: {
-          oilPaintLevel: job.oilPaintLevel,
-          rustLevel: job.rustLevel
-        },
         workpieces: job.workpieces.map(wp => {
           const { totalW, unitW } = getWorkpieceTotalWeight(wp);
           const qty = parseInt(wp.quantity, 10) || 0;
@@ -491,7 +545,11 @@ const [assistantPin, setAssistantPin] = useState('');
             unit: wp.unit || 'pcs',
             totalWeightLb: Math.round(totalW),
             unitWeightLb: Math.round(unitW),
-            weightSource: wp.isUniformWeight === false ? 'WEIGHT_BRACKET' : (wp.weightInputMode === 'PER_UNIT' ? 'PER_UNIT_INPUT' : 'TOTAL_INPUT')
+            weightSource: wp.isUniformWeight === false ? 'WEIGHT_BRACKET' : (wp.weightInputMode === 'PER_UNIT' ? 'PER_UNIT_INPUT' : 'TOTAL_INPUT'),
+            surfaceAssessment: {
+              oilPaintLevel: wp.oilPaintLevel || null,
+              rustLevel: wp.rustLevel || null
+            }
           };
 
           if (wp.riggingCategory === 'CUSTOM_FIXTURE') {
@@ -825,47 +883,9 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>              
               </div>
 
-              {/* Surface Assessment Section */}
-              <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800/80 space-y-2">
-                <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">
-                  🔍 Surface Assessment (Oil, Paint & Rust Level)
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">   
-<div>
-  <label className="block text-[11px] text-slate-400 mb-1">
-    Oil / Paint Level<span className="text-rose-400">*</span>
-  </label>
-  <select
-    value={job.oilPaintLevel}
-    onChange={(e) => handleJobFieldChange(jobIndex, 'oilPaintLevel', e.target.value)}
-    className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200"
-    required
-  >
-    <option value="">-- Select --</option>
-    {SURFACE_CONDITION_OPTIONS.map(opt => (
-      <option key={opt.value} value={opt.value}>{opt.label}</option>
-    ))}
-  </select>
-</div>
-<div>
-  <label className="block text-[11px] text-slate-400 mb-1">
-    Rust Level<span className="text-rose-400">*</span>
-  </label>
-  <select
-    value={job.rustLevel}
-    onChange={(e) => handleJobFieldChange(jobIndex, 'rustLevel', e.target.value)}
-    className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200"
-    required
-  >
-    <option value="">-- Select --</option>
-    {SURFACE_CONDITION_OPTIONS.map(opt => (
-      <option key={opt.value} value={opt.value}>{opt.label}</option>
-    ))}
-  </select>
-</div>
-                </div>
-              </div>
-
+              {/* Note: Surface Assessment (Oil, Paint & Rust Level) is now captured per-workpiece
+                  below, with a single global summary shown once for the whole Load (see the
+                  Surface Assessment Summary card near the Safety Checklist). */}
 
               {/* Dynamic Workpiece Lines */}
               <div className="pt-2 space-y-4">
@@ -1009,6 +1029,42 @@ const [assistantPin, setAssistantPin] = useState('');
                               ✕
                             </button>
                           )}
+                        </div>
+                      </div>
+
+                      {/* Surface Condition (per workpiece) */}
+                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                        <div>
+                          <label className="block text-[11px] text-slate-400 mb-1">
+                            Oil / Paint Level<span className="text-rose-400">*</span>
+                          </label>
+                          <select
+                            value={wp.oilPaintLevel || ''}
+                            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'oilPaintLevel', e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
+                            required
+                          >
+                            <option value="">-- Select --</option>
+                            {SURFACE_CONDITION_OPTIONS.map(opt => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
+                        </div>
+                        <div>
+                          <label className="block text-[11px] text-slate-400 mb-1">
+                            Rust Level<span className="text-rose-400">*</span>
+                          </label>
+                          <select
+                            value={wp.rustLevel || ''}
+                            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'rustLevel', e.target.value)}
+                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
+                            required
+                          >
+                            <option value="">-- Select --</option>
+                            {SURFACE_CONDITION_OPTIONS.map(opt => (
+                              <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            ))}
+                          </select>
                         </div>
                       </div>
 
@@ -1309,6 +1365,59 @@ const [assistantPin, setAssistantPin] = useState('');
 
         {/* 3. SIGN-OFF & SUBMIT SECTION */}
         <div className="pt-4 border-t border-slate-800 space-y-4">
+
+              {/* Global Surface Assessment Summary (Oil, Paint & Rust Level) - aggregated across
+                  every workpiece on this Load, shown once for the whole page */}
+              <div className="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3">
+                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block">
+                  Surface Assessment (Oil, Paint & Rust Level)
+                </span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  {[
+                    { key: 'oilPaint', label: 'Oil / Paint Level' },
+                    { key: 'rust', label: 'Rust Level' }
+                  ].map(({ key, label }) => {
+                    const s = surfaceAssessmentSummary[key];
+                    return (
+                      <div key={key} className="bg-slate-950 p-2.5 rounded border border-slate-800 space-y-1.5">
+                        <span className="text-slate-300 font-semibold block">{label}</span>
+                        {s.min && s.max ? (
+                          <div className="flex items-center gap-2">
+                            <span className="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-700 text-emerald-300 font-mono font-bold text-[11px]">
+                              Min: {s.min.label}
+                            </span>
+                            <span className="text-slate-600">&rarr;</span>
+                            <span className={`px-2 py-0.5 rounded border font-mono font-bold text-[11px] ${
+                              s.hasWarning
+                                ? 'bg-rose-950 border-rose-600 text-rose-300'
+                                : 'bg-slate-900 border-slate-700 text-slate-300'
+                            }`}>
+                              Max: {s.max.label}
+                            </span>
+                          </div>
+                        ) : (
+                          <span className="text-slate-500 text-[11px]">No workpiece data entered yet</span>
+                        )}
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {(surfaceAssessmentSummary.oilPaint.hasWarning || surfaceAssessmentSummary.rust.hasWarning) && (
+                  <div className="p-3 bg-rose-950/60 border border-rose-700 rounded-lg text-rose-200 text-[11px] space-y-2">
+                    <div className="font-bold text-rose-300 flex items-center gap-1.5">
+                      ⚠️ Wide Surface Condition Spread Detected
+                    </div>
+                    <p>
+                      <strong>Local Pre-Treatment:</strong> For individual workpieces with severe localized corrosion, perform manual grinding pre-treatment before hanging to reduce the corrosion gap among workpieces sharing the same rack.
+                    </p>
+                    <p>
+                      <strong>Batch by Corrosion Grade at the Source:</strong> Do not mix lightly rusted workpieces with heavily scaled/rusted workpieces on the same rack. Before hanging, group workpieces into batches by corrosion grade (Grade A/B/C/D).
+                    </p>
+                  </div>
+                )}
+              </div>
 
               {/* Global Job Safety & Submersion Checklist (SOP Inspection) - applies to the whole load, confirmed once at sign-off */}
               <div className="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3">
