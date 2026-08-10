@@ -273,12 +273,7 @@ const [assistantPin, setAssistantPin] = useState('');
 
       const dailySeq = await getNextDailySequence();
 
-      let generated = '';
-      if (selectedVal === 'HOOK') {
-        generated = `H00-${year}${month}${day}-${dailySeq}`;
-      } else {
-        generated = `R${selectedVal}-${year}${month}${day}-${dailySeq}`;
-      }
+      const generated = `R${selectedVal}-${year}${month}${day}-${dailySeq}`;
 
       setAutoLoadId(generated);
       setLoadId(generated);
@@ -503,7 +498,7 @@ const [assistantPin, setAssistantPin] = useState('');
     const payload = {
       global: {
         loadId: loadId.trim(),
-        rackNo: rackNo === 'HOOK' ? 'HOOK' : `Rack #${rackNo}`,
+        rackNo: `Rack #${rackNo}`,
         operatorId: currentUser?.id || 'UNKNOWN',
         signedOffByEmployeeId: primaryOperatorId.trim(),
         assistantOperatorId: assistantOperatorId.trim() || null,
