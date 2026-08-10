@@ -682,18 +682,6 @@ const [assistantPin, setAssistantPin] = useState('');
             </div>
           )}
 
-          {/* NON-BLOCKING RIGGING STRAND WARNING */}
-          {deficiencies.length > 0 && criticalViolations.length === 0 && (
-            <div className="p-3 bg-amber-950/70 border border-amber-800 rounded-lg text-amber-200 text-xs space-y-1">
-              <div className="font-bold text-amber-300 flex items-center gap-1.5">
-                ⚠️ NOTICE: Wire strand count below reference value
-              </div>
-              <p className="text-[11px] text-amber-200/90">
-                One or more workpiece lines have wire strand counts below the theoretical safety recommendation. Please review item details.
-              </p>
-            </div>
-          )}
-
           {/* 4-STEP SOP REFERENCE GRID */}
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
             {/* Step 1: Venting & Drainage */}
@@ -938,6 +926,8 @@ const [assistantPin, setAssistantPin] = useState('');
 
                 {job.workpieces.map((wp, wpIndex) => {
                   const { totalW, unitW } = getWorkpieceTotalWeight(wp);
+                  const linePrefix = `Job #${jobIndex + 1} Line #${wpIndex + 1}`;
+                  const lineDeficiencies = deficiencies.filter(d => d.startsWith(linePrefix));
 
                   return (
                     <div key={wp.id} className="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 space-y-3 relative">
@@ -1219,6 +1209,22 @@ const [assistantPin, setAssistantPin] = useState('');
           <strong className="font-semibold">Full Cumulative Load Calculation Enabled:</strong>
           Pure wire loses tensile strength faster in high-temp zinc — the system has automatically lowered the safety margin!
         </div>
+      </div>
+    )}
+
+    {lineDeficiencies.length > 0 && criticalViolations.length === 0 && (
+      <div className="p-3 bg-amber-950/70 border border-amber-800 rounded-lg text-amber-200 text-xs space-y-1">
+        <div className="font-bold text-amber-300 flex items-center gap-1.5">
+          ⚠️ NOTICE: Wire strand count below reference value
+        </div>
+        <p className="text-[11px] text-amber-200/90">
+          One or more workpiece lines have wire strand counts below the theoretical safety recommendation. Please review item details.
+        </p>
+        <ul className="list-disc list-inside text-[10px] space-y-0.5 text-amber-200/80 mt-1">
+          {lineDeficiencies.map((detail, idx) => (
+            <li key={idx}>{detail.replace(`${linePrefix}: `, '')}</li>
+          ))}
+        </ul>
       </div>
     )}
   </div>
