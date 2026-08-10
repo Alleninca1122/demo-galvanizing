@@ -184,6 +184,19 @@ const [assistantPin, setAssistantPin] = useState('');
     setSafetyChecklist(prev => ({ ...prev, [field]: value }));
   };
 
+  // Global Surface Assessment (Oil, Paint & Rust Level) - operator selects the observed Min/Max
+  // level across all workpieces on this Load once, here (not per workpiece/per job).
+  const [surfaceAssessment, setSurfaceAssessment] = useState({
+    minOilPaintLevel: '',
+    maxOilPaintLevel: '',
+    minRustLevel: '',
+    maxRustLevel: ''
+  });
+
+  const handleSurfaceAssessmentChange = (field, value) => {
+    setSurfaceAssessment(prev => ({ ...prev, [field]: value }));
+  };
+
   // Formatted Current Date & Day of Week
   const currentDateFormatted = new Date().toLocaleDateString('en-US', {
     weekday: 'long',
@@ -198,8 +211,8 @@ const [assistantPin, setAssistantPin] = useState('');
     customerName: '',
     customerOrderNo: '',
     customerBatchNo: '',
-    // Note: Surface Condition Inspection moved to per-workpiece fields (oilPaintLevel/rustLevel
-    // below), with a global summary shown once for the whole Load. SOP & Safety Checklist is
+    // Note: Surface Assessment (Oil, Paint & Rust Level) is captured once globally via the
+    // `surfaceAssessment` state (Min/Max selects), not per Job. SOP & Safety Checklist is
     // also global (shared `safetyChecklist` state).
     workpieces: [
       {
@@ -212,8 +225,6 @@ const [assistantPin, setAssistantPin] = useState('');
         weightInputMode: 'TOTAL',   // 'TOTAL' | 'PER_UNIT'
         unitWeightInput: '',
         weightBracketId: '',
-        oilPaintLevel: '',          // Surface Condition Inspection - per workpiece
-        rustLevel: '',
         riggingCategory: 'WIRE_CHAIN', // 'WIRE_CHAIN' | 'CUSTOM_FIXTURE'
         customFixtureType: '',
         hangingMode: 'INDIVIDUAL',
@@ -317,8 +328,6 @@ const [assistantPin, setAssistantPin] = useState('');
       weightInputMode: 'TOTAL',
       unitWeightInput: '',
       weightBracketId: '',
-      oilPaintLevel: '',
-      rustLevel: '',
       riggingCategory: 'WIRE_CHAIN',
       customFixtureType: '',
       hangingMode: 'INDIVIDUAL',
@@ -413,16 +422,15 @@ const [assistantPin, setAssistantPin] = useState('');
     return total;
   };
 
-  // Scans every workpiece line on this Load and returns the highest/lowest Oil/Paint Level and
-  // Rust Level entered, plus whether the spread between them is wide enough to warrant a
-  // mixed-corrosion batching warning.
+  // Resolves the operator-selected Min/Max Oil-Paint and Rust levels (from the global
+  // `surfaceAssessment` state) and flags whether the spread between them is wide enough to
+  // warrant a mixed-corrosion batching warning.
   const getSurfaceAssessmentSummary = () => {
     const levelIndex = (val) => SURFACE_CONDITION_OPTIONS.findIndex(o => o.value === val);
-    const summarize = (values) => {
-      const indices = values.map(levelIndex).filter(i => i >= 0);
-      if (indices.length === 0) return { min: null, max: null, spread: 0, hasWarning: false };
-      const minIdx = Math.min(...indices);
-      const maxIdx = Math.max(...indices);
+    const buildRange = (minVal, maxVal) => {
+      const minIdx = levelIndex(minVal);
+      const maxIdx = levelIndex(maxVal);
+      if (minIdx < 0 || maxIdx < 0) return { min: null, max: null, spread: 0, hasWarning: false };
       return {
         min: SURFACE_CONDITION_OPTIONS[minIdx],
         max: SURFACE_CONDITION_OPTIONS[maxIdx],
@@ -431,18 +439,9 @@ const [assistantPin, setAssistantPin] = useState('');
       };
     };
 
-    const oilPaintValues = [];
-    const rustValues = [];
-    jobs.forEach(job => {
-      job.workpieces.forEach(wp => {
-        if (wp.oilPaintLevel) oilPaintValues.push(wp.oilPaintLevel);
-        if (wp.rustLevel) rustValues.push(wp.rustLevel);
-      });
-    });
-
     return {
-      oilPaint: summarize(oilPaintValues),
-      rust: summarize(rustValues)
+      oilPaint: buildRange(surfaceAssessment.minOilPaintLevel, surfaceAssessment.maxOilPaintLevel),
+      rust: buildRange(surfaceAssessment.minRustLevel, surfaceAssessment.maxRustLevel)
     };
   };
 
@@ -545,11 +544,7 @@ const [assistantPin, setAssistantPin] = useState('');
             unit: wp.unit || 'pcs',
             totalWeightLb: Math.round(totalW),
             unitWeightLb: Math.round(unitW),
-            weightSource: wp.isUniformWeight === false ? 'WEIGHT_BRACKET' : (wp.weightInputMode === 'PER_UNIT' ? 'PER_UNIT_INPUT' : 'TOTAL_INPUT'),
-            surfaceAssessment: {
-              oilPaintLevel: wp.oilPaintLevel || null,
-              rustLevel: wp.rustLevel || null
-            }
+            weightSource: wp.isUniformWeight === false ? 'WEIGHT_BRACKET' : (wp.weightInputMode === 'PER_UNIT' ? 'PER_UNIT_INPUT' : 'TOTAL_INPUT')
           };
 
           if (wp.riggingCategory === 'CUSTOM_FIXTURE') {
@@ -597,6 +592,12 @@ const [assistantPin, setAssistantPin] = useState('');
       maxHangDepthValid: true,
       hasTightContact: false,
       hasMaskingAgent: false
+    });
+    setSurfaceAssessment({
+      minOilPaintLevel: '',
+      maxOilPaintLevel: '',
+      minRustLevel: '',
+      maxRustLevel: ''
     });
     setJobs([createNewJob()]);
   };
@@ -1032,42 +1033,6 @@ const [assistantPin, setAssistantPin] = useState('');
                         </div>
                       </div>
 
-                      {/* Surface Condition (per workpiece) */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-                        <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">
-                            Oil / Paint Level<span className="text-rose-400">*</span>
-                          </label>
-                          <select
-                            value={wp.oilPaintLevel || ''}
-                            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'oilPaintLevel', e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
-                            required
-                          >
-                            <option value="">-- Select --</option>
-                            {SURFACE_CONDITION_OPTIONS.map(opt => (
-                              <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                        <div>
-                          <label className="block text-[11px] text-slate-400 mb-1">
-                            Rust Level<span className="text-rose-400">*</span>
-                          </label>
-                          <select
-                            value={wp.rustLevel || ''}
-                            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'rustLevel', e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-200"
-                            required
-                          >
-                            <option value="">-- Select --</option>
-                            {SURFACE_CONDITION_OPTIONS.map(opt => (
-                              <option key={opt.value} value={opt.value}>{opt.label}</option>
-                            ))}
-                          </select>
-                        </div>
-                      </div>
-
 {/* Rigging & Hanging Setup for THIS Workpiece */}
 <div className="pt-2.5 border-t border-slate-800/80 bg-slate-950/40 p-3 rounded-lg space-y-3">
 
@@ -1366,8 +1331,8 @@ const [assistantPin, setAssistantPin] = useState('');
         {/* 3. SIGN-OFF & SUBMIT SECTION */}
         <div className="pt-4 border-t border-slate-800 space-y-4">
 
-              {/* Global Surface Assessment Summary (Oil, Paint & Rust Level) - aggregated across
-                  every workpiece on this Load, shown once for the whole page */}
+              {/* Global Surface Assessment Summary (Oil, Paint & Rust Level) - operator selects the
+                  observed Min/Max level across all workpieces on this Load, once for the whole page */}
               <div className="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3">
                 <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block">
                   Surface Assessment (Oil, Paint & Rust Level)
@@ -1375,30 +1340,43 @@ const [assistantPin, setAssistantPin] = useState('');
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
                   {[
-                    { key: 'oilPaint', label: 'Oil / Paint Level' },
-                    { key: 'rust', label: 'Rust Level' }
-                  ].map(({ key, label }) => {
+                    { key: 'oilPaint', label: 'Oil / Paint Level', minField: 'minOilPaintLevel', maxField: 'maxOilPaintLevel' },
+                    { key: 'rust', label: 'Rust Level', minField: 'minRustLevel', maxField: 'maxRustLevel' }
+                  ].map(({ key, label, minField, maxField }) => {
                     const s = surfaceAssessmentSummary[key];
                     return (
-                      <div key={key} className="bg-slate-950 p-2.5 rounded border border-slate-800 space-y-1.5">
+                      <div key={key} className="bg-slate-950 p-2.5 rounded border border-slate-800 space-y-2">
                         <span className="text-slate-300 font-semibold block">{label}</span>
-                        {s.min && s.max ? (
-                          <div className="flex items-center gap-2">
-                            <span className="px-2 py-0.5 rounded bg-emerald-950 border border-emerald-700 text-emerald-300 font-mono font-bold text-[11px]">
-                              Min: {s.min.label}
-                            </span>
-                            <span className="text-slate-600">&rarr;</span>
-                            <span className={`px-2 py-0.5 rounded border font-mono font-bold text-[11px] ${
-                              s.hasWarning
-                                ? 'bg-rose-950 border-rose-600 text-rose-300'
-                                : 'bg-slate-900 border-slate-700 text-slate-300'
-                            }`}>
-                              Max: {s.max.label}
-                            </span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] text-slate-500 mb-0.5">Min</label>
+                            <select
+                              value={surfaceAssessment[minField]}
+                              onChange={(e) => handleSurfaceAssessmentChange(minField, e.target.value)}
+                              className="w-full bg-slate-900 border border-emerald-700/60 rounded px-2 py-1 text-[11px] text-emerald-200"
+                            >
+                              <option value="">-- Select --</option>
+                              {SURFACE_CONDITION_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
                           </div>
-                        ) : (
-                          <span className="text-slate-500 text-[11px]">No workpiece data entered yet</span>
-                        )}
+                          <div>
+                            <label className="block text-[10px] text-slate-500 mb-0.5">Max</label>
+                            <select
+                              value={surfaceAssessment[maxField]}
+                              onChange={(e) => handleSurfaceAssessmentChange(maxField, e.target.value)}
+                              className={`w-full bg-slate-900 rounded px-2 py-1 text-[11px] border ${
+                                s.hasWarning ? 'border-rose-600 text-rose-200' : 'border-slate-700 text-slate-200'
+                              }`}
+                            >
+                              <option value="">-- Select --</option>
+                              {SURFACE_CONDITION_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}
