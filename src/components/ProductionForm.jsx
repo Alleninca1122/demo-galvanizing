@@ -351,6 +351,21 @@ const [assistantPin, setAssistantPin] = useState('');
   // WIRE points are checked against the Reo-certified weight-bracket tables (upper bound of the
   // matched bracket, per Scheme One/Two). CHAIN points and Anchor Shackle are checked against the
   // supplier WLL figures directly.
+  //
+  // String Hanging has three physically different rigging setups, so the weight basis used for
+  // each point's WIRE check depends on which Stringing Method is selected:
+  //  - Full Chain: chain is the only structural member; both points (chain) are checked against
+  //    the string's shared total weight, split across however many top points there are.
+  //  - Chain + Wire: the CHAIN point(s) still carry the shared total weight as above. Any point
+  //    marked WIRE here represents a short wire tie used to lash ONE individual workpiece onto the
+  //    backbone chain - NOT the "Use Wire Extension at Top" top-point extension checkbox further
+  //    down (that is a different, separate piece of hardware). Because a tie only ever holds the
+  //    one workpiece it's tied to, it is checked against a SINGLE workpiece's weight, not the
+  //    string's shared total.
+  //  - Pure Wire: workpieces are wired directly to each other in a daisy chain (A-to-B-to-C...),
+  //    so the topmost wire in the chain ends up carrying the full cumulative weight of every piece
+  //    below it. Rather than model each wire's exact position in the chain, every wire strand count
+  //    on the line is conservatively checked against the FULL total weight of the whole string.
   const checkSafetyDeficiencies = () => {
     let deficiencies = [];
     jobs.forEach((job, jIdx) => {
@@ -360,14 +375,30 @@ const [assistantPin, setAssistantPin] = useState('');
 
         const { totalW, unitW } = getWorkpieceTotalWeight(wp);
         const pts = parseInt(wp.hangingPoints, 10) || 1;
+        const isString = wp.hangingMode === 'STRING';
+        const stringingMethod = wp.stringingMethod || 'FULL_CHAIN';
 
-        // designW = the weight actually carried by this rigging setup:
-        // String mode -> whole batch shares one set of points; Individual mode -> one piece's own points
-        // (when isUniformWeight is false, totalW/unitW are already both the same bracket ceiling)
-        const designW = wp.hangingMode === 'STRING' ? totalW : (wp.isUniformWeight === false ? totalW : unitW);
+        // designW = the weight actually carried by the shared structural points (chain / top
+        // rigging): String mode -> whole batch shares one set of points; Individual mode -> one
+        // piece's own points. (When isUniformWeight is false, totalW/unitW are already both the
+        // same bracket ceiling.)
+        const designW = isString ? totalW : (wp.isUniformWeight === false ? totalW : unitW);
         const loadPerPt = designW / pts;
-        const wireRec = getRequiredWireCount(designW, pts);
         const label = `Job #${jIdx + 1} Line #${wIdx + 1} (${wp.workpieceType || 'Item'})`;
+
+        // Wire recommendation basis differs by stringing method (see notes above).
+        let wireRec;
+        let wireBasisNote;
+        if (isString && stringingMethod === 'CHAIN_WIRE') {
+          wireRec = getRequiredWireCount(unitW, 1); // ties ONE workpiece - always single-hanger basis
+          wireBasisNote = `tying a single workpiece (${Math.round(unitW)} lb)`;
+        } else if (isString && stringingMethod === 'PURE_WIRE') {
+          wireRec = getRequiredWireCount(totalW, 1); // conservative: every wire rated for the full string
+          wireBasisNote = `the full string weight (${Math.round(totalW)} lb, conservative)`;
+        } else {
+          wireRec = getRequiredWireCount(designW, pts); // Individual hanging, or String + Full Chain
+          wireBasisNote = `a design weight of ${Math.round(designW)} lb`;
+        }
 
         const checkPoint = (specId, userStrandsRaw, pointLabel) => {
           const specObj = RIGGING_SPECS.find(r => r.id === specId) || RIGGING_SPECS[0];
@@ -376,9 +407,11 @@ const [assistantPin, setAssistantPin] = useState('');
 
           if (specObj.type === 'WIRE') {
             if (userStrands < wireRec.perPoint) {
-              deficiencies.push(`${label}: ${pointLabel} wire count (${userStrands}) is below the Reo-certified recommendation (${wireRec.perPoint}) for a design weight of ${Math.round(designW)} lb.`);
+              deficiencies.push(`${label}: ${pointLabel} wire count (${userStrands}) is below the Reo-certified recommendation (${wireRec.perPoint}) for ${wireBasisNote}.`);
             }
           } else if (specObj.type === 'CHAIN') {
+            // Chain always carries the shared structural load (loadPerPt), regardless of stringing
+            // method - a Chain+Wire line's chain point is still the backbone for the whole string.
             const req = Math.max(1, Math.ceil(loadPerPt / specObj.swl));
             if (userStrands < req) {
               deficiencies.push(`${label}: ${pointLabel} chain strand count (${userStrands}) is below the required (${req}) for a ${specObj.label} rated at ${specObj.swl} lb WLL.`);
@@ -391,8 +424,9 @@ const [assistantPin, setAssistantPin] = useState('');
           checkPoint(wp.point2SpecId, wp.point2Strands, 'Point 2');
         }
 
-        // Anchor Shackle WLL check (one shackle spec per workpiece line, checked against the
-        // heaviest single-point load it will carry)
+        // Anchor Shackle WLL check - the shackle attaches the chain/wire assembly to the rack at a
+        // single point, so it's checked against that point's share of the structural load
+        // (loadPerPt), same basis as the CHAIN check above, regardless of stringing method.
         if (wp.anchorShackle && wp.anchorShackle !== 'NONE') {
           const shackleSpec = ANCHOR_SHACKLE_SPECS.find(s => s.id === wp.anchorShackle);
           if (shackleSpec && shackleSpec.wll != null && loadPerPt > shackleSpec.wll) {
