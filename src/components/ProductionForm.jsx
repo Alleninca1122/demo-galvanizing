@@ -362,10 +362,12 @@ const [assistantPin, setAssistantPin] = useState('');
   //    down (that is a different, separate piece of hardware). Because a tie only ever holds the
   //    one workpiece it's tied to, it is checked against a SINGLE workpiece's weight, not the
   //    string's shared total.
-  //  - Pure Wire: workpieces are wired directly to each other in a daisy chain (A-to-B-to-C...),
-  //    so the topmost wire in the chain ends up carrying the full cumulative weight of every piece
-  //    below it. Rather than model each wire's exact position in the chain, every wire strand count
-  //    on the line is conservatively checked against the FULL total weight of the whole string.
+  //  - Pure Wire: each workpiece is hung from the one below it using the SAME hanging-point pattern
+  //    (e.g. every link is a 2-point wire hang) all the way down to the last piece, then the whole
+  //    daisy chain is hung from the rack. Every one of those links carries some or all of the
+  //    weight below it, so - rather than track each link's exact position - every link's wire
+  //    strand count is conservatively checked as if it alone were carrying the FULL total weight of
+  //    the whole string, still split across however many points that link actually uses (1 or 2).
   const checkSafetyDeficiencies = () => {
     let deficiencies = [];
     jobs.forEach((job, jIdx) => {
@@ -393,7 +395,9 @@ const [assistantPin, setAssistantPin] = useState('');
           wireRec = getRequiredWireCount(unitW, 1); // ties ONE workpiece - always single-hanger basis
           wireBasisNote = `tying a single workpiece (${Math.round(unitW)} lb)`;
         } else if (isString && stringingMethod === 'PURE_WIRE') {
-          wireRec = getRequiredWireCount(totalW, 1); // conservative: every wire rated for the full string
+          // Conservative: every link's wire count is checked as if it alone carried the full string
+          // weight, but still split across however many points (1 or 2) that link actually uses.
+          wireRec = getRequiredWireCount(totalW, pts);
           wireBasisNote = `the full string weight (${Math.round(totalW)} lb, conservative)`;
         } else {
           wireRec = getRequiredWireCount(designW, pts); // Individual hanging, or String + Full Chain
@@ -1186,7 +1190,7 @@ const [assistantPin, setAssistantPin] = useState('');
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
       {[
         { id: 'FULL_CHAIN', label: 'Full Chain', desc: 'High Safety' },
-        { id: 'CHAIN_WIRE', label: 'Chain + Wire', desc: 'Chain + Wire' },
+        { id: 'CHAIN_WIRE', label: 'Chain + Wire', desc: 'Wire ties each piece to one chain' },
         { id: 'PURE_WIRE', label: 'Pure Wire', desc: 'Weight Limited' },
       ].map((method) => {
         const isSelected = (wp.stringingMethod || 'FULL_CHAIN') === method.id;
