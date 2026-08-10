@@ -20,15 +20,124 @@ const RACK_OPTIONS = Array.from({ length: 30 }, (_, i) => {
   return { value: num, label: `Rack #${num}` };
 });
 
-// Rigging Specifications (SWL per strand in lbs)
+// ============================================================
+// RIGGING HARDWARE SPECIFICATIONS - shop-confirmed data only
+// Wire: shop operating standard (12 Gauge only, 75 lb/strand SWL)
+// Chain & Anchor Shackle: per official supplier spec sheets provided
+// (Suncor Stainless - Grade 50 Lifting Chain S5 316L;
+//  Suncor Stainless - Anchor Shackle w/ Oversize Screw Pin 316-NM,
+//  WLL values below already reflect the 20% reduction shown on the sheet)
+// ============================================================
 const RIGGING_SPECS = [
-  { id: '14_WIRE', label: '14 Gauge Wire', type: 'WIRE', swl: 50 },
-  { id: '12_WIRE', label: '12 Gauge Wire', type: 'WIRE', swl: 75 },
-  { id: '10_WIRE', label: '10 Gauge Wire', type: 'WIRE', swl: 150 },
-  { id: '38_CHAIN', label: '3/8" High Test Chain', type: 'CHAIN', swl: 4000 },
-  { id: '12_CHAIN', label: '1/2" High Test Chain', type: 'CHAIN', swl: 6500 },
-  { id: 'CLAMP', label: 'Heavy Duty Lifting Clamp', type: 'CLAMP', swl: 10000 },
+  { id: '12_WIRE',    label: '12 Gauge Wire',      type: 'WIRE',  swl: 75 },
+  { id: 'CHAIN_3_16', label: '3/16" Chain',        type: 'CHAIN', swl: 880 },
+  { id: 'CHAIN_1_4',  label: '1/4" (9/32) Chain',  type: 'CHAIN', swl: 1760 },
+  { id: 'CHAIN_5_16', label: '5/16" Chain',        type: 'CHAIN', swl: 2160 },
+  { id: 'CHAIN_3_8',  label: '3/8" Chain',         type: 'CHAIN', swl: 3520 },
+  { id: 'CHAIN_1_2',  label: '1/2" Chain',         type: 'CHAIN', swl: 5840 },
+  { id: 'CHAIN_5_8',  label: '5/8" Chain',         type: 'CHAIN', swl: 7840 },
 ];
+
+const WIRE_SPEC = RIGGING_SPECS[0]; // 12 Gauge Wire, 75 lb/strand
+
+// Anchor Shackle w/ Oversize Screw Pin, 316-NM Stainless (WLL after 20% reduction)
+const ANCHOR_SHACKLE_SPECS = [
+  { id: 'NONE',          label: '-- None (Direct Chain / Slot Hooking) --', wll: null },
+  { id: 'SHACKLE_3_16',  label: '3/16" Anchor Shackle',   wll: 520 },
+  { id: 'SHACKLE_1_4',   label: '1/4" Anchor Shackle',    wll: 800 },
+  { id: 'SHACKLE_5_16',  label: '5/16" Anchor Shackle',   wll: 1040 },
+  { id: 'SHACKLE_3_8',   label: '3/8" Anchor Shackle',    wll: 1200 },
+  { id: 'SHACKLE_7_16',  label: '7/16" Anchor Shackle',   wll: 1600 },
+  { id: 'SHACKLE_1_2',   label: '1/2" Anchor Shackle',    wll: 2400 },
+  { id: 'SHACKLE_5_8',   label: '5/8" Anchor Shackle',    wll: 3200 },
+  { id: 'SHACKLE_3_4',   label: '3/4" Anchor Shackle',    wll: 4800 },
+  { id: 'SHACKLE_7_8',   label: '7/8" Anchor Shackle',    wll: 6400 },
+  { id: 'SHACKLE_1',     label: '1" Anchor Shackle',      wll: 8000 },
+  { id: 'SHACKLE_1_1_4', label: '1-1/4" Anchor Shackle',  wll: 11200 },
+];
+
+// Reo Engineering & Testing - Job No. 23-R-4105 "Wire Hangers Capacity Certification"
+// (30-Mar-2023, PEng stamped) - recommended 12 Ga wire count by workpiece weight bracket.
+// The UPPER bound of the matched bracket is what the app should check against.
+// Scheme One - Single Hanger (1 hanging point)
+const WIRE_BRACKETS_SINGLE = [
+  { minLb: 0,   maxLb: 75,  wires: 1 },
+  { minLb: 75,  maxLb: 150, wires: 2 },
+  { minLb: 150, maxLb: 250, wires: 3 },
+  { minLb: 250, maxLb: 350, wires: 4 },
+  { minLb: 350, maxLb: 450, wires: 5 },
+  { minLb: 450, maxLb: 550, wires: 6 },
+  { minLb: 550, maxLb: 650, wires: 7 },
+];
+
+// Scheme Two - Double Hanger (2 hanging points, symmetric each side)
+const WIRE_BRACKETS_DOUBLE = [
+  { minLb: 0,   maxLb: 150,  wires: 2,  perSide: 1 },
+  { minLb: 150, maxLb: 350,  wires: 4,  perSide: 2 },
+  { minLb: 350, maxLb: 550,  wires: 6,  perSide: 3 },
+  { minLb: 550, maxLb: 750,  wires: 8,  perSide: 4 },
+  { minLb: 750, maxLb: 950,  wires: 10, perSide: 5 },
+  { minLb: 950, maxLb: 1150, wires: 12, perSide: 6 }, // confirmed on-site: 950-1150 lb
+];
+
+// Looks up the certified wire-count bracket for a given design weight + hanging point count.
+// Falls back to a generic 75 lb/strand calc only if the weight exceeds the certified table range.
+function getRequiredWireCount(designWeightLb, hangingPoints) {
+  if (hangingPoints === 2) {
+    const match = WIRE_BRACKETS_DOUBLE.find(b => designWeightLb <= b.maxLb);
+    if (match) return { total: match.wires, perPoint: match.perSide };
+    const perPoint = Math.max(1, Math.ceil((designWeightLb / 2) / WIRE_SPEC.swl));
+    return { total: perPoint * 2, perPoint };
+  }
+  const match = WIRE_BRACKETS_SINGLE.find(b => designWeightLb <= b.maxLb);
+  if (match) return { total: match.wires, perPoint: match.wires };
+  const perPoint = Math.max(1, Math.ceil(designWeightLb / WIRE_SPEC.swl));
+  return { total: perPoint, perPoint };
+}
+
+// ============================================================
+// RACK / BEAM STRUCTURAL CAPACITY (shop-confirmed)
+// Beam itself rated 18,000 lb; the two end support frames are the tighter limit at
+// 6,700 lb each (13,400 lb combined) - that combined figure is the binding constraint.
+// ============================================================
+const BEAM_CAPACITY_LBS = 18000;
+const SUPPORT_ARM_CAPACITY_LBS = 6700; // per-side Support Frame capacity
+const RACK_LIMIT_LBS = SUPPORT_ARM_CAPACITY_LBS * 2; // 13,400 lb - hard submission block
+
+// Custom, shop-built hanging fixtures (not wire/chain) - e.g. a Railing Comb Rack or a row of
+// hooks for small parts. These bypass wire/chain/shackle spec checks but still count toward the
+// rack's total weight.
+const CUSTOM_FIXTURE_TYPES = [
+  { value: '', label: '-- Select Fixture --' },
+  { value: 'RAILING_COMB_RACK', label: 'Railing Comb Rack' },
+  { value: 'HOOK_ROW', label: 'Hook Row (Small Parts)' },
+  { value: 'OTHER', label: 'Other Custom Fixture' },
+];
+
+// Resolves a workpiece line's weight, accounting for both weight-input modes:
+// - isUniformWeight (default true): operator enters either the TOTAL weight for the line, or a
+//   single-piece weight (weightInputMode) which the app multiplies out by quantity.
+// - Not uniform: pieces vary, so instead of weighing each one the operator selects a certified
+//   weight bracket (Reo table) and the app conservatively uses the UPPER bound of that bracket.
+function getWorkpieceTotalWeight(wp) {
+  const qty = parseInt(wp.quantity, 10) || 0;
+
+  if (wp.isUniformWeight === false) {
+    const pts = wp.hangingPoints === '2' ? 2 : 1;
+    const brackets = pts === 2 ? WIRE_BRACKETS_DOUBLE : WIRE_BRACKETS_SINGLE;
+    const bracket = brackets.find(b => String(b.maxLb) === String(wp.weightBracketId));
+    const totalW = bracket ? bracket.maxLb : 0;
+    return { totalW, unitW: qty > 0 ? totalW / qty : 0 };
+  }
+
+  if (wp.weightInputMode === 'PER_UNIT') {
+    const unitW = parseFloat(wp.unitWeightInput) || 0;
+    return { totalW: unitW * qty, unitW };
+  }
+
+  const totalW = parseFloat(wp.weightLb) || 0;
+  return { totalW, unitW: qty > 0 ? totalW / qty : 0 };
+}
 
 // Surface Condition Rating Options (Clean & Standardized)
 const SURFACE_CONDITION_OPTIONS = [
@@ -37,6 +146,14 @@ const SURFACE_CONDITION_OPTIONS = [
   { value: 'MEDIUM', label: 'Medium' },
   { value: 'HEAVY', label: 'Heavy' }
 ];
+
+// Corrosion grade lookup (A = lightest, D = heaviest) - used to flag mixed-batch warnings
+// when workpieces on the same rack span too wide a rust/corrosion range.
+const SURFACE_CONDITION_GRADE = { NONE: 'A', LIGHT: 'B', MEDIUM: 'C', HEAVY: 'D' };
+
+// If the max and min levels on the rack are this many steps apart or more (on the
+// NONE < LIGHT < MEDIUM < HEAVY scale), warn the operator about mixed-corrosion batching.
+const SURFACE_SPREAD_WARNING_THRESHOLD = 2;
 
 export default function ProductionForm({ currentUser, supabase }) {
   // Global Rack & Load Session
@@ -50,6 +167,35 @@ const [primaryOperatorId, setPrimaryOperatorId] = useState('');
 const [primaryPin, setPrimaryPin] = useState(''); 
 const [assistantOperatorId, setAssistantOperatorId] = useState('');
 const [assistantPin, setAssistantPin] = useState(''); 
+
+  // Global Job Safety & Submersion Checklist (SOP Inspection) - shared across ALL jobs on this load
+  const [safetyChecklist, setSafetyChecklist] = useState({
+    hasEnclosedCavity: false,      // 1. Enclosed cavity/pipe structure
+    hasAdequateVenting: true,      // 2. Adequate venting/drainage holes
+    drilledOnsite: true,           // 3. Drilled on site if missing
+    isAngleCompliant: true,        // 4. Tilt angle 15°-30°
+    minTopClearanceValid: true,    // 5. Min top clearance >= 50cm
+    maxHangDepthValid: true,       // 6. Max hang depth <= 300cm
+    hasTightContact: false,        // 7. Tight contact between workpieces
+    hasMaskingAgent: false         // 8. Coated with masking/stop-off agent
+  });
+
+  const handleSafetyFieldChange = (field, value) => {
+    setSafetyChecklist(prev => ({ ...prev, [field]: value }));
+  };
+
+  // Global Surface Assessment (Oil, Paint & Rust Level) - operator selects the observed Min/Max
+  // level across all workpieces on this Load once, here (not per workpiece/per job).
+  const [surfaceAssessment, setSurfaceAssessment] = useState({
+    minOilPaintLevel: '',
+    maxOilPaintLevel: '',
+    minRustLevel: '',
+    maxRustLevel: ''
+  });
+
+  const handleSurfaceAssessmentChange = (field, value) => {
+    setSurfaceAssessment(prev => ({ ...prev, [field]: value }));
+  };
 
   // Formatted Current Date & Day of Week
   const currentDateFormatted = new Date().toLocaleDateString('en-US', {
@@ -65,23 +211,22 @@ const [assistantPin, setAssistantPin] = useState('');
     customerName: '',
     customerOrderNo: '',
     customerBatchNo: '',
-    // Surface Condition Inspection
-    oilPaintLevel: '',
-    rustLevel: '',
-    // SOP & Safety Checklist
-    hasEnclosedCavity: false,      // 1. Enclosed cavity/pipe structure
-    hasAdequateVenting: true,     // 2. Adequate venting/drainage holes
-    drilledOnsite: true,          // 3. Drilled on site if missing
-    isAngleCompliant: true,       // 4. Tilt angle 15°-30°
-    minTopClearanceValid: true,   // 5. Min top clearance >= 50cm
-    maxHangDepthValid: true,      // 6. Max hang depth <= 300cm
+    // Note: Surface Assessment (Oil, Paint & Rust Level) is captured once globally via the
+    // `surfaceAssessment` state (Min/Max selects), not per Job. SOP & Safety Checklist is
+    // also global (shared `safetyChecklist` state).
     workpieces: [
       {
         id: Date.now() + 1,
         workpieceType: '',
         quantity: '',
         unit: 'pcs',
-        weightLb: '', 
+        weightLb: '',
+        isUniformWeight: true,      // false = pieces vary; use a certified weight bracket instead
+        weightInputMode: 'TOTAL',   // 'TOTAL' | 'PER_UNIT'
+        unitWeightInput: '',
+        weightBracketId: '',
+        riggingCategory: 'WIRE_CHAIN', // 'WIRE_CHAIN' | 'CUSTOM_FIXTURE'
+        customFixtureType: '',
         hangingMode: 'INDIVIDUAL',
         hangingPoints: '2',
         point1SpecId: '12_WIRE',
@@ -179,6 +324,12 @@ const [assistantPin, setAssistantPin] = useState('');
       quantity: '',
       unit: 'pcs',
       weightLb: '',
+      isUniformWeight: true,
+      weightInputMode: 'TOTAL',
+      unitWeightInput: '',
+      weightBracketId: '',
+      riggingCategory: 'WIRE_CHAIN',
+      customFixtureType: '',
       hangingMode: 'INDIVIDUAL',
       hangingPoints: '2',
       point1SpecId: '12_WIRE',
@@ -201,31 +352,56 @@ const [assistantPin, setAssistantPin] = useState('');
     return rawShift.toLowerCase().includes('shift') ? rawShift : `${rawShift} Shift`;
   };
 
-  // Wire Strand Safety Check Warnings (Non-blocking warning)
+  // Rigging Safety Check Warnings (Non-blocking warning - operator can override & confirm)
+  // WIRE points are checked against the Reo-certified weight-bracket tables (upper bound of the
+  // matched bracket, per Scheme One/Two). CHAIN points and Anchor Shackle are checked against the
+  // supplier WLL figures directly.
   const checkSafetyDeficiencies = () => {
     let deficiencies = [];
     jobs.forEach((job, jIdx) => {
       job.workpieces.forEach((wp, wIdx) => {
-        const totalW = parseFloat(wp.weightLb) || 0;
-        const qty = parseInt(wp.quantity, 10) || 1;
-        const unitW = totalW / qty;
+        // Custom fixtures (Comb Rack / Hook Row) aren't rated by strand count - nothing to check here
+        if (wp.riggingCategory === 'CUSTOM_FIXTURE') return;
+
+        const { totalW, unitW } = getWorkpieceTotalWeight(wp);
         const pts = parseInt(wp.hangingPoints, 10) || 1;
 
-        const loadPerPt = wp.hangingMode === 'STRING' ? (totalW / pts) : (unitW / pts);
+        // designW = the weight actually carried by this rigging setup:
+        // String mode -> whole batch shares one set of points; Individual mode -> one piece's own points
+        // (when isUniformWeight is false, totalW/unitW are already both the same bracket ceiling)
+        const designW = wp.hangingMode === 'STRING' ? totalW : (wp.isUniformWeight === false ? totalW : unitW);
+        const loadPerPt = designW / pts;
+        const wireRec = getRequiredWireCount(designW, pts);
+        const label = `Job #${jIdx + 1} Line #${wIdx + 1} (${wp.workpieceType || 'Item'})`;
 
-        const p1Obj = RIGGING_SPECS.find(r => r.id === wp.point1SpecId) || RIGGING_SPECS[0];
-        const p1Req = Math.max(1, Math.ceil(loadPerPt / p1Obj.swl));
-        const p1User = parseInt(wp.point1Strands, 10) || 0;
-        if (p1Obj.type === 'WIRE' && p1User > 0 && p1User < p1Req) {
-          deficiencies.push(`Job #${jIdx + 1} Line #${wIdx + 1} (${wp.workpieceType || 'Item'}): Point 1 wire count (${p1User}) is lower than recommended (${p1Req}).`);
+        const checkPoint = (specId, userStrandsRaw, pointLabel) => {
+          const specObj = RIGGING_SPECS.find(r => r.id === specId) || RIGGING_SPECS[0];
+          const userStrands = parseInt(userStrandsRaw, 10) || 0;
+          if (userStrands <= 0) return;
+
+          if (specObj.type === 'WIRE') {
+            if (userStrands < wireRec.perPoint) {
+              deficiencies.push(`${label}: ${pointLabel} wire count (${userStrands}) is below the Reo-certified recommendation (${wireRec.perPoint}) for a design weight of ${Math.round(designW)} lb.`);
+            }
+          } else if (specObj.type === 'CHAIN') {
+            const req = Math.max(1, Math.ceil(loadPerPt / specObj.swl));
+            if (userStrands < req) {
+              deficiencies.push(`${label}: ${pointLabel} chain strand count (${userStrands}) is below the required (${req}) for a ${specObj.label} rated at ${specObj.swl} lb WLL.`);
+            }
+          }
+        };
+
+        checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
+        if (pts === 2) {
+          checkPoint(wp.point2SpecId, wp.point2Strands, 'Point 2');
         }
 
-        if (pts === 2) {
-          const p2Obj = RIGGING_SPECS.find(r => r.id === wp.point2SpecId) || RIGGING_SPECS[0];
-          const p2Req = Math.max(1, Math.ceil(loadPerPt / p2Obj.swl));
-          const p2User = parseInt(wp.point2Strands, 10) || 0;
-          if (p2Obj.type === 'WIRE' && p2User > 0 && p2User < p2Req) {
-            deficiencies.push(`Job #${jIdx + 1} Line #${wIdx + 1} (${wp.workpieceType || 'Item'}): Point 2 wire count (${p2User}) is lower than recommended (${p2Req}).`);
+        // Anchor Shackle WLL check (one shackle spec per workpiece line, checked against the
+        // heaviest single-point load it will carry)
+        if (wp.anchorShackle && wp.anchorShackle !== 'NONE') {
+          const shackleSpec = ANCHOR_SHACKLE_SPECS.find(s => s.id === wp.anchorShackle);
+          if (shackleSpec && shackleSpec.wll != null && loadPerPt > shackleSpec.wll) {
+            deficiencies.push(`${label}: Anchor Shackle (${shackleSpec.label}, ${shackleSpec.wll} lb WLL) is under the ${Math.round(loadPerPt)} lb load it would carry at each point.`);
           }
         }
       });
@@ -233,29 +409,70 @@ const [assistantPin, setAssistantPin] = useState('');
     return deficiencies;
   };
 
-  // Severe Safety Violations Check (Hard Blocking Logic)
+  // Sums the design weight of every workpiece line on this Load (all Jobs, both WIRE_CHAIN and
+  // CUSTOM_FIXTURE lines) - this is what the Beam Rack's support frames actually have to carry.
+  const getRackTotalWeight = () => {
+    let total = 0;
+    jobs.forEach(job => {
+      job.workpieces.forEach(wp => {
+        const { totalW } = getWorkpieceTotalWeight(wp);
+        total += totalW;
+      });
+    });
+    return total;
+  };
+
+  // Resolves the operator-selected Min/Max Oil-Paint and Rust levels (from the global
+  // `surfaceAssessment` state) and flags whether the spread between them is wide enough to
+  // warrant a mixed-corrosion batching warning.
+  const getSurfaceAssessmentSummary = () => {
+    const levelIndex = (val) => SURFACE_CONDITION_OPTIONS.findIndex(o => o.value === val);
+    const buildRange = (minVal, maxVal) => {
+      const minIdx = levelIndex(minVal);
+      const maxIdx = levelIndex(maxVal);
+      if (minIdx < 0 || maxIdx < 0) return { min: null, max: null, spread: 0, hasWarning: false };
+      return {
+        min: SURFACE_CONDITION_OPTIONS[minIdx],
+        max: SURFACE_CONDITION_OPTIONS[maxIdx],
+        spread: maxIdx - minIdx,
+        hasWarning: (maxIdx - minIdx) >= SURFACE_SPREAD_WARNING_THRESHOLD
+      };
+    };
+
+    return {
+      oilPaint: buildRange(surfaceAssessment.minOilPaintLevel, surfaceAssessment.maxOilPaintLevel),
+      rust: buildRange(surfaceAssessment.minRustLevel, surfaceAssessment.maxRustLevel)
+    };
+  };
+
+  // Severe Safety Violations Check (Hard Blocking Logic) - now based on the single global checklist
   const checkCriticalSafetyViolations = () => {
     let severeErrors = [];
-    jobs.forEach((job, jIdx) => {
-      // Check 1: Cavity without venting & without onsite drilling
-      if (job.hasEnclosedCavity && (!job.hasAdequateVenting && !job.drilledOnsite)) {
-        severeErrors.push(`Job #${jIdx + 1}: Enclosed cavity detected without sufficient venting/drainage holes, and not drilled on site! (Explosion Risk in Kettle)`);
-      }
-      // Check 2: Minimum Top Clearance violation (< 50cm)
-      if (!job.minTopClearanceValid) {
-        severeErrors.push(`Job #${jIdx + 1}: Top clearance is less than 50 cm. Material cannot be fully submerged in acid/zinc bath.`);
-      }
-      // Check 3: Maximum Hang Depth violation (> 300cm)
-      if (!job.maxHangDepthValid) {
-        severeErrors.push(`Job #${jIdx + 1}: Total hang depth exceeds 300 cm. Risk of bottom collision or crane overhead snagging.`);
-      }
-    });
+    // Check 1: Cavity without venting & without onsite drilling
+    if (safetyChecklist.hasEnclosedCavity && (!safetyChecklist.hasAdequateVenting && !safetyChecklist.drilledOnsite)) {
+      severeErrors.push(`Enclosed cavity detected without sufficient venting/drainage holes, and not drilled on site! (Explosion Risk in Kettle)`);
+    }
+    // Check 2: Minimum Top Clearance violation (< 50cm)
+    if (!safetyChecklist.minTopClearanceValid) {
+      severeErrors.push(`Top clearance is less than 50 cm. Material cannot be fully submerged in acid/zinc bath.`);
+    }
+    // Check 3: Maximum Hang Depth violation (> 300cm)
+    if (!safetyChecklist.maxHangDepthValid) {
+      severeErrors.push(`Total hang depth exceeds 300 cm. Risk of bottom collision or crane overhead snagging.`);
+    }
+    // Check 4: Rack support-arm capacity (13,400 lb combined) - hard limit, no override
+    const rackTotal = getRackTotalWeight();
+    if (rackTotal > RACK_LIMIT_LBS) {
+      severeErrors.push(`Total rack load (${Math.round(rackTotal).toLocaleString()} lb) exceeds the support frame capacity of ${RACK_LIMIT_LBS.toLocaleString()} lb. Remove workpieces or split onto another rack before submitting.`);
+    }
     return severeErrors;
   };
 
   const deficiencies = checkSafetyDeficiencies();
   const criticalViolations = checkCriticalSafetyViolations();
   const isFormBlocked = criticalViolations.length > 0;
+  const rackTotalWeight = getRackTotalWeight();
+  const surfaceAssessmentSummary = getSurfaceAssessmentSummary();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -269,8 +486,8 @@ const [assistantPin, setAssistantPin] = useState('');
       return;
     }
 
-    if (!operatorSignoffId.trim()) {
-      alert('Please enter your Employee ID as Confirm & Sign-off before submitting.');
+    if (!primaryOperatorId.trim()) {
+      alert('Please enter the Primary Operator Employee ID to Confirm & Sign-off before submitting.');
       return;
     }
 
@@ -288,42 +505,67 @@ const [assistantPin, setAssistantPin] = useState('');
         loadId: loadId.trim(),
         rackNo: rackNo === 'HOOK' ? 'HOOK' : `Rack #${rackNo}`,
         operatorId: currentUser?.id || 'UNKNOWN',
-        signedOffByEmployeeId: operatorSignoffId.trim(),
+        signedOffByEmployeeId: primaryOperatorId.trim(),
+        assistantOperatorId: assistantOperatorId.trim() || null,
         shift: getShiftDisplay(),
         entryDate: currentDateFormatted,
-        createdAt: new Date().toISOString()
+        createdAt: new Date().toISOString(),
+        // Job Safety & Submersion Checklist (SOP Inspection) - one shared checklist for the whole load
+        safetyChecklist: { ...safetyChecklist },
+        // Rack structural capacity check, recorded for audit trail
+        rackCapacityCheck: {
+          totalLoadLb: Math.round(rackTotalWeight),
+          limitLb: RACK_LIMIT_LBS
+        },
+        // Surface Assessment (Oil, Paint & Rust Level) - global summary across every workpiece on this Load
+        surfaceAssessmentSummary: {
+          oilPaint: {
+            min: surfaceAssessmentSummary.oilPaint.min?.value || null,
+            max: surfaceAssessmentSummary.oilPaint.max?.value || null,
+            mixedBatchWarning: surfaceAssessmentSummary.oilPaint.hasWarning
+          },
+          rust: {
+            min: surfaceAssessmentSummary.rust.min?.value || null,
+            max: surfaceAssessmentSummary.rust.max?.value || null,
+            mixedBatchWarning: surfaceAssessmentSummary.rust.hasWarning
+          }
+        }
       },
       jobs: jobs.map(job => ({
         customerName: job.customerName,
         customerOrderNo: job.customerOrderNo,
         customerBatchNo: job.customerBatchNo || '#1',
-        surfaceAssessment: {
-          oilPaintLevel: job.oilPaintLevel,
-          rustLevel: job.rustLevel
-        },
-        safetyChecklist: {
-          hasEnclosedCavity: job.hasEnclosedCavity,
-          hasAdequateVenting: job.hasAdequateVenting,
-          drilledOnsite: job.drilledOnsite,
-          isAngleCompliant: job.isAngleCompliant,
-          minTopClearanceValid: job.minTopClearanceValid,
-          maxHangDepthValid: job.maxHangDepthValid
-        },
         workpieces: job.workpieces.map(wp => {
-          const totalW = parseInt(wp.weightLb, 10) || 0;
+          const { totalW, unitW } = getWorkpieceTotalWeight(wp);
           const qty = parseInt(wp.quantity, 10) || 0;
-          const unitW = qty > 0 ? Math.round(totalW / qty) : 0;
-          return {
+          const base = {
             workpieceType: wp.workpieceType,
             quantity: qty,
             unit: wp.unit || 'pcs',
-            totalWeightLb: totalW,
-            unitWeightLb: unitW,
+            totalWeightLb: Math.round(totalW),
+            unitWeightLb: Math.round(unitW),
+            weightSource: wp.isUniformWeight === false ? 'WEIGHT_BRACKET' : (wp.weightInputMode === 'PER_UNIT' ? 'PER_UNIT_INPUT' : 'TOTAL_INPUT')
+          };
+
+          if (wp.riggingCategory === 'CUSTOM_FIXTURE') {
+            return {
+              ...base,
+              rigging: {
+                category: 'CUSTOM_FIXTURE',
+                fixtureType: wp.customFixtureType || null
+              }
+            };
+          }
+
+          return {
+            ...base,
             rigging: {
+              category: 'WIRE_CHAIN',
               hangingMode: wp.hangingMode,
               hangingPoints: parseInt(wp.hangingPoints, 10),
               point1: { spec: wp.point1SpecId, strands: parseInt(wp.point1Strands, 10) || 0 },
-              point2: wp.hangingPoints === '2' ? { spec: wp.point2SpecId, strands: parseInt(wp.point2Strands, 10) || 0 } : null
+              point2: wp.hangingPoints === '2' ? { spec: wp.point2SpecId, strands: parseInt(wp.point2Strands, 10) || 0 } : null,
+              anchorShackle: wp.anchorShackle && wp.anchorShackle !== 'NONE' ? wp.anchorShackle : null
             }
           };
         })
@@ -331,13 +573,32 @@ const [assistantPin, setAssistantPin] = useState('');
     };
 
     console.log('Submitting Production Load Payload:', payload);
-    alert(`Load [${loadId.trim()}] recorded and signed off by ID [${operatorSignoffId.trim()}] successfully!`);
+    alert(`Load [${loadId.trim()}] recorded and signed off by ID [${primaryOperatorId.trim()}] successfully!`);
 
     // Reset Form
     setRackNo('');
     setLoadId('');
     setAutoLoadId('');
-    setOperatorSignoffId('');
+    setPrimaryOperatorId('');
+    setPrimaryPin('');
+    setAssistantOperatorId('');
+    setAssistantPin('');
+    setSafetyChecklist({
+      hasEnclosedCavity: false,
+      hasAdequateVenting: true,
+      drilledOnsite: true,
+      isAngleCompliant: true,
+      minTopClearanceValid: true,
+      maxHangDepthValid: true,
+      hasTightContact: false,
+      hasMaskingAgent: false
+    });
+    setSurfaceAssessment({
+      minOilPaintLevel: '',
+      maxOilPaintLevel: '',
+      minRustLevel: '',
+      maxRustLevel: ''
+    });
     setJobs([createNewJob()]);
   };
 
@@ -495,6 +756,35 @@ const [assistantPin, setAssistantPin] = useState('');
               </span>
             </div>
           </div>
+
+          {/* Rack Support Frame Capacity Gauge - live total across every Job/Workpiece on this Load */}
+          {(() => {
+            const pct = Math.min(100, (rackTotalWeight / RACK_LIMIT_LBS) * 100);
+            const isOver = rackTotalWeight > RACK_LIMIT_LBS;
+            const isWarn = !isOver && pct >= 70;
+            const barColor = isOver ? 'bg-rose-500' : isWarn ? 'bg-amber-500' : 'bg-emerald-500';
+            const textColor = isOver ? 'text-rose-300' : isWarn ? 'text-amber-300' : 'text-emerald-300';
+            return (
+              <div className="mt-4 pt-3 border-t border-slate-800/80">
+                <div className="flex justify-between items-center mb-1">
+                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                    ⚖️ Rack Support Frame Load
+                  </span>
+                  <span className={`text-xs font-mono font-bold ${textColor}`}>
+                    {Math.round(rackTotalWeight).toLocaleString()} / {RACK_LIMIT_LBS.toLocaleString()} lb
+                  </span>
+                </div>
+                <div className="w-full h-2 bg-slate-900 rounded-full overflow-hidden border border-slate-800">
+                  <div className={`h-full ${barColor} transition-all`} style={{ width: `${pct}%` }} />
+                </div>
+                {isOver && (
+                  <p className="text-[10px] text-rose-400 font-semibold mt-1">
+                    🚨 Over the {SUPPORT_ARM_CAPACITY_LBS.toLocaleString()} lb/side support frame capacity ({RACK_LIMIT_LBS.toLocaleString()} lb combined) - submission blocked until reduced.
+                  </p>
+                )}
+              </div>
+            );
+          })()}
         </div>
 
         {/* 2. JOB BREAKDOWN SECTION */}
@@ -594,285 +884,9 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>              
               </div>
 
-              {/* Surface Assessment Section */}
-              <div className="bg-slate-900/50 p-3 rounded-lg border border-slate-800/80 space-y-2">
-                <span className="text-[11px] font-bold text-slate-300 uppercase tracking-wider block">
-                  🔍 Surface Assessment (Oil, Paint & Rust Level)
-                </span>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">   
-<div>
-  <label className="block text-[11px] text-slate-400 mb-1">
-    Oil / Paint Level<span className="text-rose-400">*</span>
-  </label>
-  <select
-    value={job.oilPaintLevel}
-    onChange={(e) => handleJobFieldChange(jobIndex, 'oilPaintLevel', e.target.value)}
-    className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200"
-    required
-  >
-    <option value="">-- Select --</option>
-    {SURFACE_CONDITION_OPTIONS.map(opt => (
-      <option key={opt.value} value={opt.value}>{opt.label}</option>
-    ))}
-  </select>
-</div>
-<div>
-  <label className="block text-[11px] text-slate-400 mb-1">
-    Rust Level<span className="text-rose-400">*</span>
-  </label>
-  <select
-    value={job.rustLevel}
-    onChange={(e) => handleJobFieldChange(jobIndex, 'rustLevel', e.target.value)}
-    className="w-full bg-slate-900 border border-slate-700 rounded px-2.5 py-1.5 text-xs text-slate-200"
-    required
-  >
-    <option value="">-- Select --</option>
-    {SURFACE_CONDITION_OPTIONS.map(opt => (
-      <option key={opt.value} value={opt.value}>{opt.label}</option>
-    ))}
-  </select>
-</div>
-                </div>
-              </div>
-
-              {/* SOP Safety Checklist Section */}
-              <div className="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3">
-                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block">
-                  🛡️ Job Safety & Submersion Checklist (SOP Inspection)
-                </span>
-
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-                  
-                  {/* 1. Cavity Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">1. Has enclosed cavity / hollow structure?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'hasEnclosedCavity', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          job.hasEnclosedCavity ? 'bg-amber-600 text-slate-950' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'hasEnclosedCavity', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !job.hasEnclosedCavity ? 'bg-slate-700 text-slate-200' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 2 & 3. Venting & Drilling (Only if Cavity = YES) */}
-                  {job.hasEnclosedCavity ? (
-                    <div className="space-y-2 col-span-1 md:col-span-1">
-                      <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                        <span className="text-slate-300">2. All cavities have adequate vent/drain holes?</span>
-                        <div className="flex gap-2">
-                          <button
-                            type="button"
-                            onClick={() => handleJobFieldChange(jobIndex, 'hasAdequateVenting', true)}
-                            className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                              job.hasAdequateVenting ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                            }`}
-                          >
-                            YES
-                          </button>
-                          <button
-                            type="button"
-                            onClick={() => handleJobFieldChange(jobIndex, 'hasAdequateVenting', false)}
-                            className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                              !job.hasAdequateVenting ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                            }`}
-                          >
-                            NO
-                          </button>
-                        </div>
-                      </div>
-
-                      {!job.hasAdequateVenting && (
-                        <div className="flex items-center justify-between bg-amber-950/40 p-2.5 rounded border border-amber-800">
-                          <span className="text-amber-200">3. If missing, drilled on site?</span>
-                          <div className="flex gap-2">
-                            <button
-                              type="button"
-                              onClick={() => handleJobFieldChange(jobIndex, 'drilledOnsite', true)}
-                              className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                                job.drilledOnsite ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                              }`}
-                            >
-                              YES (Drilled)
-                            </button>
-                            <button
-                              type="button"
-                              onClick={() => handleJobFieldChange(jobIndex, 'drilledOnsite', false)}
-                              className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                                !job.drilledOnsite ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                              }`}
-                            >
-                              NO (Not Drilled)
-                            </button>
-                          </div>
-                        </div>
-                      )}
-                    </div>
-                  ) : (
-                    <div className="flex items-center justify-between bg-slate-950/40 p-2.5 rounded border border-slate-800/50 text-slate-500">
-                      <span>2/3. Venting & Drainage Check</span>
-                      <span className="text-[11px]">N/A (No Cavity)</span>
-                    </div>
-                  )}
-
-                  {/* 4. Angle Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">4. Tilt angle compliant (15°-30°)?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'isAngleCompliant', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          job.isAngleCompliant ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'isAngleCompliant', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !job.isAngleCompliant ? 'bg-amber-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 5. Top Clearance Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">5. Min top clearance &ge; 50 cm?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'minTopClearanceValid', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          job.minTopClearanceValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES (&ge; 50 cm)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'minTopClearanceValid', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !job.minTopClearanceValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO (&lt; 50 cm)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 6. Max Hang Depth Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">6. Max hang depth &le; 300 cm?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'maxHangDepthValid', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          job.maxHangDepthValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES (&le; 300 cm)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'maxHangDepthValid', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !job.maxHangDepthValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO (&gt; 300 cm)
-                      </button>
-                    </div>
-                  </div>
-
- {/* 7. Workpiece Surface Contact Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">7. Tight contact between workpieces?</span>
-                    <div className="flex gap-2">
-                     <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'hasTightContact', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          job.hasTightContact === false ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO
-                      </button>
-                     {/* YES button: turns red and shows "Action Required" once selected */}
-                      <button
-                        type="button"
-                        onClick={() => handleJobFieldChange(jobIndex, 'hasTightContact', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold transition-colors ${
-                          job.hasTightContact === true
-                            ? 'bg-rose-600 text-white' 
-                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
-                        }`}
-                      >
-                        {job.hasTightContact === true ? 'YES (Action Required)' : 'YES'}
-                      </button>
-                    </div>
-                  </div>
-
-{/* 8. Anti-Galvanizing Masking Agent Check */}
-<div className="space-y-2 col-span-1 md:col-span-2">
-  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-    <span className="text-slate-300">8. Coated with Masking / Stop-off Agent?</span>
-    <div className="flex gap-2">
-      <button
-        type="button"
-        onClick={() => handleJobFieldChange(jobIndex, 'hasMaskingAgent', true)}
-        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-          job.hasMaskingAgent ? 'bg-amber-600 text-slate-950' : 'bg-slate-900 text-slate-400'
-        }`}
-      >
-        YES
-      </button>
-      <button
-        type="button"
-        onClick={() => handleJobFieldChange(jobIndex, 'hasMaskingAgent', false)}
-        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-          !job.hasMaskingAgent ? 'bg-slate-700 text-slate-200' : 'bg-slate-900 text-slate-400'
-        }`}
-      >
-        NO
-      </button>
-    </div>
-  </div>
-
-  {/* Racking Direction Notice Card */}
-  {job.hasMaskingAgent && (
-    <div className="bg-amber-950/40 border border-amber-600/50 rounded p-2.5 text-xs text-amber-200 flex items-start gap-2">
-      <span className="text-amber-400 font-bold">⚠️ SOP Notice:</span>
-      <div>
-        <p className="font-semibold">Position masked areas at the BOTTOM or SIDES during racking.</p>
-        <p className="text-[11px] text-amber-300/80 mt-0.5">
-          Prevent pre-treatment runoff from dripping onto unmasked steel surfaces.
-        </p>
-      </div>
-    </div>
-  )}
-</div>
-
-                </div>
-              </div>
+              {/* Note: Surface Assessment (Oil, Paint & Rust Level) is captured once globally
+                  (Min/Max Oil-Paint & Rust selects), shown near the Safety Checklist below -
+                  not per Job or per Workpiece. */}
 
               {/* Dynamic Workpiece Lines */}
               <div className="pt-2 space-y-4">
@@ -890,9 +904,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 </div>
 
                 {job.workpieces.map((wp, wpIndex) => {
-                  const totalW = parseFloat(wp.weightLb) || 0;
-                  const qty = parseInt(wp.quantity, 10) || 0;
-                  const unitW = qty > 0 && totalW > 0 ? Math.round(totalW / qty) : 0;
+                  const { totalW, unitW } = getWorkpieceTotalWeight(wp);
 
                   return (
                     <div key={wp.id} className="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 space-y-3 relative">
@@ -945,20 +957,57 @@ const [assistantPin, setAssistantPin] = useState('');
 
                         <div>
                           <div className="flex justify-between items-center mb-1">
-                            <label className="block text-[11px] text-slate-400">Total Weight (lb)</label>
-                            {unitW > 0 && (
-                              <span className="text-[10px] text-cyan-400 font-mono font-bold">
-                                {unitW} lb/pc
-                              </span>
-                            )}
+                            <label className="block text-[11px] text-slate-400">
+                              {wp.isUniformWeight === false ? 'Weight Bracket' : (wp.weightInputMode === 'PER_UNIT' ? 'Unit Weight (lb)' : 'Total Weight (lb)')}
+                            </label>
+                            <button
+                              type="button"
+                              onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'isUniformWeight', wp.isUniformWeight === false)}
+                              className="text-[9px] font-bold text-slate-500 hover:text-cyan-300 underline decoration-dotted"
+                              title="Are all pieces on this line the same weight?"
+                            >
+                              {wp.isUniformWeight === false ? 'Varied → Identical' : 'Identical → Varied'}
+                            </button>
                           </div>
-                          <input
-                            type="number"
-                            placeholder="Total lbs"
-                            value={wp.weightLb}
-                            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'weightLb', e.target.value)}
-                            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-cyan-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
-                          />
+
+                          {wp.isUniformWeight === false ? (
+                            <select
+                              value={wp.weightBracketId || ''}
+                              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'weightBracketId', e.target.value)}
+                              className="w-full bg-slate-900 border border-amber-700/60 rounded-lg px-2 py-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-500"
+                            >
+                              <option value="">-- Select Weight Range --</option>
+                              {(wp.hangingPoints === '2' ? WIRE_BRACKETS_DOUBLE : WIRE_BRACKETS_SINGLE).map(b => (
+                                <option key={b.maxLb} value={b.maxLb}>
+                                  {b.minLb}–{b.maxLb} lb
+                                </option>
+                              ))}
+                            </select>
+                          ) : (
+                            <div className="flex gap-1">
+                              <input
+                                type="number"
+                                placeholder={wp.weightInputMode === 'PER_UNIT' ? 'Unit lbs' : 'Total lbs'}
+                                value={wp.weightInputMode === 'PER_UNIT' ? (wp.unitWeightInput || '') : wp.weightLb}
+                                onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, wp.weightInputMode === 'PER_UNIT' ? 'unitWeightInput' : 'weightLb', e.target.value)}
+                                className="flex-1 w-full min-w-0 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-cyan-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+                              />
+                              <button
+                                type="button"
+                                onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'weightInputMode', wp.weightInputMode === 'PER_UNIT' ? 'TOTAL' : 'PER_UNIT')}
+                                className="shrink-0 px-1.5 rounded border border-slate-700 text-[9px] text-slate-400 hover:text-cyan-300 font-bold"
+                                title="Switch between total weight and per-unit weight entry"
+                              >
+                                {wp.weightInputMode === 'PER_UNIT' ? 'Unit \u2192 Total' : 'Total \u2192 Unit'}
+                              </button>
+                            </div>
+                          )}
+
+                          {wp.isUniformWeight !== false && unitW > 0 && (
+                            <span className="text-[10px] text-cyan-400 font-mono font-bold block mt-0.5">
+                              {wp.weightInputMode === 'PER_UNIT' ? `= ${Math.round(totalW)} lb total` : `${Math.round(unitW)} lb/pc`}
+                            </span>
+                          )}
                         </div>
 
                         <div className="flex items-center gap-2">
@@ -986,7 +1035,53 @@ const [assistantPin, setAssistantPin] = useState('');
 
 {/* Rigging & Hanging Setup for THIS Workpiece */}
 <div className="pt-2.5 border-t border-slate-800/80 bg-slate-950/40 p-3 rounded-lg space-y-3">
-  
+
+  {/* Rigging Category Toggle: how is this workpiece actually hung? */}
+  <div className="inline-flex bg-slate-900 p-0.5 rounded border border-slate-800">
+    <button
+      type="button"
+      onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'riggingCategory', 'WIRE_CHAIN')}
+      className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
+        wp.riggingCategory !== 'CUSTOM_FIXTURE'
+          ? 'bg-cyan-600 text-slate-950 shadow'
+          : 'text-slate-400 hover:text-slate-200'
+      }`}
+    >
+      🔗 Wire / Chain (Beam Rack)
+    </button>
+    <button
+      type="button"
+      onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'riggingCategory', 'CUSTOM_FIXTURE')}
+      className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
+        wp.riggingCategory === 'CUSTOM_FIXTURE'
+          ? 'bg-cyan-600 text-slate-950 shadow'
+          : 'text-slate-400 hover:text-slate-200'
+      }`}
+    >
+      🧱 Custom Fixture
+    </button>
+  </div>
+
+  {wp.riggingCategory === 'CUSTOM_FIXTURE' ? (
+    <div className="space-y-2 pt-1">
+      <label className="block text-[10px] font-semibold text-slate-300 uppercase tracking-wide">
+        Fixture Type <span className="text-rose-400">*</span>
+      </label>
+      <select
+        value={wp.customFixtureType || ''}
+        onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'customFixtureType', e.target.value)}
+        className="w-full sm:w-64 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
+      >
+        {CUSTOM_FIXTURE_TYPES.map(f => (
+          <option key={f.value} value={f.value}>{f.label}</option>
+        ))}
+      </select>
+      <p className="text-[10px] text-slate-500">
+        Certified shop fixture - no wire/chain/shackle spec needed. Its weight still counts toward the Rack's total load below.
+      </p>
+    </div>
+  ) : (
+    <>
   {/* Top Mode Selection */}
   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 pb-2 border-b border-slate-800/60">
     <span className="text-[11px] font-bold text-cyan-400 flex items-center gap-1">
@@ -1108,7 +1203,9 @@ const [assistantPin, setAssistantPin] = useState('');
           className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
           required
         >
-          {RIGGING_SPECS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+          {RIGGING_SPECS.map(r => (
+            <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
+          ))}
         </select>
       </div>
       <div>
@@ -1135,7 +1232,9 @@ const [assistantPin, setAssistantPin] = useState('');
             className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
             required
           >
-            {RIGGING_SPECS.map(r => <option key={r.id} value={r.id}>{r.label}</option>)}
+            {RIGGING_SPECS.map(r => (
+              <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
+            ))}
           </select>
         </div>
         <div>
@@ -1165,12 +1264,11 @@ const [assistantPin, setAssistantPin] = useState('');
         onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'anchorShackle', e.target.value)}
         className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-cyan-500"
       >
-        <option value="NONE">-- None (Direct Chain / Slot Hooking) --</option>
-        <option value="1.0T">1.0 Ton WLL Anchor Shackle (2,200 lbs)</option>
-        <option value="2.0T">2.0 Ton WLL Anchor Shackle (4,400 lbs)</option>
-        <option value="3.25T">3.25 Ton WLL Anchor Shackle (7,150 lbs)</option>
-        <option value="4.75T">4.75 Ton WLL Anchor Shackle (10,450 lbs)</option>
-        <option value="6.5T">6.5 Ton WLL Anchor Shackle (14,300 lbs)</option>
+        {ANCHOR_SHACKLE_SPECS.map(s => (
+          <option key={s.id} value={s.id}>
+            {s.wll != null ? `${s.label} (${s.wll.toLocaleString()} lb WLL)` : s.label}
+          </option>
+        ))}
       </select>
     </div>
 
@@ -1218,6 +1316,8 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
   )}
+    </>
+  )}
 
 </div>
                     </div>
@@ -1230,7 +1330,313 @@ const [assistantPin, setAssistantPin] = useState('');
 
         {/* 3. SIGN-OFF & SUBMIT SECTION */}
         <div className="pt-4 border-t border-slate-800 space-y-4">
-          
+
+              {/* Global Surface Assessment Summary (Oil, Paint & Rust Level) - operator selects the
+                  observed Min/Max level across all workpieces on this Load, once for the whole page */}
+              <div className="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3">
+                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block">
+                  Surface Assessment (Oil, Paint & Rust Level)
+                </span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  {[
+                    { key: 'oilPaint', label: 'Oil / Paint Level', minField: 'minOilPaintLevel', maxField: 'maxOilPaintLevel' },
+                    { key: 'rust', label: 'Rust Level', minField: 'minRustLevel', maxField: 'maxRustLevel' }
+                  ].map(({ key, label, minField, maxField }) => {
+                    const s = surfaceAssessmentSummary[key];
+                    return (
+                      <div key={key} className="bg-slate-950 p-2.5 rounded border border-slate-800 space-y-2">
+                        <span className="text-slate-300 font-semibold block">{label}</span>
+                        <div className="grid grid-cols-2 gap-2">
+                          <div>
+                            <label className="block text-[10px] text-slate-500 mb-0.5">Min</label>
+                            <select
+                              value={surfaceAssessment[minField]}
+                              onChange={(e) => handleSurfaceAssessmentChange(minField, e.target.value)}
+                              className="w-full bg-slate-900 border border-emerald-700/60 rounded px-2 py-1 text-[11px] text-emerald-200"
+                            >
+                              <option value="">-- Select --</option>
+                              {SURFACE_CONDITION_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                          <div>
+                            <label className="block text-[10px] text-slate-500 mb-0.5">Max</label>
+                            <select
+                              value={surfaceAssessment[maxField]}
+                              onChange={(e) => handleSurfaceAssessmentChange(maxField, e.target.value)}
+                              className={`w-full bg-slate-900 rounded px-2 py-1 text-[11px] border ${
+                                s.hasWarning ? 'border-rose-600 text-rose-200' : 'border-slate-700 text-slate-200'
+                              }`}
+                            >
+                              <option value="">-- Select --</option>
+                              {SURFACE_CONDITION_OPTIONS.map(opt => (
+                                <option key={opt.value} value={opt.value}>{opt.label}</option>
+                              ))}
+                            </select>
+                          </div>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                {(surfaceAssessmentSummary.oilPaint.hasWarning || surfaceAssessmentSummary.rust.hasWarning) && (
+                  <div className="p-3 bg-rose-950/60 border border-rose-700 rounded-lg text-rose-200 text-[11px] space-y-2">
+                    <div className="font-bold text-rose-300 flex items-center gap-1.5">
+                      ⚠️ Wide Surface Condition Spread Detected
+                    </div>
+                    <p>
+                      <strong>Local Pre-Treatment:</strong> For individual workpieces with severe localized corrosion, perform manual grinding pre-treatment before hanging to reduce the corrosion gap among workpieces sharing the same rack.
+                    </p>
+                    <p>
+                      <strong>Batch by Corrosion Grade at the Source:</strong> Do not mix lightly rusted workpieces with heavily scaled/rusted workpieces on the same rack. Before hanging, group workpieces into batches by corrosion grade (Grade A/B/C/D).
+                    </p>
+                  </div>
+                )}
+              </div>
+
+              {/* Global Job Safety & Submersion Checklist (SOP Inspection) - applies to the whole load, confirmed once at sign-off */}
+              <div className="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3">
+                <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block">
+                  🛡️ Job Safety & Submersion Checklist (SOP Inspection)
+                </span>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
+                  
+                  {/* 1. Cavity Check */}
+                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                    <span className="text-slate-300">1. Has enclosed cavity / hollow structure?</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('hasEnclosedCavity', true)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          safetyChecklist.hasEnclosedCavity ? 'bg-amber-600 text-slate-950' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        YES
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('hasEnclosedCavity', false)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          !safetyChecklist.hasEnclosedCavity ? 'bg-slate-700 text-slate-200' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        NO
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 2 & 3. Venting & Drilling (Only if Cavity = YES) */}
+                  {safetyChecklist.hasEnclosedCavity ? (
+                    <div className="space-y-2 col-span-1 md:col-span-1">
+                      <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                        <span className="text-slate-300">2. All cavities have adequate vent/drain holes?</span>
+                        <div className="flex gap-2">
+                          <button
+                            type="button"
+                            onClick={() => handleSafetyFieldChange('hasAdequateVenting', true)}
+                            className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                              safetyChecklist.hasAdequateVenting ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                            }`}
+                          >
+                            YES
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleSafetyFieldChange('hasAdequateVenting', false)}
+                            className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                              !safetyChecklist.hasAdequateVenting ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
+                            }`}
+                          >
+                            NO
+                          </button>
+                        </div>
+                      </div>
+
+                      {!safetyChecklist.hasAdequateVenting && (
+                        <div className="flex items-center justify-between bg-amber-950/40 p-2.5 rounded border border-amber-800">
+                          <span className="text-amber-200">3. If missing, drilled on site?</span>
+                          <div className="flex gap-2">
+                            <button
+                              type="button"
+                              onClick={() => handleSafetyFieldChange('drilledOnsite', true)}
+                              className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                                safetyChecklist.drilledOnsite ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                              }`}
+                            >
+                              YES (Drilled)
+                            </button>
+                            <button
+                              type="button"
+                              onClick={() => handleSafetyFieldChange('drilledOnsite', false)}
+                              className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                                !safetyChecklist.drilledOnsite ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
+                              }`}
+                            >
+                              NO (Not Drilled)
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+                  ) : (
+                    <div className="flex items-center justify-between bg-slate-950/40 p-2.5 rounded border border-slate-800/50 text-slate-500">
+                      <span>2/3. Venting & Drainage Check</span>
+                      <span className="text-[11px]">N/A (No Cavity)</span>
+                    </div>
+                  )}
+
+                  {/* 4. Angle Check */}
+                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                    <span className="text-slate-300">4. Tilt angle compliant (15°-30°)?</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('isAngleCompliant', true)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          safetyChecklist.isAngleCompliant ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        YES
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('isAngleCompliant', false)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          !safetyChecklist.isAngleCompliant ? 'bg-amber-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        NO
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 5. Top Clearance Check */}
+                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                    <span className="text-slate-300">5. Min top clearance &ge; 50 cm?</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('minTopClearanceValid', true)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          safetyChecklist.minTopClearanceValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        YES (&ge; 50 cm)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('minTopClearanceValid', false)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          !safetyChecklist.minTopClearanceValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        NO (&lt; 50 cm)
+                      </button>
+                    </div>
+                  </div>
+
+                  {/* 6. Max Hang Depth Check */}
+                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                    <span className="text-slate-300">6. Max hang depth &le; 300 cm?</span>
+                    <div className="flex gap-2">
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('maxHangDepthValid', true)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          safetyChecklist.maxHangDepthValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        YES (&le; 300 cm)
+                      </button>
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('maxHangDepthValid', false)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          !safetyChecklist.maxHangDepthValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        NO (&gt; 300 cm)
+                      </button>
+                    </div>
+                  </div>
+
+ {/* 7. Workpiece Surface Contact Check */}
+                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+                    <span className="text-slate-300">7. Tight contact between workpieces?</span>
+                    <div className="flex gap-2">
+                     <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('hasTightContact', false)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+                          safetyChecklist.hasTightContact === false ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
+                        }`}
+                      >
+                        NO
+                      </button>
+                     {/* YES button: turns red and shows "Action Required" once selected */}
+                      <button
+                        type="button"
+                        onClick={() => handleSafetyFieldChange('hasTightContact', true)}
+                        className={`px-2.5 py-1 rounded text-[11px] font-bold transition-colors ${
+                          safetyChecklist.hasTightContact === true
+                            ? 'bg-rose-600 text-white' 
+                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
+                        }`}
+                      >
+                        {safetyChecklist.hasTightContact === true ? 'YES (Action Required)' : 'YES'}
+                      </button>
+                    </div>
+                  </div>
+
+{/* 8. Anti-Galvanizing Masking Agent Check */}
+<div className="space-y-2 col-span-1 md:col-span-2">
+  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
+    <span className="text-slate-300">8. Coated with Masking / Stop-off Agent?</span>
+    <div className="flex gap-2">
+      <button
+        type="button"
+        onClick={() => handleSafetyFieldChange('hasMaskingAgent', true)}
+        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+          safetyChecklist.hasMaskingAgent ? 'bg-amber-600 text-slate-950' : 'bg-slate-900 text-slate-400'
+        }`}
+      >
+        YES
+      </button>
+      <button
+        type="button"
+        onClick={() => handleSafetyFieldChange('hasMaskingAgent', false)}
+        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
+          !safetyChecklist.hasMaskingAgent ? 'bg-slate-700 text-slate-200' : 'bg-slate-900 text-slate-400'
+        }`}
+      >
+        NO
+      </button>
+    </div>
+  </div>
+
+  {/* Racking Direction Notice Card */}
+  {safetyChecklist.hasMaskingAgent && (
+    <div className="bg-amber-950/40 border border-amber-600/50 rounded p-2.5 text-xs text-amber-200 flex items-start gap-2">
+      <span className="text-amber-400 font-bold">⚠️ SOP Notice:</span>
+      <div>
+        <p className="font-semibold">Position masked areas at the BOTTOM or SIDES during racking.</p>
+        <p className="text-[11px] text-amber-300/80 mt-0.5">
+          Prevent pre-treatment runoff from dripping onto unmasked steel surfaces.
+        </p>
+      </div>
+    </div>
+  )}
+</div>
+
+                </div>
+              </div>
+
+
 {/* Employee ID & PIN Sign-off Input Box */}
 <div className="bg-slate-950 p-4 rounded-xl border border-slate-800 space-y-4">
   <label className="block text-xs font-bold text-slate-200 uppercase tracking-wider">
