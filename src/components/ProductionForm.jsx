@@ -884,9 +884,9 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>              
               </div>
 
-              {/* Note: Surface Assessment (Oil, Paint & Rust Level) is now captured per-workpiece
-                  below, with a single global summary shown once for the whole Load (see the
-                  Surface Assessment Summary card near the Safety Checklist). */}
+              {/* Note: Surface Assessment (Oil, Paint & Rust Level) is captured once globally
+                  (Min/Max Oil-Paint & Rust selects), shown near the Safety Checklist below -
+                  not per Job or per Workpiece. */}
 
               {/* Dynamic Workpiece Lines */}
               <div className="pt-2 space-y-4">
