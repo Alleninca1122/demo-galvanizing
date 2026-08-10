@@ -97,11 +97,11 @@ function getRequiredWireCount(designWeightLb, hangingPoints) {
 
 // ============================================================
 // RACK / BEAM STRUCTURAL CAPACITY (shop-confirmed)
-// Beam itself rated 18,000 lb; the two end support arms are the tighter limit at
+// Beam itself rated 18,000 lb; the two end support frames are the tighter limit at
 // 6,700 lb each (13,400 lb combined) - that combined figure is the binding constraint.
 // ============================================================
 const BEAM_CAPACITY_LBS = 18000;
-const SUPPORT_ARM_CAPACITY_LBS = 6700;
+const SUPPORT_ARM_CAPACITY_LBS = 6700; // per-side Support Frame capacity
 const RACK_LIMIT_LBS = SUPPORT_ARM_CAPACITY_LBS * 2; // 13,400 lb - hard submission block
 
 // Custom, shop-built hanging fixtures (not wire/chain) - e.g. a Railing Comb Rack or a row of
@@ -410,7 +410,7 @@ const [assistantPin, setAssistantPin] = useState('');
   };
 
   // Sums the design weight of every workpiece line on this Load (all Jobs, both WIRE_CHAIN and
-  // CUSTOM_FIXTURE lines) - this is what the Beam Rack's support arms actually have to carry.
+  // CUSTOM_FIXTURE lines) - this is what the Beam Rack's support frames actually have to carry.
   const getRackTotalWeight = () => {
     let total = 0;
     jobs.forEach(job => {
@@ -463,7 +463,7 @@ const [assistantPin, setAssistantPin] = useState('');
     // Check 4: Rack support-arm capacity (13,400 lb combined) - hard limit, no override
     const rackTotal = getRackTotalWeight();
     if (rackTotal > RACK_LIMIT_LBS) {
-      severeErrors.push(`Total rack load (${Math.round(rackTotal).toLocaleString()} lb) exceeds the support arm capacity of ${RACK_LIMIT_LBS.toLocaleString()} lb. Remove workpieces or split onto another rack before submitting.`);
+      severeErrors.push(`Total rack load (${Math.round(rackTotal).toLocaleString()} lb) exceeds the support frame capacity of ${RACK_LIMIT_LBS.toLocaleString()} lb. Remove workpieces or split onto another rack before submitting.`);
     }
     return severeErrors;
   };
@@ -757,7 +757,7 @@ const [assistantPin, setAssistantPin] = useState('');
             </div>
           </div>
 
-          {/* Rack Support-Arm Capacity Gauge - live total across every Job/Workpiece on this Load */}
+          {/* Rack Support Frame Capacity Gauge - live total across every Job/Workpiece on this Load */}
           {(() => {
             const pct = Math.min(100, (rackTotalWeight / RACK_LIMIT_LBS) * 100);
             const isOver = rackTotalWeight > RACK_LIMIT_LBS;
@@ -768,7 +768,7 @@ const [assistantPin, setAssistantPin] = useState('');
               <div className="mt-4 pt-3 border-t border-slate-800/80">
                 <div className="flex justify-between items-center mb-1">
                   <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    ⚖️ Rack Support-Arm Load
+                    ⚖️ Rack Support Frame Load
                   </span>
                   <span className={`text-xs font-mono font-bold ${textColor}`}>
                     {Math.round(rackTotalWeight).toLocaleString()} / {RACK_LIMIT_LBS.toLocaleString()} lb
@@ -779,7 +779,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 </div>
                 {isOver && (
                   <p className="text-[10px] text-rose-400 font-semibold mt-1">
-                    🚨 Over the {SUPPORT_ARM_CAPACITY_LBS.toLocaleString()} lb/side support arm capacity ({RACK_LIMIT_LBS.toLocaleString()} lb combined) - submission blocked until reduced.
+                    🚨 Over the {SUPPORT_ARM_CAPACITY_LBS.toLocaleString()} lb/side support frame capacity ({RACK_LIMIT_LBS.toLocaleString()} lb combined) - submission blocked until reduced.
                   </p>
                 )}
               </div>
