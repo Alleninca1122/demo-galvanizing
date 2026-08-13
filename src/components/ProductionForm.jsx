@@ -174,7 +174,7 @@ const [assistantPin, setAssistantPin] = useState('');
     hasAdequateVenting: true,      // 2. Adequate venting/drainage holes
     drilledOnsite: true,           // 3. Drilled on site if missing
     isAngleCompliant: true,        // 4. Tilt angle 15°-30°
-    minTopClearanceValid: true,    // 5. Min top clearance >= 50cm
+    minTopClearanceValid: true,    // 5. Min top clearance >= 30cm
     maxHangDepthValid: true,       // 6. Max hang depth <= 300cm
     hasTightContact: false,        // 7. Tight contact between workpieces
     hasMaskingAgent: false         // 8. Coated with masking/stop-off agent
@@ -218,6 +218,7 @@ const [assistantPin, setAssistantPin] = useState('');
       {
         id: Date.now() + 1,
         workpieceType: '',
+        workpieceTypeOther: '',
         quantity: '',
         unit: 'pcs',
         weightLb: '',
@@ -316,6 +317,7 @@ const [assistantPin, setAssistantPin] = useState('');
     updated[jobIndex].workpieces.push({
       id: Date.now() + Math.random(),
       workpieceType: '',
+      workpieceTypeOther: '',
       quantity: '',
       unit: 'pcs',
       weightLb: '',
@@ -386,7 +388,10 @@ const [assistantPin, setAssistantPin] = useState('');
         // same bracket ceiling.)
         const designW = isString ? totalW : (wp.isUniformWeight === false ? totalW : unitW);
         const loadPerPt = designW / pts;
-        const label = `Job #${jIdx + 1} Line #${wIdx + 1} (${wp.workpieceType || 'Item'})`;
+        const workpieceTypeLabel = wp.workpieceType === 'Others' && wp.workpieceTypeOther
+          ? `Others: ${wp.workpieceTypeOther}`
+          : wp.workpieceType;
+        const label = `Job #${jIdx + 1} Line #${wIdx + 1} (${workpieceTypeLabel || 'Item'})`;
 
         // Wire recommendation basis differs by stringing method (see notes above).
         let wireRec;
@@ -485,9 +490,9 @@ const [assistantPin, setAssistantPin] = useState('');
     if (safetyChecklist.hasEnclosedCavity && (!safetyChecklist.hasAdequateVenting && !safetyChecklist.drilledOnsite)) {
       severeErrors.push(`Enclosed cavity detected without sufficient venting/drainage holes, and not drilled on site! (Explosion Risk in Kettle)`);
     }
-    // Check 2: Minimum Top Clearance violation (< 50cm)
+    // Check 2: Minimum Top Clearance violation (< 30cm)
     if (!safetyChecklist.minTopClearanceValid) {
-      severeErrors.push(`Top clearance is less than 50 cm. Material cannot be fully submerged in acid/zinc bath.`);
+      severeErrors.push(`Top clearance is less than 30 cm. Material cannot be fully submerged in acid/zinc bath.`);
     }
     // Check 3: Maximum Hang Depth violation (> 300cm)
     if (!safetyChecklist.maxHangDepthValid) {
@@ -573,6 +578,7 @@ const [assistantPin, setAssistantPin] = useState('');
           const qty = parseInt(wp.quantity, 10) || 0;
           const base = {
             workpieceType: wp.workpieceType,
+            ...(wp.workpieceType === 'Others' ? { workpieceTypeOther: wp.workpieceTypeOther || '' } : {}),
             quantity: qty,
             unit: wp.unit || 'pcs',
             totalWeightLb: Math.round(totalW),
@@ -712,7 +718,7 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800 space-y-1">
               <div className="font-bold text-cyan-400">4. Physical Clearance Limits</div>
               <p className="text-[11px] text-slate-300">
-                • <strong>Min Top Clearance &ge; 50 cm</strong>: Ensures full submersion in tank.<br/>
+                • <strong>Min Top Clearance &ge; 30 cm</strong>: Ensures full submersion in tank.<br/>
                 • <strong>Max Hang Depth &le; 300 cm</strong>: Prevents bottoming out or overhead crane snagging.
               </p>
             </div>
@@ -949,6 +955,16 @@ const [assistantPin, setAssistantPin] = useState('');
                               <option key={type} value={type}>{type}</option>
                             ))}
                           </select>
+                          {wp.workpieceType === 'Others' && (
+                            <input
+                              type="text"
+                              value={wp.workpieceTypeOther}
+                              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'workpieceTypeOther', e.target.value)}
+                              placeholder="if other please specify."
+                              className="mt-1.5 w-full bg-slate-900 border border-cyan-700/60 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                              required
+                            />
+                          )}
                         </div>
 
                         <div>
@@ -1556,7 +1572,7 @@ const [assistantPin, setAssistantPin] = useState('');
 
                   {/* 5. Top Clearance Check */}
                   <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">5. Min top clearance &ge; 50 cm?</span>
+                    <span className="text-slate-300">5. Min top clearance &ge; 30 cm?</span>
                     <div className="flex gap-2">
                       <button
                         type="button"
@@ -1565,7 +1581,7 @@ const [assistantPin, setAssistantPin] = useState('');
                           safetyChecklist.minTopClearanceValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
                         }`}
                       >
-                        YES (&ge; 50 cm)
+                        YES (&ge; 30 cm)
                       </button>
                       <button
                         type="button"
@@ -1574,7 +1590,7 @@ const [assistantPin, setAssistantPin] = useState('');
                           !safetyChecklist.minTopClearanceValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
                         }`}
                       >
-                        NO (&lt; 50 cm)
+                        NO (&lt; 30 cm)
                       </button>
                     </div>
                   </div>
