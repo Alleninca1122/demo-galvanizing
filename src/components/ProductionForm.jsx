@@ -218,6 +218,7 @@ const [assistantPin, setAssistantPin] = useState('');
       {
         id: Date.now() + 1,
         workpieceType: '',
+        workpieceTypeOther: '',
         quantity: '',
         unit: 'pcs',
         weightLb: '',
@@ -316,6 +317,7 @@ const [assistantPin, setAssistantPin] = useState('');
     updated[jobIndex].workpieces.push({
       id: Date.now() + Math.random(),
       workpieceType: '',
+      workpieceTypeOther: '',
       quantity: '',
       unit: 'pcs',
       weightLb: '',
@@ -386,7 +388,10 @@ const [assistantPin, setAssistantPin] = useState('');
         // same bracket ceiling.)
         const designW = isString ? totalW : (wp.isUniformWeight === false ? totalW : unitW);
         const loadPerPt = designW / pts;
-        const label = `Job #${jIdx + 1} Line #${wIdx + 1} (${wp.workpieceType || 'Item'})`;
+        const workpieceTypeLabel = wp.workpieceType === 'Others' && wp.workpieceTypeOther
+          ? `Others: ${wp.workpieceTypeOther}`
+          : wp.workpieceType;
+        const label = `Job #${jIdx + 1} Line #${wIdx + 1} (${workpieceTypeLabel || 'Item'})`;
 
         // Wire recommendation basis differs by stringing method (see notes above).
         let wireRec;
@@ -573,6 +578,7 @@ const [assistantPin, setAssistantPin] = useState('');
           const qty = parseInt(wp.quantity, 10) || 0;
           const base = {
             workpieceType: wp.workpieceType,
+            ...(wp.workpieceType === 'Others' ? { workpieceTypeOther: wp.workpieceTypeOther || '' } : {}),
             quantity: qty,
             unit: wp.unit || 'pcs',
             totalWeightLb: Math.round(totalW),
@@ -949,6 +955,16 @@ const [assistantPin, setAssistantPin] = useState('');
                               <option key={type} value={type}>{type}</option>
                             ))}
                           </select>
+                          {wp.workpieceType === 'Others' && (
+                            <input
+                              type="text"
+                              value={wp.workpieceTypeOther}
+                              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'workpieceTypeOther', e.target.value)}
+                              placeholder="if other please specify."
+                              className="mt-1.5 w-full bg-slate-900 border border-cyan-700/60 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 placeholder-slate-500 focus:outline-none focus:border-cyan-500"
+                              required
+                            />
+                          )}
                         </div>
 
                         <div>
