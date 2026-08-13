@@ -665,66 +665,98 @@ const [assistantPin, setAssistantPin] = useState('');
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
-        {/* SOP OPERATING GUIDELINES CARD */}
-        <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
-          <div className="flex items-center gap-2 pb-2 border-b border-slate-800/80">
-            <span className="text-sm">📋</span>
-            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-              SOP OPERATING GUIDELINES & INSPECTION STANDARDS
-            </h3>
-          </div>
-
-          {/* CRITICAL SAFETY BLOCKING WARNING */}
-          {criticalViolations.length > 0 && (
-            <div className="p-3.5 bg-rose-950/80 border-2 border-rose-600 rounded-lg text-rose-200 text-xs space-y-1.5 animate-pulse">
-              <div className="font-extrabold text-rose-300 text-sm flex items-center gap-2">
-                🚨 CRITICAL SAFETY HAZARD DETECTED - SUBMISSION BLOCKED
-              </div>
-              <ul className="list-disc list-inside text-[11px] space-y-1 text-rose-200">
-                {criticalViolations.map((err, idx) => (
-                  <li key={idx}>{err}</li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          {/* 4-STEP SOP REFERENCE GRID */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
-            {/* Step 1: Venting & Drainage */}
-            <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800 space-y-1">
-              <div className="font-bold text-cyan-400">1. Cavity Venting & Drainage</div>
-              <p className="text-[11px] text-slate-300">
-                Check hollow/pipe structures. Ensure vent & drain holes are present at opposite ends (min 1/2" / 13mm). Drill on site if missing to prevent explosion in 450°C kettle!
-              </p>
-            </div>
-
-            {/* Step 2: Surface Assessment */}
-            <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800 space-y-1">
-              <div className="font-bold text-cyan-400">2. Surface Condition Assessment</div>
-              <p className="text-[11px] text-slate-300">
-                Inspect oil, paint, and rust levels (None / Light / Medium / Heavy). Record accurately to alert pickling operators for degreasing & acid immersion times.
-              </p>
-            </div>
-
-            {/* Step 3: Hanging Angle */}
-            <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800 space-y-1">
-              <div className="font-bold text-cyan-400">3. Hanging Tilt Angle</div>
-              <p className="text-[11px] text-slate-300">
-                Maintain a <strong>15° - 30° tilt angle</strong> for smooth zinc flow & drainage. Adjust front/rear wire or chain lengths based on attachment point spacing.
-              </p>
-            </div>
-
-            {/* Step 4: Clearance Limits */}
-            <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800 space-y-1">
-              <div className="font-bold text-cyan-400">4. Physical Clearance Limits</div>
-              <p className="text-[11px] text-slate-300">
-                • <strong>Min Top Clearance &ge; 30 cm</strong>: Ensures full submersion in tank.<br/>
-                • <strong>Max Hang Depth &le; 300 cm</strong>: Prevents bottoming out or overhead crane snagging.
-              </p>
-            </div>
-          </div>
+{/* SOP OPERATING GUIDELINES CARD */}
+      <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
+        <div className="flex items-center gap-2 pb-2 border-b border-slate-800/80">
+          <span className="text-sm">📋</span>
+          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+            SOP OPERATING GUIDELINES & INSPECTION STANDARDS
+          </h3>
         </div>
 
+        {/* CRITICAL SAFETY BLOCKING WARNING */}
+        {criticalViolations.length > 0 && (
+          <div className="p-3.5 bg-rose-950/80 border-2 border-rose-600 rounded-lg text-rose-200 text-xs space-y-1.5 animate-pulse">
+            <div className="font-extrabold text-rose-300 text-sm flex items-center gap-2">
+              ⚠️ CRITICAL SAFETY HAZARD DETECTED - SUBMISSION BLOCKED
+            </div>
+            <ul className="list-disc list-inside text-[11px] space-y-1 text-rose-200">
+              {criticalViolations.map((err, idx) => (
+                <li key={idx}>{err}</li>
+              ))}
+            </ul>
+          </div>
+        )}
+
+        {/* DUAL-COLUMN DUAL-COLOR SOP REFERENCE GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 text-xs">
+          
+          {/* LEFT COLUMN: SAFETY CONTROLS (ROSE / RED THEME) */}
+          <div className="p-3.5 bg-slate-900/90 border border-rose-900/60 rounded-lg border-l-4 border-l-rose-500 space-y-2.5">
+            <div className="flex items-center justify-between pb-1.5 border-b border-rose-950">
+              <div className="flex items-center gap-1.5 text-rose-400 font-bold text-xs uppercase tracking-wide">
+                <span>🛡️</span>
+                <span>Safety Controls (Critical Hazards)</span>
+              </div>
+              <span className="text-[10px] bg-rose-950 text-rose-300 px-1.5 py-0.5 rounded border border-rose-800 font-semibold">HARD STOP</span>
+            </div>
+            
+            <ul className="space-y-2 text-[11px] text-slate-300 leading-relaxed">
+              <li className="flex items-start gap-1.5">
+                <span className="text-rose-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-rose-200">Rigging & Chain Lock:</strong> Min 1 wrap around beam & engage <strong className="text-white">min 2 notches</strong>. <span className="text-rose-400 font-bold uppercase underline decoration-rose-500/50">NO tie wire / baling wire</span> (anneals & snaps in 450°C zinc). Use adapter plate if chain too small.
+                </div>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-rose-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-rose-200">Cavity Venting:</strong> Pipe/hollow structures MUST have top-end vent holes (<strong className="text-white">min 1/2" / 13mm</strong>) at highest point to prevent catastrophic kettle explosion.
+                </div>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-rose-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-rose-200">WLL & Load Limits:</strong> Total rack load <strong className="text-white">≤ 85% WLL</strong>. Account for dipping angle load multipliers on single sling points.
+                </div>
+              </li>
+            </ul>
+          </div>
+
+          {/* RIGHT COLUMN: QUALITY CONTROLS (CYAN / EMERALD THEME) */}
+          <div className="p-3.5 bg-slate-900/90 border border-cyan-900/60 rounded-lg border-l-4 border-l-cyan-500 space-y-2.5">
+            <div className="flex items-center justify-between pb-1.5 border-b border-cyan-950">
+              <div className="flex items-center gap-1.5 text-cyan-400 font-bold text-xs uppercase tracking-wide">
+                <span>💎</span>
+                <span>Quality Controls (Defect Prevention)</span>
+              </div>
+              <span className="text-[10px] bg-cyan-950 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-800 font-semibold">SPEC STANDARDS</span>
+            </div>
+
+            <ul className="space-y-2 text-[11px] text-slate-300 leading-relaxed">
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-cyan-200">Hanging Tilt Angle:</strong> Maintain <strong className="text-white">15° - 30° tilt angle</strong>. Prevents air trapping (bare spots) and ensures smooth zinc drainage (no icicles/spikes).
+                </div>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-cyan-200">Orientation & Clearance:</strong> C-channels/angles face <strong className="text-white">DOWN</strong> to prevent liquid trapping. Keep <strong className="text-white">≥ 50mm clearance</strong> between parts to avoid sticking/touch marks.
+                </div>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-cyan-200">Surface & Tank Limits:</strong> Inspect oil/paint/rust. Tank clearance: Top clearance <strong className="text-white">≥ 50 cm</strong>, Max depth <strong className="text-white">≤ 300 cm</strong>.
+                </div>
+              </li>
+            </ul>
+          </div>
+
+        </div>
+      </div>
         {/* 1. RACK & LOAD ID BOX */}
         <div className="bg-slate-950 p-5 rounded-xl border border-cyan-800/60 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500"></div>
