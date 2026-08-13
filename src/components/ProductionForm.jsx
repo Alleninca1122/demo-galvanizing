@@ -174,7 +174,7 @@ const [assistantPin, setAssistantPin] = useState('');
     hasAdequateVenting: true,      // 2. Adequate venting/drainage holes
     drilledOnsite: true,           // 3. Drilled on site if missing
     isAngleCompliant: true,        // 4. Tilt angle 15°-30°
-    minTopClearanceValid: true,    // 5. Min top clearance >= 50cm
+    minTopClearanceValid: true,    // 5. Min top clearance >= 30cm
     maxHangDepthValid: true,       // 6. Max hang depth <= 300cm
     hasTightContact: false,        // 7. Tight contact between workpieces
     hasMaskingAgent: false         // 8. Coated with masking/stop-off agent
@@ -490,9 +490,9 @@ const [assistantPin, setAssistantPin] = useState('');
     if (safetyChecklist.hasEnclosedCavity && (!safetyChecklist.hasAdequateVenting && !safetyChecklist.drilledOnsite)) {
       severeErrors.push(`Enclosed cavity detected without sufficient venting/drainage holes, and not drilled on site! (Explosion Risk in Kettle)`);
     }
-    // Check 2: Minimum Top Clearance violation (< 50cm)
+    // Check 2: Minimum Top Clearance violation (< 30cm)
     if (!safetyChecklist.minTopClearanceValid) {
-      severeErrors.push(`Top clearance is less than 50 cm. Material cannot be fully submerged in acid/zinc bath.`);
+      severeErrors.push(`Top clearance is less than 30 cm. Material cannot be fully submerged in acid/zinc bath.`);
     }
     // Check 3: Maximum Hang Depth violation (> 300cm)
     if (!safetyChecklist.maxHangDepthValid) {
@@ -718,7 +718,7 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="p-3 bg-slate-900/60 rounded-lg border border-slate-800 space-y-1">
               <div className="font-bold text-cyan-400">4. Physical Clearance Limits</div>
               <p className="text-[11px] text-slate-300">
-                • <strong>Min Top Clearance &ge; 50 cm</strong>: Ensures full submersion in tank.<br/>
+                • <strong>Min Top Clearance &ge; 30 cm</strong>: Ensures full submersion in tank.<br/>
                 • <strong>Max Hang Depth &le; 300 cm</strong>: Prevents bottoming out or overhead crane snagging.
               </p>
             </div>
@@ -1572,7 +1572,7 @@ const [assistantPin, setAssistantPin] = useState('');
 
                   {/* 5. Top Clearance Check */}
                   <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">5. Min top clearance &ge; 50 cm?</span>
+                    <span className="text-slate-300">5. Min top clearance &ge; 30 cm?</span>
                     <div className="flex gap-2">
                       <button
                         type="button"
@@ -1581,7 +1581,7 @@ const [assistantPin, setAssistantPin] = useState('');
                           safetyChecklist.minTopClearanceValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
                         }`}
                       >
-                        YES (&ge; 50 cm)
+                        YES (&ge; 30 cm)
                       </button>
                       <button
                         type="button"
@@ -1590,7 +1590,7 @@ const [assistantPin, setAssistantPin] = useState('');
                           !safetyChecklist.minTopClearanceValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
                         }`}
                       >
-                        NO (&lt; 50 cm)
+                        NO (&lt; 30 cm)
                       </button>
                     </div>
                   </div>
