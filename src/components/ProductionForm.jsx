@@ -1,47 +1,5 @@
 import React, { useState } from 'react';
 
-const STEP_GUIDELINES = {
-  1: {
-    title: "STEP 1: Job Entry & Venting",
-    safetyTitle: "Cavity Venting Check",
-    safetyDesc: "Verify pipe/hollow structures have top-end vent holes (min 1/2 in / 13mm) at highest point. NEVER submerge sealed parts to prevent 450°C kettle explosion.",
-    qualityTitle: "Surface Condition Assessment",
-    qualityDesc: "Assess oil, heavy paint, or scale levels. System syncs degreasing and pickling time to prevent bare spot defects."
-  },
-  2: {
-    title: "STEP 2: Rigging Selection",
-    safetyTitle: "Chain Spec & Wire Restriction",
-    safetyDesc: "Match chain gauge to part weight. Tie wire/baling wire is STRICTLY PROHIBITED. Use AP-01 notch adapter if chain slips.",
-    qualityTitle: "Rack WLL Load Limit",
-    qualityDesc: "Total load must remain <= 85% WLL. Dynamic check accounts for dipping angle tension multipliers."
-  },
-  3: {
-    title: "STEP 3: Racking & Tying",
-    safetyTitle: "Chain Engagement & Lock",
-    safetyDesc: "Chains must wrap at least 1 full loop around beam and lock into at least 2 chain notches to prevent slipping.",
-    qualityTitle: "Part Orientation & Spacing",
-    qualityDesc: "Channel openings must face DOWN/slanted to prevent air pockets or acid trapping. Keep >= 50mm clearance between parts."
-  },
-  4: {
-    title: "STEP 4: Final Pose Check",
-    safetyTitle: "Kettle Clearance Limits",
-    safetyDesc: "Maintain top clearance >= 50 cm and max depth <= 300 cm to avoid kettle wall/bottom impact during crane transfer.",
-    qualityTitle: "Hanging Tilt Angle",
-    qualityDesc: "Maintain 15 to 30 deg tilt angle for smooth zinc drainage, zero ash trapping, and fast air venting."
-  }
-};
-export default function LoadingStation() { // （注：组件名以你的实际组件名称为准）
-  
-  // 3. 补上这一行！声明 currentStep 变量
-  const [currentStep, setCurrentStep] = useState(1);
-
-  return (
-    <form className="space-y-6">
-      {/* 你的 WORKFLOW STEPPER CONTAINER 代码 */}
-    </form>
-  );
-}
-
 // Standard Galvanizing Workpiece Types
 const WORKPIECE_TYPES = [
   'Anchor', 'Angle', 'Beam', 'Bend Plate', 'Box', 'Bracket', 'Channel', 'Embed Plate', 'Frame',
@@ -707,46 +665,17 @@ const [assistantPin, setAssistantPin] = useState('');
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
-
-
-
-
-{/* WORKFLOW STEPPER CONTAINER */}
+{/* SOP OPERATING GUIDELINES CARD */}
       <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
-        
-        {/* STEPPER PROGRESS BAR (CLICKABLE TABS) */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-xs overflow-x-auto gap-2">
-          {[1, 2, 3, 4].map((stepNum) => {
-            const isActive = currentStep === stepNum;
-            const stepTitles = ["Part Inspection", "Rigging Match", "Racking Execution", "Final Check"];
-            return (
-              <button
-                key={stepNum}
-                type="button"
-                onClick={() => setCurrentStep(stepNum)}
-                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
-                  isActive
-                    ? "bg-cyan-950/80 border border-cyan-500/50 text-white font-bold"
-                    : "opacity-50 hover:opacity-100 text-slate-400 hover:text-slate-200"
-                }`}
-              >
-                <span
-                  className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
-                    isActive
-                      ? "bg-cyan-500 text-slate-950"
-                      : "bg-slate-800 text-slate-400"
-                  }`}
-                >
-                  {stepNum}
-                </span>
-                <span>STEP {stepNum}: {stepTitles[stepNum - 1]}</span>
-              </button>
-            );
-          })}
+        <div className="flex items-center gap-2 pb-2 border-b border-slate-800/80">
+          <span className="text-sm">📋</span>
+          <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+            SOP OPERATING GUIDELINES & INSPECTION STANDARDS
+          </h3>
         </div>
 
         {/* CRITICAL SAFETY BLOCKING WARNING */}
-        {typeof criticalViolations !== 'undefined' && criticalViolations && criticalViolations.length > 0 && (
+        {criticalViolations.length > 0 && (
           <div className="p-3.5 bg-rose-950/80 border-2 border-rose-600 rounded-lg text-rose-200 text-xs space-y-1.5 animate-pulse">
             <div className="font-extrabold text-rose-300 text-sm flex items-center gap-2">
               ⚠️ CRITICAL SAFETY HAZARD DETECTED - SUBMISSION BLOCKED
@@ -759,72 +688,74 @@ const [assistantPin, setAssistantPin] = useState('');
           </div>
         )}
 
-        {/* DYNAMIC CONTROL POINTS PANEL */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+        {/* DUAL-COLUMN DUAL-COLOR SOP REFERENCE GRID */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-3.5 text-xs">
           
-          {/* SAFETY CONTROL POINT */}
-          <div className="p-3.5 bg-rose-950/40 border-l-4 border-l-rose-500 border border-rose-900/40 rounded-r-lg space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-rose-300 flex items-center gap-1">
-                🛡️ Safety Control
-              </span>
-              <span className="text-[9px] bg-rose-950 text-rose-400 border border-rose-800 px-1.5 py-0.5 rounded uppercase font-mono font-semibold">
-                Hard Stop
-              </span>
+          {/* LEFT COLUMN: SAFETY CONTROLS (ROSE / RED THEME) */}
+          <div className="p-3.5 bg-slate-900/90 border border-rose-900/60 rounded-lg border-l-4 border-l-rose-500 space-y-2.5">
+            <div className="flex items-center justify-between pb-1.5 border-b border-rose-950">
+              <div className="flex items-center gap-1.5 text-rose-400 font-bold text-xs uppercase tracking-wide">
+                <span>🛡️</span>
+                <span>Safety Controls (Critical Hazards)</span>
+              </div>
+              <span className="text-[10px] bg-rose-950 text-rose-300 px-1.5 py-0.5 rounded border border-rose-800 font-semibold">HARD STOP</span>
             </div>
-            <p className="text-xs font-bold text-white">
-              {STEP_GUIDELINES[currentStep]?.safetyTitle}
-            </p>
-            <p className="text-[11px] text-slate-300 leading-relaxed">
-              {STEP_GUIDELINES[currentStep]?.safetyDesc}
-            </p>
+            
+            <ul className="space-y-2 text-[11px] text-slate-300 leading-relaxed">
+              <li className="flex items-start gap-1.5">
+                <span className="text-rose-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-rose-200">Rigging & Chain Lock:</strong> Min 1 wrap around beam & engage <strong className="text-white">min 2 notches</strong>. <span className="text-rose-400 font-bold uppercase underline decoration-rose-500/50">NO tie wire / baling wire</span> (anneals & snaps in 450°C zinc). Use adapter plate if chain too small.
+                </div>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-rose-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-rose-200">Cavity Venting:</strong> Pipe/hollow structures MUST have top-end vent holes (<strong className="text-white">min 1/2" / 13mm</strong>) at highest point to prevent catastrophic kettle explosion.
+                </div>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-rose-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-rose-200">WLL & Load Limits:</strong> Total rack load <strong className="text-white">≤ 85% WLL</strong>. Account for dipping angle load multipliers on single sling points.
+                </div>
+              </li>
+            </ul>
           </div>
 
-          {/* QUALITY CONTROL POINT */}
-          <div className="p-3.5 bg-cyan-950/40 border-l-4 border-l-cyan-500 border border-cyan-900/40 rounded-r-lg space-y-1.5">
-            <div className="flex items-center justify-between">
-              <span className="text-xs font-bold text-cyan-300 flex items-center gap-1">
-                💎 Quality Control
-              </span>
-              <span className="text-[9px] bg-cyan-950 text-cyan-400 border border-cyan-800 px-1.5 py-0.5 rounded uppercase font-mono font-semibold">
-                Spec Standard
-              </span>
+          {/* RIGHT COLUMN: QUALITY CONTROLS (CYAN / EMERALD THEME) */}
+          <div className="p-3.5 bg-slate-900/90 border border-cyan-900/60 rounded-lg border-l-4 border-l-cyan-500 space-y-2.5">
+            <div className="flex items-center justify-between pb-1.5 border-b border-cyan-950">
+              <div className="flex items-center gap-1.5 text-cyan-400 font-bold text-xs uppercase tracking-wide">
+                <span>💎</span>
+                <span>Quality Controls (Defect Prevention)</span>
+              </div>
+              <span className="text-[10px] bg-cyan-950 text-cyan-300 px-1.5 py-0.5 rounded border border-cyan-800 font-semibold">SPEC STANDARDS</span>
             </div>
-            <p className="text-xs font-bold text-white">
-              {STEP_GUIDELINES[currentStep]?.qualityTitle}
-            </p>
-            <p className="text-[11px] text-slate-300 leading-relaxed">
-              {STEP_GUIDELINES[currentStep]?.qualityDesc}
-            </p>
+
+            <ul className="space-y-2 text-[11px] text-slate-300 leading-relaxed">
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-cyan-200">Hanging Tilt Angle:</strong> Maintain <strong className="text-white">15° - 30° tilt angle</strong>. Prevents air trapping (bare spots) and ensures smooth zinc drainage (no icicles/spikes).
+                </div>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-cyan-200">Orientation & Clearance:</strong> C-channels/angles face <strong className="text-white">DOWN</strong> to prevent liquid trapping. Keep <strong className="text-white">≥ 50mm clearance</strong> between parts to avoid sticking/touch marks.
+                </div>
+              </li>
+              <li className="flex items-start gap-1.5">
+                <span className="text-cyan-400 font-bold text-sm leading-none">•</span>
+                <div>
+                  <strong className="text-cyan-200">Surface & Tank Limits:</strong> Inspect oil/paint/rust. Tank clearance: Top clearance <strong className="text-white">≥ 50 cm</strong>, Max depth <strong className="text-white">≤ 300 cm</strong>.
+                </div>
+              </li>
+            </ul>
           </div>
 
         </div>
-
-        {/* NAVIGATION CONTROLS (PREV / NEXT STEP BUTTONS) */}
-        <div className="flex items-center justify-between pt-1 text-xs">
-          <button
-            type="button"
-            disabled={currentStep === 1}
-            onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
-            className="px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800 transition"
-          >
-            &larr; Previous Step
-          </button>
-          
-          <span className="text-[11px] text-slate-500 font-mono">
-            Step {currentStep} of 4
-          </span>
-
-          <button
-            type="button"
-            disabled={currentStep === 4}
-            onClick={() => setCurrentStep((prev) => Math.min(4, prev + 1))}
-            className="px-3 py-1.5 rounded bg-cyan-950 border border-cyan-700 text-cyan-200 font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-cyan-900 transition"
-          >
-            Next Step &rarr;
-          </button>
-        </div>
-
       </div>
         {/* 1. RACK & LOAD ID BOX */}
         <div className="bg-slate-950 p-5 rounded-xl border border-cyan-800/60 relative overflow-hidden">
