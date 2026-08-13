@@ -1,5 +1,36 @@
 import React, { useState } from 'react';
 
+const STEP_GUIDELINES = {
+  1: {
+    title: "STEP 1: Job Entry & Venting",
+    safetyTitle: "Cavity Venting Check",
+    safetyDesc: "Verify pipe/hollow structures have top-end vent holes (min 1/2 in / 13mm) at highest point. NEVER submerge sealed parts to prevent 450°C kettle explosion.",
+    qualityTitle: "Surface Condition Assessment",
+    qualityDesc: "Assess oil, heavy paint, or scale levels. System syncs degreasing and pickling time to prevent bare spot defects."
+  },
+  2: {
+    title: "STEP 2: Rigging Selection",
+    safetyTitle: "Chain Spec & Wire Restriction",
+    safetyDesc: "Match chain gauge to part weight. Tie wire/baling wire is STRICTLY PROHIBITED. Use AP-01 notch adapter if chain slips.",
+    qualityTitle: "Rack WLL Load Limit",
+    qualityDesc: "Total load must remain <= 85% WLL. Dynamic check accounts for dipping angle tension multipliers."
+  },
+  3: {
+    title: "STEP 3: Racking & Tying",
+    safetyTitle: "Chain Engagement & Lock",
+    safetyDesc: "Chains must wrap at least 1 full loop around beam and lock into at least 2 chain notches to prevent slipping.",
+    qualityTitle: "Part Orientation & Spacing",
+    qualityDesc: "Channel openings must face DOWN/slanted to prevent air pockets or acid trapping. Keep >= 50mm clearance between parts."
+  },
+  4: {
+    title: "STEP 4: Final Pose Check",
+    safetyTitle: "Kettle Clearance Limits",
+    safetyDesc: "Maintain top clearance >= 50 cm and max depth <= 300 cm to avoid kettle wall/bottom impact during crane transfer.",
+    qualityTitle: "Hanging Tilt Angle",
+    qualityDesc: "Maintain 15 to 30 deg tilt angle for smooth zinc drainage, zero ash trapping, and fast air venting."
+  }
+};
+
 // Standard Galvanizing Workpiece Types
 const WORKPIECE_TYPES = [
   'Anchor', 'Angle', 'Beam', 'Bend Plate', 'Box', 'Bracket', 'Channel', 'Embed Plate', 'Frame',
@@ -665,27 +696,42 @@ const [assistantPin, setAssistantPin] = useState('');
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
+
+
+
+
 {/* WORKFLOW STEPPER CONTAINER */}
       <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
         
-        {/* STEPPER PROGRESS BAR */}
+        {/* STEPPER PROGRESS BAR (CLICKABLE TABS) */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-3 text-xs overflow-x-auto gap-2">
-          <div className="flex items-center gap-2 shrink-0">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">1</span>
-            <span className="font-bold text-white">STEP 1: 工件预检</span>
-          </div>
-          <div className="flex items-center gap-2 opacity-50 shrink-0">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-[10px] font-bold text-slate-400">2</span>
-            <span className="text-slate-300">STEP 2: 索具匹配</span>
-          </div>
-          <div className="flex items-center gap-2 opacity-50 shrink-0">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-[10px] font-bold text-slate-400">3</span>
-            <span className="text-slate-300">STEP 3: 挂装打捆</span>
-          </div>
-          <div className="flex items-center gap-2 opacity-50 shrink-0">
-            <span className="flex h-5 w-5 items-center justify-center rounded-full bg-slate-800 text-[10px] font-bold text-slate-400">4</span>
-            <span className="text-slate-300">STEP 4: 姿态终检</span>
-          </div>
+          {[1, 2, 3, 4].map((stepNum) => {
+            const isActive = currentStep === stepNum;
+            const stepTitles = ["Part Inspection", "Rigging Match", "Racking Execution", "Final Check"];
+            return (
+              <button
+                key={stepNum}
+                type="button"
+                onClick={() => setCurrentStep(stepNum)}
+                className={`flex items-center gap-2 px-3 py-1.5 rounded-lg transition-all shrink-0 cursor-pointer ${
+                  isActive
+                    ? "bg-cyan-950/80 border border-cyan-500/50 text-white font-bold"
+                    : "opacity-50 hover:opacity-100 text-slate-400 hover:text-slate-200"
+                }`}
+              >
+                <span
+                  className={`flex h-5 w-5 items-center justify-center rounded-full text-[10px] font-bold ${
+                    isActive
+                      ? "bg-cyan-500 text-slate-950"
+                      : "bg-slate-800 text-slate-400"
+                  }`}
+                >
+                  {stepNum}
+                </span>
+                <span>STEP {stepNum}: {stepTitles[stepNum - 1]}</span>
+              </button>
+            );
+          })}
         </div>
 
         {/* CRITICAL SAFETY BLOCKING WARNING */}
@@ -702,38 +748,72 @@ const [assistantPin, setAssistantPin] = useState('');
           </div>
         )}
 
-        {/* CURRENT STEP CONTROL POINTS PANEL */}
+        {/* DYNAMIC CONTROL POINTS PANEL */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
           
-          {/* SAFETY CONTROL POINT (RED / ROSE) */}
+          {/* SAFETY CONTROL POINT */}
           <div className="p-3.5 bg-rose-950/40 border-l-4 border-l-rose-500 border border-rose-900/40 rounded-r-lg space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-rose-300 flex items-center gap-1">
-                🛡️ 安全控制点 (Safety Control)
+                🛡️ Safety Control
               </span>
-              <span className="text-[9px] bg-rose-950 text-rose-400 border border-rose-800 px-1.5 py-0.5 rounded uppercase font-mono font-semibold">Hard Stop</span>
+              <span className="text-[9px] bg-rose-950 text-rose-400 border border-rose-800 px-1.5 py-0.5 rounded uppercase font-mono font-semibold">
+                Hard Stop
+              </span>
             </div>
-            <p className="text-xs font-bold text-white">中空件防爆排气孔 (Venting Check)</p>
+            <p className="text-xs font-bold text-white">
+              {STEP_GUIDELINES[currentStep]?.safetyTitle}
+            </p>
             <p className="text-[11px] text-slate-300 leading-relaxed">
-              确认管件最高点已开启 <strong className="text-rose-200">&ge; 1/2 inch (13mm)</strong> 排气孔。严禁无孔入池，防止 450°C 锌液爆飞。
+              {STEP_GUIDELINES[currentStep]?.safetyDesc}
             </p>
           </div>
 
-          {/* QUALITY CONTROL POINT (CYAN / EMERALD) */}
+          {/* QUALITY CONTROL POINT */}
           <div className="p-3.5 bg-cyan-950/40 border-l-4 border-l-cyan-500 border border-cyan-900/40 rounded-r-lg space-y-1.5">
             <div className="flex items-center justify-between">
               <span className="text-xs font-bold text-cyan-300 flex items-center gap-1">
-                💎 质量控制点 (Quality Control)
+                💎 Quality Control
               </span>
-              <span className="text-[9px] bg-cyan-950 text-cyan-400 border border-cyan-800 px-1.5 py-0.5 rounded uppercase font-mono font-semibold">Spec Standard</span>
+              <span className="text-[9px] bg-cyan-950 text-cyan-400 border border-cyan-800 px-1.5 py-0.5 rounded uppercase font-mono font-semibold">
+                Spec Standard
+              </span>
             </div>
-            <p className="text-xs font-bold text-white">表面油漆锈污染评估 (Surface Condition)</p>
+            <p className="text-xs font-bold text-white">
+              {STEP_GUIDELINES[currentStep]?.qualityTitle}
+            </p>
             <p className="text-[11px] text-slate-300 leading-relaxed">
-              记录油污/重漆等级。系统将同步前道酸洗与脱脂时间，防止酸洗不透导致 <strong className="text-cyan-200">局部漏镀</strong>。
+              {STEP_GUIDELINES[currentStep]?.qualityDesc}
             </p>
           </div>
 
         </div>
+
+        {/* NAVIGATION CONTROLS (PREV / NEXT STEP BUTTONS) */}
+        <div className="flex items-center justify-between pt-1 text-xs">
+          <button
+            type="button"
+            disabled={currentStep === 1}
+            onClick={() => setCurrentStep((prev) => Math.max(1, prev - 1))}
+            className="px-3 py-1.5 rounded bg-slate-900 border border-slate-700 text-slate-300 disabled:opacity-30 disabled:cursor-not-allowed hover:bg-slate-800 transition"
+          >
+            &larr; Previous Step
+          </button>
+          
+          <span className="text-[11px] text-slate-500 font-mono">
+            Step {currentStep} of 4
+          </span>
+
+          <button
+            type="button"
+            disabled={currentStep === 4}
+            onClick={() => setCurrentStep((prev) => Math.min(4, prev + 1))}
+            className="px-3 py-1.5 rounded bg-cyan-950 border border-cyan-700 text-cyan-200 font-bold disabled:opacity-30 disabled:cursor-not-allowed hover:bg-cyan-900 transition"
+          >
+            Next Step &rarr;
+          </button>
+        </div>
+
       </div>
         {/* 1. RACK & LOAD ID BOX */}
         <div className="bg-slate-950 p-5 rounded-xl border border-cyan-800/60 relative overflow-hidden">
