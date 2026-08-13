@@ -30,6 +30,17 @@ const STEP_GUIDELINES = {
     qualityDesc: "Maintain 15 to 30 deg tilt angle for smooth zinc drainage, zero ash trapping, and fast air venting."
   }
 };
+export default function LoadingStation() { // （注：组件名以你的实际组件名称为准）
+  
+  // 3. 补上这一行！声明 currentStep 变量
+  const [currentStep, setCurrentStep] = useState(1);
+
+  return (
+    <form className="space-y-6">
+      {/* 你的 WORKFLOW STEPPER CONTAINER 代码 */}
+    </form>
+  );
+}
 
 // Standard Galvanizing Workpiece Types
 const WORKPIECE_TYPES = [
