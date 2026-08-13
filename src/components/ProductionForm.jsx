@@ -2,9 +2,9 @@ import React, { useState } from 'react';
 
 // Standard Galvanizing Workpiece Types
 const WORKPIECE_TYPES = [
-  'Anchor', 'Angle', 'Beam', 'Bracket', 'Channel', 'Frame',
-  'Grating', 'Ladder', 'Mesh', 'Pipe', 'Plate',
-  'Pole', 'Railing', 'Rebar', 'Rod', 'Tube', 'Washer', 'Others'
+  'Anchor', 'Angle', 'Beam', 'Bend Plate', 'Box', 'Bracket', 'Channel', 'Embed Plate', 'Frame',
+  'Grating', 'Ladder', 'Lid', 'Mesh', 'Pipe', 'Plate', 'Pole', 'Railing', 'Rebar', 'Rod', 'Round Plate',
+  'Trangular Frame', 'Tube', 'Washer', 'Others'
 ];
 
 // Quantity Unit Options
