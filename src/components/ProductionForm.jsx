@@ -98,11 +98,17 @@ function getRequiredWireCount(designWeightLb, hangingPoints) {
 // ============================================================
 // RACK / BEAM STRUCTURAL CAPACITY (shop-confirmed)
 // Beam itself rated 18,000 lb; the two end support frames are the tighter limit at
-// 6,700 lb each (13,400 lb combined) - that combined figure is the binding constraint.
+// 6,750 lb each (13,500 lb combined). The usable rack load is further reduced by the
+// beam's own self-weight (3,990 lb) and a 85% safety factor, then rounded down to a
+// conservative shop figure - that net figure (8,000 lb) is the binding constraint.
 // ============================================================
 const BEAM_CAPACITY_LBS = 18000;
-const SUPPORT_ARM_CAPACITY_LBS = 6700; // per-side Support Frame capacity
-const RACK_LIMIT_LBS = SUPPORT_ARM_CAPACITY_LBS * 2; // 13,400 lb - hard submission block
+const SUPPORT_FRAME_CAPACITY_LBS = 6750; // per-side Support Frame capacity
+const BEAM_SELF_WEIGHT_LBS = 3990; // beam's own weight, not available for workpiece load
+const SAFETY_FACTOR = 0.85; // shop-confirmed safety factor
+// Raw calc: (SUPPORT_FRAME_CAPACITY_LBS * 2 - BEAM_SELF_WEIGHT_LBS) * SAFETY_FACTOR ≈ 8,083.5 lb,
+// rounded down to a conservative round-number shop limit.
+const RACK_LIMIT_LBS = 8000; // hard submission block
 
 // Custom, shop-built hanging fixtures (not wire/chain) - e.g. a Railing Comb Rack or a row of
 // hooks for small parts. These bypass wire/chain/shackle spec checks but still count toward the
@@ -498,10 +504,10 @@ const [assistantPin, setAssistantPin] = useState('');
     if (!safetyChecklist.maxHangDepthValid) {
       severeErrors.push(`Total hang depth exceeds 300 cm. Risk of bottom collision or crane overhead snagging.`);
     }
-    // Check 4: Rack support-arm capacity (13,400 lb combined) - hard limit, no override
+    // Check 4: Rack support-frame capacity (8,000 lb net, after beam self-weight & safety factor) - hard limit, no override
     const rackTotal = getRackTotalWeight();
     if (rackTotal > RACK_LIMIT_LBS) {
-      severeErrors.push(`Total rack load (${Math.round(rackTotal).toLocaleString()} lb) exceeds the support frame capacity of ${RACK_LIMIT_LBS.toLocaleString()} lb. Remove workpieces or split onto another rack before submitting.`);
+      severeErrors.push(`Total rack load (${Math.round(rackTotal).toLocaleString()} lb) exceeds the rack's usable load capacity of ${RACK_LIMIT_LBS.toLocaleString()} lb. Remove workpieces or split onto another rack before submitting.`);
     }
     return severeErrors;
   };
@@ -868,7 +874,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 </div>
                 {isOver && (
                   <p className="text-[10px] text-rose-400 font-semibold mt-1">
-                    🚨 Over the {SUPPORT_ARM_CAPACITY_LBS.toLocaleString()} lb/side support frame capacity ({RACK_LIMIT_LBS.toLocaleString()} lb combined) - submission blocked until reduced.
+                    🚨 Over the rack's usable load capacity of {RACK_LIMIT_LBS.toLocaleString()} lb ({SUPPORT_FRAME_CAPACITY_LBS.toLocaleString()} lb/side support frame, net of beam self-weight & safety factor) - submission blocked until reduced.
                   </p>
                 )}
               </div>
@@ -1842,7 +1848,7 @@ const [assistantPin, setAssistantPin] = useState('');
 </button>  
         </div>
 
-      </form>
+   {/* WORKFLOW STEPPER CONTAINER */}   </form>
     </div>
   );
 }
