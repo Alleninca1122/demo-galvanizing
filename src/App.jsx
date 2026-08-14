@@ -158,7 +158,7 @@ export default function App() {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Step 01: Loading Station
+            Stage 01: Loading Station
           </button>
           <button
             onClick={() => setActiveTab('process')}
@@ -168,7 +168,7 @@ export default function App() {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Steps 02-04: Process Portal
+            Stages 02-04: Process Portal
           </button>
         </div>
 

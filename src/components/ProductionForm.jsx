@@ -654,7 +654,7 @@ const [assistantPin, setAssistantPin] = useState('');
       <div className="border-b border-slate-800 pb-4 mb-6 flex justify-between items-center">
         <div>
           <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest block">
-            Step 01: Loading Station
+            Stage 01: Loading Station
           </span>
           <h2 className="text-xl font-extrabold text-white">New Load Entry</h2>
         </div>
