@@ -754,8 +754,8 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
     <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
       <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Weight Input Accuracy</div>
-        Input accurate scale weight into form. Crucial baseline to prevent crane overload and feed downstream WLL limit calculations.
+        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Weight Input & Rigging Spec</div>
+        Input accurate scale weight into form. Essential for determining required wire strand count or chain gauge, and enforcing the 8,000 lb rack load limit.
       </div>
       <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
         <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Raw Weight Logging</div>
