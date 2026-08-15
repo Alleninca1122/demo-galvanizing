@@ -671,6 +671,62 @@ const [assistantPin, setAssistantPin] = useState('');
 
       <form onSubmit={handleSubmit} className="space-y-6">
 
+{/* MANDATORY PPE PRE-CHECK BAR (Placed right above STEP 1) */}
+<div className="bg-slate-900/90 border border-amber-500/30 rounded-lg p-3 space-y-2">
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-1.5 text-amber-400 font-mono text-[11px] font-bold uppercase tracking-wider">
+      <span>🛡️</span> Mandatory PPE Gear Requirements (Loading Station)
+    </div>
+    <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono">
+      PRE-START CHECK
+    </span>
+  </div>
+
+  {/* 6-Grid Visual Equipment Layout */}
+  <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-[10px]">
+    {/* Body-Zone 1 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">🥽</span>
+      <span className="text-slate-200 font-bold">Safety Glasses</span>
+      <span className="text-[9px] text-slate-500">Impact Protection</span>
+    </div>
+
+    {/* Body-Zone 2 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">🎧</span>
+      <span className="text-slate-200 font-bold">Earplugs</span>
+      <span className="text-[9px] text-slate-500">Noise Reduction</span>
+    </div>
+
+    {/* Body-Zone 3 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">😷</span>
+      <span className="text-slate-200 font-bold">Dust Mask</span>
+      <span className="text-[9px] text-slate-500">Particle Filter</span>
+    </div>
+
+    {/* Body-Zone 4 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">🥼</span>
+      <span className="text-slate-200 font-bold">Hi-Vis Cut Jacket</span>
+      <span className="text-[9px] text-slate-500">Long Sleeve & Strip</span>
+    </div>
+
+    {/* Body-Zone 5 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">🧤</span>
+      <span className="text-slate-200 font-bold">Cut & Puncture Gloves</span>
+      <span className="text-[9px] text-slate-500">ANSI A5 / Anti-Wire</span>
+    </div>
+
+    {/* Body-Zone 6 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">🥾</span>
+      <span className="text-slate-200 font-bold">Steel-Toe Boots</span>
+      <span className="text-[9px] text-slate-500">Anti-Crush & Pierce</span>
+    </div>
+  </div>
+</div>
 {/* WORKFLOW STEPPER CONTAINER - 5 STATIC STEPS */}
       <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
         
@@ -683,7 +739,7 @@ const [assistantPin, setAssistantPin] = useState('');
             </h3>
           </div>
           <span className="text-[10px] bg-slate-900 text-cyan-400 px-2 py-0.5 rounded border border-slate-700 font-mono">
-            RACKING STATION SOP
+            LOADING STATION SOP
           </span>
         </div>
 
