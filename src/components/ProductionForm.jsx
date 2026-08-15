@@ -810,22 +810,16 @@ const [assistantPin, setAssistantPin] = useState('');
       Hollow/pipe sections MUST have vent holes (min 1/2" / 13mm) at highest points to allow air escape and prevent catastrophic kettle explosions / zinc splash.
     </div>
 
-    {/* 1. 排气孔与排水孔检查 */}
+    {/* Quality Item 1: 排气孔与排水孔 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Vent & Drain Hole Verification</div>
       Confirm presence and size of required vent and drain holes at highest/lowest points to ensure smooth air escape, acid flow, and molten zinc drainage.
     </div>
 
-    {/* 2. 油污与油漆检查 */}
+    {/* Quality Item 2: 表面状况检查（合并油污、油漆与锈蚀） */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Oil, Grease & Paint Assessment</div>
-      Inspect for oil, grease, paint, or varnish. Mark in form for solvent pre-cleaning (acid bath cannot remove organic contaminants).
-    </div>
-
-    {/* 3. 锈蚀与氧化皮程度检查 */}
-    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Rust & Mill Scale Severity Check</div>
-      Evaluate initial surface rust grade (Light / Medium / Heavy scale) to properly estimate required acid bath pickling immersion time.
+      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Surface Condition Inspection</div>
+      Inspect and log surface contaminants (oil, grease, paint) and rust severity in form as a reference for downstream degreasing and acid pickling processes.
     </div>
   </div>
 </div>
