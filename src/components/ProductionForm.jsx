@@ -793,7 +793,7 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>
 </div>
 
- {/* STEP 2 */}
+{/* STEP 2 */}
 <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
   <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
     <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
@@ -810,16 +810,22 @@ const [assistantPin, setAssistantPin] = useState('');
       Hollow/pipe sections MUST have vent holes (min 1/2" / 13mm) at highest points to allow air escape and prevent catastrophic kettle explosions / zinc splash.
     </div>
 
-    {/* Quality Item 1: 排气孔与排水孔 */}
+    {/* Quality Item 1: 排气与排水孔 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Vent & Drain Hole Verification</div>
       Confirm presence and size of required vent and drain holes at highest/lowest points to ensure smooth air escape, acid flow, and molten zinc drainage.
     </div>
 
-    {/* Quality Item 2: 表面状况检查（合并油污、油漆与锈蚀） */}
+    {/* Quality Item 2: 表面油污与锈蚀 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Surface Condition Inspection</div>
       Inspect and log surface contaminants (oil, grease, paint) and rust severity in form as a reference for downstream degreasing and acid pickling processes.
+    </div>
+
+    {/* Quality Item 3: 防镀/遮蔽剂位置检查 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Masking / Stop-off Agent Check</div>
+      If masked, position zones at BOTTOM or SIDES during racking to prevent pre-treatment runoff from dripping onto unmasked steel surfaces.
     </div>
   </div>
 </div>
