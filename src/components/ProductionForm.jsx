@@ -727,7 +727,7 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
   </div>
 </div>
-{/* WORKFLOW STEPPER CONTAINER - 5 STATIC STEPS */}
+{/* WORKFLOW STEPPER CONTAINER - FLEXIBLE STACKED LAYOUT */}
 <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
   
   {/* PIPELINE HEADER */}
@@ -752,14 +752,21 @@ const [assistantPin, setAssistantPin] = useState('');
       </span>
       <span className="text-[10px] text-slate-400 font-mono">Log job details & weigh raw batch</span>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Weight Input & Rigging Spec</div>
-        Input accurate scale weight into form. Essential for determining required wire strand count or chain gauge, and enforcing the 8,000 lb rack load limit.
+    <div className="space-y-2 text-xs">
+      {/* Safety Item */}
+      <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Weight Input & Rigging Match</div>
+        Input accurate scale weight into form. Essential for determining required wire strand count or chain gauge, enforcing the 8,000 lb rack load limit.
       </div>
-      <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      {/* Quality Item 1 */}
+      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
         <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Raw Weight Logging</div>
-        Log raw steel weight in form for zinc pickup analysis, pickling bath duration calculation, and customer billing.
+        Log exact scale weight for zinc pickup rate calculations, acid bath immersion profiling, and precise customer billing.
+      </div>
+      {/* Quality Item 2 */}
+      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Job Breakdown & Heat Traceability</div>
+        Verify PO numbers, heat tags, and item counts against physical material to ensure accurate job lot tracking before processing.
       </div>
     </div>
   </div>
@@ -773,14 +780,21 @@ const [assistantPin, setAssistantPin] = useState('');
       </span>
       <span className="text-[10px] text-slate-400 font-mono">Verify vent holes & surface condition</span>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Cavity Venting Check</div>
-        Pipe/hollow parts MUST have vent holes (min 1/2 in / 13mm) at highest point. Prevent 450°C kettle explosion hazard.
+    <div className="space-y-2 text-xs">
+      {/* Safety Item */}
+      <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Explosion Hazard Venting</div>
+        Hollow/pipe sections MUST have vent holes (min 1/2" / 13mm) at highest points to allow air escape and prevent 450°C kettle explosion hazards.
       </div>
-      <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Surface Contaminants</div>
-        Select oil, heavy paint, or scale level (None / Medium / Heavy) in form to adjust acid tank immersion time.
+      {/* Quality Item 1 */}
+      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Surface Contaminant Assessment</div>
+        Inspect for oil, paint, varnish, or heavy mill scale (None / Medium / Heavy) in form to adjust acid tank immersion duration.
+      </div>
+      {/* Quality Item 2 */}
+      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Drainage Hole Verification</div>
+        Confirm presence of adequate drain holes at lowest structural points to enable complete acid pickling flow and molten zinc drainage.
       </div>
     </div>
   </div>
@@ -794,14 +808,21 @@ const [assistantPin, setAssistantPin] = useState('');
       </span>
       <span className="text-[10px] text-slate-400 font-mono">Match chain gauge & secure load</span>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+    <div className="space-y-2 text-xs">
+      {/* Safety Item */}
+      <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
         <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec & Lock Engagement</div>
-        Match chain gauge to part weight. Baling wire is PROHIBITED. Wrap min 1 full loop & engage min 2 notches to prevent slippage.
+        Match wire strand count or chain gauge strictly to part weight. Wrap min 1 full loop & engage min 2 notches to prevent load slippage.
       </div>
-      <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Part Orientation & Spacing</div>
-        Channel openings must face DOWN/slanted to prevent air traps or acid pockets. Keep ≥ 50mm clearance between parts.
+      {/* Quality Item 1 */}
+      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Orientation & Part Clearance</div>
+        Channel openings must face down/slanted to prevent acid pockets or air traps. Maintain ≥ 50mm clearance between adjacent parts.
+      </div>
+      {/* Quality Item 2 */}
+      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Minimizing Rigging Touch-Marks</div>
+        Position wires and chains on non-critical visual surfaces or secondary edges to minimize touch-mark repair after dipping.
       </div>
     </div>
   </div>
@@ -815,14 +836,16 @@ const [assistantPin, setAssistantPin] = useState('');
       </span>
       <span className="text-[10px] text-slate-400 font-mono">Check tilt angle & tank limits</span>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+    <div className="space-y-2 text-xs">
+      {/* Safety Item */}
+      <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
         <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Kettle Clearance Limits</div>
-        Ensure top clearance ≥ 50cm and max depth ≤ 300cm to avoid kettle wall or tank bottom contact during transfer.
+        Ensure top clearance ≥ 50cm and max depth ≤ 300cm to prevent kettle wall or tank bottom contact during immersion/transfer.
       </div>
-      <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      {/* Quality Item 1 */}
+      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
         <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Hanging Pitch Angle</div>
-        Maintain 15° to 30° tilt angle for rapid, uniform zinc drainage, fast run-off, and zero ash trapping.
+        Maintain 15° to 30° tilt angle for rapid, uniform zinc drainage, fast run-off, and zero ash trapping on flat surfaces.
       </div>
     </div>
   </div>
@@ -836,14 +859,16 @@ const [assistantPin, setAssistantPin] = useState('');
       </span>
       <span className="text-[10px] text-slate-400 font-mono">Sign-off form & release to pickling</span>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+    <div className="space-y-2 text-xs">
+      {/* Safety Item */}
+      <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
         <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Center of Gravity Balance</div>
-        Perform 10cm test-lift to verify center of gravity. Ensure zero tilting or slippage during crane transit.
+        Perform 10cm test-lift to verify center of gravity. Ensure zero unexpected tilting or slippage during overhead crane movement.
       </div>
-      <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Form Entry & Sign-Off</div>
-        Complete digital form sign-off to push load record and release rack to pre-treatment station.
+      {/* Quality Item 1 */}
+      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Digital Form Sign-Off & Release</div>
+        Complete digital form sign-off to push load record to system and release rack to pre-treatment/pickling station.
       </div>
     </div>
   </div>
