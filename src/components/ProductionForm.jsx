@@ -1182,8 +1182,8 @@ const [assistantPin, setAssistantPin] = useState('');
     <div className="space-y-2 text-xs">
       {/* Safety Item */}
       <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Kettle Clearance Limits</div>
-        Ensure top clearance ≥ 50cm and max depth ≤ 300cm to prevent kettle wall or tank bottom contact during immersion/transfer.
+        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rack & Hanging Depth Limits</div>
+        Maintain top clearance ≥ 30mm to ensure the workpiece fully immerses in the zinc kettle/acid tanks. Control hanging depth ≤ 300mm to ensure the crane-suspended rack safely clear the racks resting on support frames during transfer.
       </div>
       {/* Quality Item 1 */}
       <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
