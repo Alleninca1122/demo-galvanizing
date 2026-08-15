@@ -814,12 +814,11 @@ const [assistantPin, setAssistantPin] = useState('');
       Hollow/pipe sections MUST have vent holes (min 1/2" / 13mm) at highest points to allow air escape and prevent catastrophic kettle explosions / zinc splash.
     </div>
 
-    {/* Quality Item 1: 带延伸阅读按钮的排气/排水孔检查 */}
+    {/* Quality Item 1 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="flex items-center justify-between mb-0.5">
         <span className="font-bold text-cyan-300">💎 Quality: Vent & Drain Hole Verification</span>
         
-        {/* 图解弹窗触发按钮 */}
         <button
           type="button"
           onClick={() => setShowGuide(true)}
@@ -834,13 +833,13 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
 
-    {/* Quality Item 2: 表面油污与锈蚀 */}
+    {/* Quality Item 2 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Surface Condition Inspection</div>
       Inspect and log surface contaminants (oil, grease, paint) and rust severity in form as a reference for downstream degreasing and acid pickling processes.
     </div>
 
-    {/* Quality Item 3: 防镀/遮蔽剂检查 */}
+    {/* Quality Item 3 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Masking / Stop-off Agent Check</div>
       If masked, position zones at BOTTOM or SIDES during racking to prevent pre-treatment runoff from dripping onto unmasked steel surfaces.
@@ -869,44 +868,48 @@ const [assistantPin, setAssistantPin] = useState('');
           </button>
         </div>
 
-        {/* Modal Content - 原生 SVG 矢量图示 */}
+        {/* Modal Content - 右侧优先下池的 SVG 图示 */}
         <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
           
-          {/* 图解 1: 倾斜角度与高低点 */}
+          {/* 图解 1: 右端先下锌池的倾斜角度与孔位 */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
             <div className="font-bold text-cyan-300 text-[11px]">
               1. Vent/Drain Locations Relative to Racking Angle
             </div>
             <div className="text-[10px] text-slate-400 leading-relaxed">
-              Venting MUST be at the highest point and Draining at the lowest point <strong className="text-amber-400">when the rack is tilted (typically 30°–45°)</strong>.
+              Venting MUST be at the highest point (Trailing / Left) and Draining at the lowest point (Leading / Right) <strong className="text-amber-400">when the rack enters kettle (typically 30°–45°)</strong>.
             </div>
             
-            {/* SVG 示意图 1 */}
+            {/* SVG 示意图 1 (右低左高) */}
             <div className="w-full h-36 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 120" className="w-full h-full">
-                {/* 吊索/索具 */}
-                <path d="M 80 10 L 100 35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
-                <path d="M 220 10 L 220 45" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
+                {/* 吊索 (左长右短/右侧先下) */}
+                <path d="M 100 10 L 100 35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
+                <path d="M 220 10 L 220 75" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
                 
-                {/* 倾斜吊挂的管件 */}
-                <g transform="rotate(-18 160 60)">
+                {/* 顺时针倾斜 18 度：右侧先进入锌池 */}
+                <g transform="rotate(18 160 60)">
                   {/* 管件主体 */}
                   <rect x="50" y="40" width="220" height="40" rx="4" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
                   
-                  {/* 排气孔 (Vent) */}
-                  <circle cx="260" cy="40" r="4" fill="#ef4444" stroke="#f87171" strokeWidth="1.5" />
-                  <path d="M 260 36 L 260 18" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
-                  <text x="260" y="12" fill="#ef4444" fontSize="9" fontWeight="bold" textAnchor="middle">Vent Hole (Air Escape)</text>
+                  {/* 左上角最高点 - 排气孔 (Vent Hole) */}
+                  <circle cx="60" cy="40" r="4" fill="#ef4444" stroke="#f87171" strokeWidth="1.5" />
 
-                  {/* 排水孔 (Drain) */}
-                  <circle cx="60" cy="80" r="4" fill="#38bdf8" stroke="#7dd3fc" strokeWidth="1.5" />
-                  <path d="M 60 84 L 60 102" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="2 2" />
-                  <text x="60" y="112" fill="#38bdf8" fontSize="9" fontWeight="bold" textAnchor="middle">Drain Hole (Zinc Flow)</text>
+                  {/* 右下角最低点 - 排水/进锌孔 (Drain Hole) */}
+                  <circle cx="260" cy="80" r="4" fill="#38bdf8" stroke="#7dd3fc" strokeWidth="1.5" />
                 </g>
 
-                {/* 锌液液位线 */}
-                <line x1="20" y1="105" x2="300" y2="105" stroke="#0284c7" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
-                <text x="295" y="100" fill="#0284c7" fontSize="8" textAnchor="end" opacity="0.6">Kettle Bath Line</text>
+                {/* 文字标注：左上排气 */}
+                <path d="M 70 30 L 70 18" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
+                <text x="70" y="12" fill="#ef4444" fontSize="9" fontWeight="bold" textAnchor="middle">Vent Hole (High Point / Air Escape)</text>
+
+                {/* 文字标注：右下进锌 */}
+                <path d="M 270 92 L 270 102" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="2 2" />
+                <text x="270" y="112" fill="#38bdf8" fontSize="9" fontWeight="bold" textAnchor="middle">Drain Hole (Low Point / Zinc In)</text>
+
+                {/* 锌池液位线 */}
+                <line x1="20" y1="95" x2="300" y2="95" stroke="#0284c7" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
+                <text x="25" y="90" fill="#0284c7" fontSize="8" opacity="0.6">Zinc Kettle Bath Line →</text>
               </svg>
             </div>
           </div>
