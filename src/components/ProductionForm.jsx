@@ -162,6 +162,10 @@ const SURFACE_CONDITION_GRADE = { NONE: 'A', LIGHT: 'B', MEDIUM: 'C', HEAVY: 'D'
 const SURFACE_SPREAD_WARNING_THRESHOLD = 2;
 
 export default function ProductionForm({ currentUser, supabase }) {
+
+  // 控制 ASTM A385 图解弹窗的开关
+  const [showGuide, setShowGuide] = useState(false);
+
   // Global Rack & Load Session
   const [rackNo, setRackNo] = useState('');
   const [loadId, setLoadId] = useState('');
@@ -810,10 +814,24 @@ const [assistantPin, setAssistantPin] = useState('');
       Hollow/pipe sections MUST have vent holes (min 1/2" / 13mm) at highest points to allow air escape and prevent catastrophic kettle explosions / zinc splash.
     </div>
 
-    {/* Quality Item 1: 排气与排水孔 */}
+    {/* Quality Item 1: 带延伸阅读按钮的排气/排水孔检查 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Vent & Drain Hole Verification</div>
-      Confirm presence and size of required vent and drain holes at highest/lowest points to ensure smooth air escape, acid flow, and molten zinc drainage.
+      <div className="flex items-center justify-between mb-0.5">
+        <span className="font-bold text-cyan-300">💎 Quality: Vent & Drain Hole Verification</span>
+        
+        {/* 点击打开弹窗按钮 */}
+        <button
+          type="button"
+          onClick={() => setShowGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>📐</span>
+          <span className="underline decoration-cyan-400/50">ASTM A385 Diagrams</span>
+        </button>
+      </div>
+      <div>
+        Confirm presence and size of required vent and drain holes at highest/lowest points to ensure smooth air escape, acid flow, and molten zinc drainage.
+      </div>
     </div>
 
     {/* Quality Item 2: 表面油污与锈蚀 */}
@@ -822,12 +840,76 @@ const [assistantPin, setAssistantPin] = useState('');
       Inspect and log surface contaminants (oil, grease, paint) and rust severity in form as a reference for downstream degreasing and acid pickling processes.
     </div>
 
-    {/* Quality Item 3: 防镀/遮蔽剂位置检查 */}
+    {/* Quality Item 3: 防镀/遮蔽剂检查 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Masking / Stop-off Agent Check</div>
       If masked, position zones at BOTTOM or SIDES during racking to prevent pre-treatment runoff from dripping onto unmasked steel surfaces.
     </div>
   </div>
+
+  {/* ASTM A385 图解说明弹窗 (Modal) */}
+  {showGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        
+        {/* Modal Header */}
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-base">📐</span>
+            <h3 className="text-sm font-bold text-cyan-400">
+              Venting & Draining Standards (ASTM A385)
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowGuide(false)}
+            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        {/* Modal Content */}
+        <div className="space-y-3 text-xs text-slate-300 max-h-[60vh] overflow-y-auto pr-1">
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1.5">
+            <div className="font-bold text-cyan-300 text-[11px]">
+              1. Vent/Drain Locations Relative to Racking Angle
+            </div>
+            <div className="text-[10px] text-slate-400 leading-relaxed">
+              Venting MUST be at the highest point and Draining at the lowest point <strong className="text-amber-400">when the rack is tilted (typically 30°–45°)</strong>.
+            </div>
+            <div className="h-28 bg-slate-900 rounded border border-dashed border-slate-700 flex items-center justify-center text-slate-500 text-[10px]">
+              [ Diagram: Tubular Frame hanging at 45° with Top Vent & Bottom Drain ]
+            </div>
+          </div>
+
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1.5">
+            <div className="font-bold text-cyan-300 text-[11px]">
+              2. Internal Gusset & Stiffener Coping
+            </div>
+            <div className="text-[10px] text-slate-400 leading-relaxed">
+              Internal plates must have clipped corners (min 1" / 25mm) to prevent trapped air pockets inside sealed chambers.
+            </div>
+            <div className="h-24 bg-slate-900 rounded border border-dashed border-slate-700 flex items-center justify-center text-slate-500 text-[10px]">
+              [ Diagram: Internal Gusset Corner Clipping ]
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowGuide(false)}
+            className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+          >
+            Got It
+          </button>
+        </div>
+
+      </div>
+    </div>
+  )}
 </div>
 
   {/* STEP 3 */}
