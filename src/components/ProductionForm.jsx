@@ -675,7 +675,7 @@ const [assistantPin, setAssistantPin] = useState('');
 <div className="bg-slate-900/90 border border-amber-500/30 rounded-lg p-3 space-y-2">
   <div className="flex items-center justify-between">
     <div className="flex items-center gap-1.5 text-amber-400 font-mono text-[11px] font-bold uppercase tracking-wider">
-      <span>🛡️</span> Mandatory PPE Gear Requirements (Racking Station)
+      <span>🛡️</span> Mandatory PPE Gear Requirements (Loading Station)
     </div>
     <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono">
       PRE-START CHECK
@@ -727,7 +727,6 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
   </div>
 </div>
-
 {/* WORKFLOW STEPPER CONTAINER - 5 STATIC STEPS */}
       <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
         
