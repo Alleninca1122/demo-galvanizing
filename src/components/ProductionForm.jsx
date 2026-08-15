@@ -1058,7 +1058,7 @@ const [assistantPin, setAssistantPin] = useState('');
    {/* Quality Item 1 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Minimizing Rigging Touch-Marks</div>
-      Position wires and chains through existing bolt/mounting holes, non-critical visual surfaces, or secondary edges to minimize touch-mark repair after dipping.
+      Position wires and chains through existing bolt/mounting holes, non-critical visual surfaces, or secondary edges to minimize touch-mark repair after dipping. Utilize "Clearance Looping" for workpieces with natural mechanical constraints. Strictly distinguish this from rigid binding; do not use loose loops where tight wrapping is required to prevent hazardous shifting.
     </div>
 
     {/* Quality Item 2 */}
