@@ -111,12 +111,12 @@ const SAFETY_FACTOR = 0.85; // shop-confirmed safety factor
 const RACK_LIMIT_LBS = 8000; // hard submission block
 
 // Custom, shop-built hanging fixtures (not wire/chain) - e.g. a Railing Comb Rack or a row of
-// hooks for small parts. These bypass wire/chain/shackle spec checks but still count toward the
+// hooks for small workpieces. These bypass wire/chain/shackle spec checks but still count toward the
 // rack's total weight.
 const CUSTOM_FIXTURE_TYPES = [
   { value: '', label: '-- Select Fixture --' },
   { value: 'RAILING_COMB_RACK', label: 'Railing Comb Rack' },
-  { value: 'HOOK_ROW', label: 'Hook Row (Small Parts)' },
+  { value: 'HOOK_ROW', label: 'Hook Row (Small Workpieces)' },
   { value: 'OTHER', label: 'Other Custom Fixture' },
 ];
 
@@ -1050,13 +1050,13 @@ const [assistantPin, setAssistantPin] = useState('');
 {/* STEP 3 - Safety Card Updated */}
 <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
   <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec, Wire Laps & Anti-Slippage</div>
-  Match wire strand count or chain gauge strictly to part weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, wrap loop & lock end with an <strong className="text-cyan-300">approved Anchor Shackle as a stopper</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.
+  Match wire strand count or chain gauge strictly to workpiece weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, wrap loop & lock end with an <strong className="text-cyan-300">approved Anchor Shackle as a stopper</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.
 </div>
 
     {/* Quality Item */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Orientation & Part Clearance</div>
-      Maintain adequate spacing between adjacent parts to allow uniform acid pickle coverage and zinc bath flow without air pocket trapping.
+      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Orientation & Workpiece Clearance</div>
+      Maintain adequate spacing between adjacent workpieces to allow uniform acid pickle coverage and zinc bath flow without air pocket trapping.
     </div>
   </div>
 </div>
