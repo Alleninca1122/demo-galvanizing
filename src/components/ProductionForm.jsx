@@ -744,27 +744,54 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>
 
  {/* STEP 1 */}
-  <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-      <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">1</span>
-        STEP 1: Raw Steel Weigh-In & Form Entry
-      </span>
-      <span className="text-[10px] text-slate-400 font-mono">Log job details & weigh raw steel</span>
+<div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+  <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+    <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">1</span>
+      STEP 1: Raw Steel Weigh-In & Form Entry
+    </span>
+    <span className="text-[10px] text-slate-400 font-mono">Log job details & weigh raw steel</span>
+  </div>
+  
+  <div className="space-y-2 text-xs">
+    {/* Safety Item */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Weight Input & Rigging Match</div>
+      Input accurate scale weight into form. Essential for determining required wire strand count or chain gauge, enforcing the 8,000 lb rack load limit.
     </div>
-    <div className="space-y-2 text-xs">
-      {/* Safety Item */}
-      <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Weight Input & Rigging Match</div>
-        Input accurate scale weight into form. Essential for determining required wire strand count or chain gauge, enforcing the 8,000 lb rack load limit.
-      </div>
-      {/* Quality Item - Single Practical Focus */}
-      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+
+    {/* Quality Item with Integrated Photo Buttons */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300 space-y-2">
+      <div>
         <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Custom Packaging & Bundling Photo Record</div>
         Inspect incoming customer bundling. Capture photos of any unusual or custom packaging setups to serve as an exact reference for downstream unloading and re-bundling.
       </div>
+
+      {/* 按钮区域 (上传按钮 & 手机扫码协同按钮) */}
+      <div className="flex items-center gap-2 pt-1">
+        <label className="cursor-pointer bg-cyan-950 hover:bg-cyan-900 text-cyan-300 border border-cyan-500/40 px-3 py-1 rounded text-[11px] font-mono flex items-center gap-1.5 transition-colors">
+          <span>📷</span>
+          <span>Snap / Upload Photo</span>
+          <input 
+            type="file" 
+            accept="image/*" 
+            capture="environment" 
+            className="hidden" 
+            onChange={(e) => console.log(e.target.files[0])}
+          />
+        </label>
+
+        <button 
+          type="button"
+          onClick={() => alert("Displays temporary QR code for mobile photo sync")}
+          className="bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700 px-2.5 py-1 rounded text-[11px] font-mono transition-colors"
+        >
+          📱 Scan via Phone
+        </button>
+      </div>
     </div>
   </div>
+</div>
 
   {/* STEP 2 */}
   <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
