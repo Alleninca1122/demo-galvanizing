@@ -819,7 +819,7 @@ const [assistantPin, setAssistantPin] = useState('');
       <div className="flex items-center justify-between mb-0.5">
         <span className="font-bold text-cyan-300">💎 Quality: Vent & Drain Hole Verification</span>
         
-        {/* 点击打开弹窗按钮 */}
+        {/* 图解弹窗触发按钮 */}
         <button
           type="button"
           onClick={() => setShowGuide(true)}
@@ -863,37 +863,87 @@ const [assistantPin, setAssistantPin] = useState('');
           <button
             type="button"
             onClick={() => setShowGuide(false)}
-            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800"
+            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
           >
             ✕ Close
           </button>
         </div>
 
-        {/* Modal Content */}
-        <div className="space-y-3 text-xs text-slate-300 max-h-[60vh] overflow-y-auto pr-1">
-          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1.5">
+        {/* Modal Content - 原生 SVG 矢量图示 */}
+        <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
+          
+          {/* 图解 1: 倾斜角度与高低点 */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
             <div className="font-bold text-cyan-300 text-[11px]">
               1. Vent/Drain Locations Relative to Racking Angle
             </div>
             <div className="text-[10px] text-slate-400 leading-relaxed">
               Venting MUST be at the highest point and Draining at the lowest point <strong className="text-amber-400">when the rack is tilted (typically 30°–45°)</strong>.
             </div>
-            <div className="h-28 bg-slate-900 rounded border border-dashed border-slate-700 flex items-center justify-center text-slate-500 text-[10px]">
-              [ Diagram: Tubular Frame hanging at 45° with Top Vent & Bottom Drain ]
+            
+            {/* SVG 示意图 1 */}
+            <div className="w-full h-36 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+              <svg viewBox="0 0 320 120" className="w-full h-full">
+                {/* 吊索/索具 */}
+                <path d="M 80 10 L 100 35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
+                <path d="M 220 10 L 220 45" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
+                
+                {/* 倾斜吊挂的管件 */}
+                <g transform="rotate(-18 160 60)">
+                  {/* 管件主体 */}
+                  <rect x="50" y="40" width="220" height="40" rx="4" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+                  
+                  {/* 排气孔 (Vent) */}
+                  <circle cx="260" cy="40" r="4" fill="#ef4444" stroke="#f87171" strokeWidth="1.5" />
+                  <path d="M 260 36 L 260 18" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
+                  <text x="260" y="12" fill="#ef4444" fontSize="9" fontWeight="bold" textAnchor="middle">Vent Hole (Air Escape)</text>
+
+                  {/* 排水孔 (Drain) */}
+                  <circle cx="60" cy="80" r="4" fill="#38bdf8" stroke="#7dd3fc" strokeWidth="1.5" />
+                  <path d="M 60 84 L 60 102" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="2 2" />
+                  <text x="60" y="112" fill="#38bdf8" fontSize="9" fontWeight="bold" textAnchor="middle">Drain Hole (Zinc Flow)</text>
+                </g>
+
+                {/* 锌液液位线 */}
+                <line x1="20" y1="105" x2="300" y2="105" stroke="#0284c7" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
+                <text x="295" y="100" fill="#0284c7" fontSize="8" textAnchor="end" opacity="0.6">Kettle Bath Line</text>
+              </svg>
             </div>
           </div>
 
-          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-1.5">
+          {/* 图解 2: 内部筋板切角 */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
             <div className="font-bold text-cyan-300 text-[11px]">
               2. Internal Gusset & Stiffener Coping
             </div>
             <div className="text-[10px] text-slate-400 leading-relaxed">
               Internal plates must have clipped corners (min 1" / 25mm) to prevent trapped air pockets inside sealed chambers.
             </div>
-            <div className="h-24 bg-slate-900 rounded border border-dashed border-slate-700 flex items-center justify-center text-slate-500 text-[10px]">
-              [ Diagram: Internal Gusset Corner Clipping ]
+            
+            {/* SVG 示意图 2 */}
+            <div className="w-full h-32 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+              <svg viewBox="0 0 320 100" className="w-full h-full">
+                {/* 外部框体 */}
+                <rect x="60" y="15" width="200" height="70" fill="none" stroke="#475569" strokeWidth="2" />
+                
+                {/* 内部加强筋板 */}
+                <path d="M 160 15 L 160 30 L 160 70 L 160 85" stroke="#38bdf8" strokeWidth="2" />
+                
+                {/* 顶部切角 */}
+                <path d="M 160 30 L 175 15" stroke="#f59e0b" strokeWidth="2" strokeDasharray="2 2" />
+                <circle cx="160" cy="22" r="8" fill="none" stroke="#f59e0b" strokeWidth="1" />
+                <text x="210" y="25" fill="#f59e0b" fontSize="9" fontWeight="bold">Min 1" (25mm) Clipped Corner</text>
+
+                {/* 底部切角 */}
+                <path d="M 160 70 L 175 85" stroke="#f59e0b" strokeWidth="2" strokeDasharray="2 2" />
+                
+                {/* 穿流指示 */}
+                <path d="M 145 28 C 155 20, 165 20, 175 28" stroke="#10b981" strokeWidth="1.5" fill="none" />
+                <text x="110" y="55" fill="#10b981" fontSize="9" textAnchor="middle">Air/Zinc Passage</text>
+              </svg>
             </div>
           </div>
+
         </div>
 
         {/* Modal Footer */}
