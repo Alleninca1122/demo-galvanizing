@@ -1053,10 +1053,55 @@ const [assistantPin, setAssistantPin] = useState('');
   Match wire strand count or chain gauge strictly to workpiece weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, wrap loop & lock end with an <strong className="text-cyan-300">approved Anchor Shackle as a stopper</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.
 </div>
 
-    {/* Quality Item */}
+    {/* Quality Item - Vector Diagram Embedded */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Orientation & Workpiece Clearance</div>
-      Maintain adequate spacing between adjacent workpieces to allow uniform acid pickle coverage and zinc bath flow without air pocket trapping.
+      Maintain adequate spacing between adjacent workpieces to allow uniform acid pickle coverage and zinc bath flow without air pocket trapping. For Socket & Spigot joints, hang with Spigot end high and Socket end low to prevent zinc buildup and fitment failure.
+      
+      {/* Embedded Vector Diagram */}
+      <div className="mt-2.5 p-3 border border-slate-800 rounded bg-slate-950/50 flex flex-col sm:flex-row items-center gap-4 text-[10px] leading-tight">
+        
+        {/* Scenario 1: Spigot End Low (INCORRECT) */}
+        <div className="flex-1 flex flex-col items-center gap-2 p-1.5 border border-dashed border-rose-800 rounded-sm bg-rose-950/20 text-rose-300">
+          <svg className="w-28 h-auto" viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 25 C5 25 10 25 15 25 L80 25 L105 25" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Chain line */}
+            <circle cx="15" cy="25" r="1.5" fill="#f43f5e" /> {/* Link point */}
+            <circle cx="105" cy="25" r="1.5" fill="#f43f5e" /> {/* Link point */}
+            <path d="M5 45 H115" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Pipe core line */}
+            <rect x="15" y="38" width="90" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/> {/* Main pipe (high) */}
+            <path d="M5 40 H15 M105 40 H115 M5 50 H15 M105 50 H115" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Ends core */}
+            <path d="M15 40 L5 40 Q3 40 3 42 V48 Q3 50 5 50 L15 50" stroke="currentColor" strokeWidth="1.5"/> {/* Socket End (high) */}
+            <path d="M105 40 L115 40 Q117 40 117 42 V48 Q117 50 115 50 L105 50" stroke="currentColor" strokeWidth="1.5"/> {/* Spigot End (low) */}
+            <path d="M115 40 L115 50 M113 42 L113 48" stroke="currentColor" strokeWidth="1.5"/> {/* Spigot reduced diameter */}
+            {/* Zinc Protrusion */}
+            <circle cx="115" cy="50" r="2.5" fill="#f43f5e" /> {/* Heavy dross/zinc buildup */}
+            <circle cx="115" cy="50" r="1.5" fill="#fff" />
+          </svg>
+          <div className="font-bold flex items-center gap-1"><span className="text-base text-rose-500">✕</span> Spigot Low (INCORRECT)</div>
+          <div className="text-rose-400/80">Buildup here causes fitment fail</div>
+        </div>
+
+        {/* Scenario 2: Socket End Low (CORRECT) */}
+        <div className="flex-1 flex flex-col items-center gap-2 p-1.5 border border-dashed border-cyan-800 rounded-sm bg-cyan-950/20 text-cyan-300">
+          <svg className="w-28 h-auto" viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg">
+            <path d="M5 25 C5 25 10 25 15 25 L80 25 L105 25" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Chain line */}
+            <circle cx="15" cy="25" r="1.5" fill="#22d3ee" /> {/* Link point */}
+            <circle cx="105" cy="25" r="1.5" fill="#22d3ee" /> {/* Link point */}
+            <path d="M5 45 H115" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Pipe core line */}
+            <rect x="15" y="38" width="90" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/> {/* Main pipe */}
+            <path d="M5 40 H15 M105 40 H115 M5 50 H15 M105 50 H115" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Ends core */}
+            <path d="M15 40 L5 40 Q3 40 3 42 V48 Q3 50 5 50 L15 50" stroke="currentColor" strokeWidth="1.5"/> {/* Socket End (low) */}
+            <path d="M105 40 L115 40 Q117 40 117 42 V48 Q117 50 115 50 L105 50" stroke="currentColor" strokeWidth="1.5"/> {/* Spigot End (high) */}
+            <path d="M115 40 L115 50 M113 42 L113 48" stroke="currentColor" strokeWidth="1.5"/> {/* Spigot reduced diameter */}
+            {/* Smooth Drainage */}
+            <path d="M5 50 Q3 51 3 53 V58 H0" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3"/> {/* Smooth flow indicator */}
+            <circle cx="3" cy="50" r="1.5" fill="#22d3ee" /> {/* Clean edge point */}
+          </svg>
+          <div className="font-bold flex items-center gap-1"><span className="text-base text-cyan-500">✓</span> Socket Low (CORRECT)</div>
+          <div className="text-cyan-400/80">Ensures clean spigot for fit</div>
+        </div>
+
+      </div>
     </div>
   </div>
 </div>
