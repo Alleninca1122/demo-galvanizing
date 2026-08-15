@@ -1035,33 +1035,42 @@ const [assistantPin, setAssistantPin] = useState('');
   )}
 </div>
 
-  {/* STEP 3 */}
-  <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-      <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">3</span>
-        STEP 3: Rigging Selection & Chain Locking
-      </span>
-      <span className="text-[10px] text-slate-400 font-mono">Match chain gauge & secure load</span>
+{/* STEP 3 */}
+<div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+  <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+    <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">3</span>
+      STEP 3: Rigging Selection (Chain & Wire Securing)
+    </span>
+    <span className="text-[10px] text-slate-400 font-mono">Verify wire turns, chain locking & adapters</span>
+  </div>
+  
+  <div className="space-y-2 text-xs">
+    {/* Safety Item 1: 铁丝盘绕圈数标准 */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Wire Tie Minimum Laps (Min 4 Laps)</div>
+      When using rigging wire, you MUST wrap a <strong className="text-amber-300">minimum of 4 full laps (Min 4 Laps Typ.)</strong> at both the Beam Rack connection and the workpiece anchor point to prevent wire slippage or unwinding under heavy load.
     </div>
-    <div className="space-y-2 text-xs">
-      {/* Safety Item */}
-      <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec & Lock Engagement</div>
-        Match wire strand count or chain gauge strictly to part weight. Wrap min 1 full loop & engage min 2 notches to prevent load slippage.
-      </div>
-      {/* Quality Item 1 */}
-      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Orientation & Part Clearance</div>
-        Channel openings must face down/slanted to prevent acid pockets or air traps. Maintain ≥ 50mm clearance between adjacent parts.
-      </div>
-      {/* Quality Item 2 */}
-      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Minimizing Rigging Touch-Marks</div>
-        Position wires and chains on non-critical visual surfaces or secondary edges to minimize touch-mark repair after dipping.
-      </div>
+
+    {/* Safety Item 2: 铁链防滑与严禁铁丝代 Adapter */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-rose-300 mb-0.5">⚠️ Critical Safety: Chain Slippage & Adapter Usage</div>
+      If the chain gauge/size is too small and slides on the Beam Rack, an <strong className="text-cyan-300">approved Adapter MUST be installed</strong> to lock position. <strong className="text-rose-400 underline decoration-rose-500">STRICTLY PROHIBITED</strong> to use tie wire as a substitute for an adapter to secure a slipping chain.
+    </div>
+
+    {/* Quality Item 1: 链条锁定与挂重匹配 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Chain Gauge & Notch Engagement</div>
+      Match chain gauge strictly to total part weight. Ensure chain locks engage at least 2 full notches with 1 full loop wrap around the rack beam.
+    </div>
+
+    {/* Quality Item 2: 工件间距与角度 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Orientation & Part Clearance</div>
+      Maintain adequate spacing between adjacent parts to allow uniform acid pickle coverage and zinc bath flow without air pocket trapping.
     </div>
   </div>
+</div>
 
   {/* STEP 4 */}
   <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
