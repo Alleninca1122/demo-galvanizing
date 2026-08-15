@@ -1051,11 +1051,11 @@ const [assistantPin, setAssistantPin] = useState('');
   
   <div className="space-y-2 text-xs">
 
-    {/* Safety Item */}
-    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
-      <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec, Wire Laps & Anti-Slippage</div>
-      Match wire strand count or chain gauge strictly to workpiece weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, wrap loop & lock end with an <strong className="text-cyan-300">approved Anchor Shackle as a stopper</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.
-    </div>
+ {/* Safety Item */}
+<div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
+  <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec, Wire Laps & Anti-Slippage</div>
+  Match wire strand count or chain gauge strictly to workpiece weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, wrap loop & lock end with an <strong className="text-cyan-300">approved Anchor Shackle as a stopper</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>. If chain length is insufficient, join rated chains with an <strong className="text-cyan-300">approved Anchor Shackle</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER extend or splice chains with tie wire</strong>.
+</div>
 
     {/* Quality Item 1 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
