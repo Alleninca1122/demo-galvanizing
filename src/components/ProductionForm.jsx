@@ -163,6 +163,8 @@ const SURFACE_SPREAD_WARNING_THRESHOLD = 2;
 
 export default function ProductionForm({ currentUser, supabase }) {
 
+  const [showPitchGuide, setShowPitchGuide] = React.useState(false);
+
   const [showClearanceLoopingModal, setShowClearanceLoopingModal] = useState(false);
 
   const [showSocketSpigotModal, setShowSocketSpigotModal] = useState(false);
