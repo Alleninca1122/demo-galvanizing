@@ -739,7 +739,7 @@ const [assistantPin, setAssistantPin] = useState('');
             </h3>
           </div>
           <span className="text-[10px] bg-slate-900 text-cyan-400 px-2 py-0.5 rounded border border-slate-700 font-mono">
-            RACKING STATION SOP
+            LOADING STATION SOP
           </span>
         </div>
 
