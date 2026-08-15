@@ -1048,22 +1048,20 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>
   
   <div className="space-y-2 text-xs">
+    {/* STEP 3 - Safety Card */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
+      <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec, Wire Laps & Anti-Slippage</div>
+      Match wire strand count or chain gauge strictly to workpiece weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, wrap loop & lock end with an <strong className="text-cyan-300">approved Anchor Shackle as a stopper</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.
+    </div>
 
-{/* STEP 3 - Safety Card Updated */}
-<div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
-  <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec, Wire Laps & Anti-Slippage</div>
-  Match wire strand count or chain gauge strictly to workpiece weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, wrap loop & lock end with an <strong className="text-cyan-300">approved Anchor Shackle as a stopper</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.
-</div>
-
-    {/* Quality Item */}
-    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+    {/* STEP 3 - Quality Item */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
       <div className="flex items-center justify-between mb-0.5">
         <div className="font-bold text-cyan-300">💎 Quality: Orientation & Workpiece Clearance</div>
-        {/* 精简弹窗按钮 */}
         <button 
           type="button"
           onClick={() => setShowSocketSpigotModal(true)}
-          className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-cyan-950/80 border border-cyan-500/40 hover:border-cyan-400 rounded text-[10px] text-cyan-300 hover:text-cyan-100 transition-colors cursor-pointer shadow-sm"
+          className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-cyan-950/80 border border-cyan-500/40 hover:border-cyan-400 rounded text-[10px] text-cyan-300 hover:text-cyan-100 transition-colors cursor-pointer shadow-sm shrink-0"
         >
           <span className="text-amber-400 text-[11px]">📐</span> Socket/Spigot Guide
         </button>
@@ -1072,7 +1070,7 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
   </div>
 
-  {/* Modal 弹窗逻辑（独立于页面布局之外） */}
+  {/* Modal 弹窗（控制插头/承口挂向） */}
   {showSocketSpigotModal && (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
       <div className="bg-slate-900 border border-cyan-500/30 rounded-xl shadow-2xl max-w-2xl w-full p-5 space-y-4">
@@ -1084,7 +1082,7 @@ const [assistantPin, setAssistantPin] = useState('');
           <button 
             type="button"
             onClick={() => setShowSocketSpigotModal(false)}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors"
+            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors cursor-pointer"
           >
             ✕ Close
           </button>
@@ -1093,24 +1091,24 @@ const [assistantPin, setAssistantPin] = useState('');
         {/* Modal Content / Diagram Section */}
         <div className="space-y-3 text-xs text-slate-300">
           <p className="leading-relaxed">
-            To prevent excessive zinc accumulation (dross/runs) on the male male/inserted portion, strictly control the hanging tilt angle:
+            To prevent excessive zinc accumulation (dross/runs) on the male/inserted portion, strictly control the hanging tilt angle:
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Incorrect Orientation */}
+            {/* Incorrect Orientation: Left High (Socket), Right Low (Spigot) */}
             <div className="p-3 bg-rose-950/20 border border-rose-800/60 rounded-lg space-y-2">
               <div className="font-bold text-rose-400 flex items-center gap-1.5">
                 <span>✕</span> INCORRECT: Spigot End Low
               </div>
               <div className="bg-slate-950/80 p-3 rounded border border-rose-950 flex justify-center">
                 <svg className="w-full h-24" viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* High Socket / Low Spigot Pipe */}
+                  {/* Left High, Right Low (15deg) */}
                   <g transform="rotate(15 80 40)">
-                    {/* Socket End (Left - Large Opening) */}
+                    {/* Socket End (Left - Large Opening, High Point) */}
                     <rect x="20" y="30" width="15" height="20" rx="1" fill="#1e293b" stroke="#f43f5e" strokeWidth="1.5"/>
                     {/* Main Pipe Body */}
                     <rect x="35" y="33" width="80" height="14" fill="#0f172a" stroke="#f43f5e" strokeWidth="1.5"/>
-                    {/* Spigot End (Right - Reduced Male Plug) */}
+                    {/* Spigot End (Right - Reduced Male Plug, Low Point) */}
                     <rect x="115" y="36" width="25" height="8" rx="1" fill="#f43f5e" fillOpacity="0.2" stroke="#f43f5e" strokeWidth="1.5"/>
                     {/* Zinc Dross Protrusion at Low Point */}
                     <circle cx="140" cy="44" r="3.5" fill="#f43f5e"/>
@@ -1123,23 +1121,23 @@ const [assistantPin, setAssistantPin] = useState('');
               </div>
             </div>
 
-            {/* Correct Orientation */}
+            {/* Correct Orientation: Left High (Spigot), Right Low (Socket) */}
             <div className="p-3 bg-cyan-950/20 border border-cyan-800/60 rounded-lg space-y-2">
               <div className="font-bold text-cyan-400 flex items-center gap-1.5">
                 <span>✓</span> CORRECT: Socket End Low
               </div>
               <div className="bg-slate-950/80 p-3 rounded border border-cyan-950 flex justify-center">
                 <svg className="w-full h-24" viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* High Spigot / Low Socket Pipe */}
-                  <g transform="rotate(-15 80 40)">
-                    {/* Socket End (Left - Large Opening, Low Point) */}
-                    <rect x="20" y="30" width="15" height="20" rx="1" fill="#22d3ee" fillOpacity="0.2" stroke="#22d3ee" strokeWidth="1.5"/>
+                  {/* Left High, Right Low (15deg) - Swapped Ends */}
+                  <g transform="rotate(15 80 40)">
+                    {/* Spigot End (Left - Reduced Male Plug, High Point) */}
+                    <rect x="20" y="36" width="25" height="8" rx="1" fill="#1e293b" stroke="#22d3ee" strokeWidth="1.5"/>
                     {/* Main Pipe Body */}
-                    <rect x="35" y="33" width="80" height="14" fill="#0f172a" stroke="#22d3ee" strokeWidth="1.5"/>
-                    {/* Spigot End (Right - Reduced Male Plug, High Point) */}
-                    <rect x="115" y="36" width="25" height="8" rx="1" fill="#1e293b" stroke="#22d3ee" strokeWidth="1.5"/>
+                    <rect x="45" y="33" width="80" height="14" fill="#0f172a" stroke="#22d3ee" strokeWidth="1.5"/>
+                    {/* Socket End (Right - Large Opening, Low Point) */}
+                    <rect x="125" y="30" width="15" height="20" rx="1" fill="#22d3ee" fillOpacity="0.2" stroke="#22d3ee" strokeWidth="1.5"/>
                     {/* Smooth Zinc Runoff Indicator */}
-                    <path d="M20 50 Q16 54 12 58" stroke="#22d3ee" strokeWidth="1.2" strokeDasharray="2 2"/>
+                    <path d="M140 50 Q142 54 144 58" stroke="#22d3ee" strokeWidth="1.2" strokeDasharray="2 2"/>
                   </g>
                 </svg>
               </div>
@@ -1155,7 +1153,7 @@ const [assistantPin, setAssistantPin] = useState('');
           <button 
             type="button"
             onClick={() => setShowSocketSpigotModal(false)}
-            className="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold rounded text-xs transition-colors"
+            className="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold rounded text-xs transition-colors cursor-pointer"
           >
             Got It
           </button>
