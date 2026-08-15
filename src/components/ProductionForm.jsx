@@ -1053,57 +1053,114 @@ const [assistantPin, setAssistantPin] = useState('');
   Match wire strand count or chain gauge strictly to workpiece weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, wrap loop & lock end with an <strong className="text-cyan-300">approved Anchor Shackle as a stopper</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.
 </div>
 
-    {/* Quality Item - Vector Diagram Embedded */}
+    {/* Quality Item */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Orientation & Workpiece Clearance</div>
-      Maintain adequate spacing between adjacent workpieces to allow uniform acid pickle coverage and zinc bath flow without air pocket trapping. For Socket & Spigot joints, hang with Spigot end high and Socket end low to prevent zinc buildup and fitment failure.
-      
-      {/* Embedded Vector Diagram */}
-      <div className="mt-2.5 p-3 border border-slate-800 rounded bg-slate-950/50 flex flex-col sm:flex-row items-center gap-4 text-[10px] leading-tight">
-        
-        {/* Scenario 1: Spigot End Low (INCORRECT) */}
-        <div className="flex-1 flex flex-col items-center gap-2 p-1.5 border border-dashed border-rose-800 rounded-sm bg-rose-950/20 text-rose-300">
-          <svg className="w-28 h-auto" viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 25 C5 25 10 25 15 25 L80 25 L105 25" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Chain line */}
-            <circle cx="15" cy="25" r="1.5" fill="#f43f5e" /> {/* Link point */}
-            <circle cx="105" cy="25" r="1.5" fill="#f43f5e" /> {/* Link point */}
-            <path d="M5 45 H115" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Pipe core line */}
-            <rect x="15" y="38" width="90" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/> {/* Main pipe (high) */}
-            <path d="M5 40 H15 M105 40 H115 M5 50 H15 M105 50 H115" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Ends core */}
-            <path d="M15 40 L5 40 Q3 40 3 42 V48 Q3 50 5 50 L15 50" stroke="currentColor" strokeWidth="1.5"/> {/* Socket End (high) */}
-            <path d="M105 40 L115 40 Q117 40 117 42 V48 Q117 50 115 50 L105 50" stroke="currentColor" strokeWidth="1.5"/> {/* Spigot End (low) */}
-            <path d="M115 40 L115 50 M113 42 L113 48" stroke="currentColor" strokeWidth="1.5"/> {/* Spigot reduced diameter */}
-            {/* Zinc Protrusion */}
-            <circle cx="115" cy="50" r="2.5" fill="#f43f5e" /> {/* Heavy dross/zinc buildup */}
-            <circle cx="115" cy="50" r="1.5" fill="#fff" />
-          </svg>
-          <div className="font-bold flex items-center gap-1"><span className="text-base text-rose-500">✕</span> Spigot Low (INCORRECT)</div>
-          <div className="text-rose-400/80">Buildup here causes fitment fail</div>
-        </div>
-
-        {/* Scenario 2: Socket End Low (CORRECT) */}
-        <div className="flex-1 flex flex-col items-center gap-2 p-1.5 border border-dashed border-cyan-800 rounded-sm bg-cyan-950/20 text-cyan-300">
-          <svg className="w-28 h-auto" viewBox="0 0 120 70" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M5 25 C5 25 10 25 15 25 L80 25 L105 25" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Chain line */}
-            <circle cx="15" cy="25" r="1.5" fill="#22d3ee" /> {/* Link point */}
-            <circle cx="105" cy="25" r="1.5" fill="#22d3ee" /> {/* Link point */}
-            <path d="M5 45 H115" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Pipe core line */}
-            <rect x="15" y="38" width="90" height="14" rx="2" stroke="currentColor" strokeWidth="1.5"/> {/* Main pipe */}
-            <path d="M5 40 H15 M105 40 H115 M5 50 H15 M105 50 H115" stroke="currentColor" strokeWidth="1.5" strokeDasharray="3 3"/> {/* Ends core */}
-            <path d="M15 40 L5 40 Q3 40 3 42 V48 Q3 50 5 50 L15 50" stroke="currentColor" strokeWidth="1.5"/> {/* Socket End (low) */}
-            <path d="M105 40 L115 40 Q117 40 117 42 V48 Q117 50 115 50 L105 50" stroke="currentColor" strokeWidth="1.5"/> {/* Spigot End (high) */}
-            <path d="M115 40 L115 50 M113 42 L113 48" stroke="currentColor" strokeWidth="1.5"/> {/* Spigot reduced diameter */}
-            {/* Smooth Drainage */}
-            <path d="M5 50 Q3 51 3 53 V58 H0" stroke="currentColor" strokeWidth="1" strokeDasharray="3 3"/> {/* Smooth flow indicator */}
-            <circle cx="3" cy="50" r="1.5" fill="#22d3ee" /> {/* Clean edge point */}
-          </svg>
-          <div className="font-bold flex items-center gap-1"><span className="text-base text-cyan-500">✓</span> Socket Low (CORRECT)</div>
-          <div className="text-cyan-400/80">Ensures clean spigot for fit</div>
-        </div>
-
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Orientation & Workpiece Clearance</div>
+        {/* 精简弹窗按钮 */}
+        <button 
+          type="button"
+          onClick={() => setShowSocketSpigotModal(true)}
+          className="inline-flex items-center gap-1.5 px-2 py-0.5 bg-cyan-950/80 border border-cyan-500/40 hover:border-cyan-400 rounded text-[10px] text-cyan-300 hover:text-cyan-100 transition-colors cursor-pointer shadow-sm"
+        >
+          <span className="text-amber-400 text-[11px]">📐</span> Socket/Spigot Guide
+        </button>
       </div>
+      Maintain adequate spacing between adjacent workpieces to allow uniform acid pickle coverage and zinc bath flow without air pocket trapping. For Socket & Spigot joints, hang with Spigot end high and Socket end low to prevent zinc buildup and fitment failure.
     </div>
   </div>
+
+  {/* Modal 弹窗逻辑（独立于页面布局之外） */}
+  {showSocketSpigotModal && (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl shadow-2xl max-w-2xl w-full p-5 space-y-4">
+        {/* Modal Header */}
+        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm">
+            <span className="text-amber-400">📐</span> Socket & Spigot Galvanizing Racking Standards
+          </div>
+          <button 
+            type="button"
+            onClick={() => setShowSocketSpigotModal(false)}
+            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        {/* Modal Content / Diagram Section */}
+        <div className="space-y-3 text-xs text-slate-300">
+          <p className="leading-relaxed">
+            To prevent excessive zinc accumulation (dross/runs) on the male male/inserted portion, strictly control the hanging tilt angle:
+          </p>
+
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+            {/* Incorrect Orientation */}
+            <div className="p-3 bg-rose-950/20 border border-rose-800/60 rounded-lg space-y-2">
+              <div className="font-bold text-rose-400 flex items-center gap-1.5">
+                <span>✕</span> INCORRECT: Spigot End Low
+              </div>
+              <div className="bg-slate-950/80 p-3 rounded border border-rose-950 flex justify-center">
+                <svg className="w-full h-24" viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* High Socket / Low Spigot Pipe */}
+                  <g transform="rotate(15 80 40)">
+                    {/* Socket End (Left - Large Opening) */}
+                    <rect x="20" y="30" width="15" height="20" rx="1" fill="#1e293b" stroke="#f43f5e" strokeWidth="1.5"/>
+                    {/* Main Pipe Body */}
+                    <rect x="35" y="33" width="80" height="14" fill="#0f172a" stroke="#f43f5e" strokeWidth="1.5"/>
+                    {/* Spigot End (Right - Reduced Male Plug) */}
+                    <rect x="115" y="36" width="25" height="8" rx="1" fill="#f43f5e" fillOpacity="0.2" stroke="#f43f5e" strokeWidth="1.5"/>
+                    {/* Zinc Dross Protrusion at Low Point */}
+                    <circle cx="140" cy="44" r="3.5" fill="#f43f5e"/>
+                    <path d="M138 44 Q140 49 141 46" stroke="#f43f5e" strokeWidth="1.5"/>
+                  </g>
+                </svg>
+              </div>
+              <div className="text-[10px] text-rose-300/80 leading-tight">
+                Zinc drains toward the reduced spigot, creating heavy dross/protrusions and preventing fitment.
+              </div>
+            </div>
+
+            {/* Correct Orientation */}
+            <div className="p-3 bg-cyan-950/20 border border-cyan-800/60 rounded-lg space-y-2">
+              <div className="font-bold text-cyan-400 flex items-center gap-1.5">
+                <span>✓</span> CORRECT: Socket End Low
+              </div>
+              <div className="bg-slate-950/80 p-3 rounded border border-cyan-950 flex justify-center">
+                <svg className="w-full h-24" viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  {/* High Spigot / Low Socket Pipe */}
+                  <g transform="rotate(-15 80 40)">
+                    {/* Socket End (Left - Large Opening, Low Point) */}
+                    <rect x="20" y="30" width="15" height="20" rx="1" fill="#22d3ee" fillOpacity="0.2" stroke="#22d3ee" strokeWidth="1.5"/>
+                    {/* Main Pipe Body */}
+                    <rect x="35" y="33" width="80" height="14" fill="#0f172a" stroke="#22d3ee" strokeWidth="1.5"/>
+                    {/* Spigot End (Right - Reduced Male Plug, High Point) */}
+                    <rect x="115" y="36" width="25" height="8" rx="1" fill="#1e293b" stroke="#22d3ee" strokeWidth="1.5"/>
+                    {/* Smooth Zinc Runoff Indicator */}
+                    <path d="M20 50 Q16 54 12 58" stroke="#22d3ee" strokeWidth="1.2" strokeDasharray="2 2"/>
+                  </g>
+                </svg>
+              </div>
+              <div className="text-[10px] text-cyan-300/80 leading-tight">
+                Zinc drains off the larger socket mouth, leaving the reduced spigot clean and smooth for assembly.
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Modal Footer */}
+        <div className="flex justify-end pt-2 border-t border-slate-800">
+          <button 
+            type="button"
+            onClick={() => setShowSocketSpigotModal(false)}
+            className="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold rounded text-xs transition-colors"
+          >
+            Got It
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
 </div>
 
   {/* STEP 4 */}
