@@ -1048,13 +1048,20 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>
   
   <div className="space-y-2 text-xs">
-    {/* STEP 3 - Safety Card */}
+
+    {/* Safety Item */}
     <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
       <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec, Wire Laps & Anti-Slippage</div>
       Match wire strand count or chain gauge strictly to workpiece weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, wrap loop & lock end with an <strong className="text-cyan-300">approved Anchor Shackle as a stopper</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.
     </div>
 
-    {/* STEP 3 - Quality Item */}
+   {/* Quality Item 1 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Minimizing Rigging Touch-Marks</div>
+      Position wires and chains through existing bolt/mounting holes, non-critical visual surfaces, or secondary edges to minimize touch-mark repair after dipping.
+    </div>
+
+    {/* Quality Item 2 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
       <div className="flex items-center justify-between mb-0.5">
         <div className="font-bold text-cyan-300">💎 Quality: Orientation & Workpiece Clearance</div>
@@ -1066,7 +1073,7 @@ const [assistantPin, setAssistantPin] = useState('');
           <span className="text-amber-400 text-[11px]">📐</span> Socket/Spigot Guide
         </button>
       </div>
-      Maintain adequate spacing between adjacent workpieces to allow uniform acid pickle coverage and zinc bath flow without air pocket trapping. For Socket & Spigot joints, hang with Spigot end high and Socket end low to prevent zinc buildup and fitment failure.
+      Channel openings must face down/slanted to prevent acid pockets or air traps. For Socket & Spigot joints, hang with Spigot end high and Socket end low to prevent zinc buildup and fitment failure. Maintain ≥ 50mm clearance between adjacent workpieces to to prevent sticking, air pockets, and uneven zinc coverage. 
     </div>
   </div>
 
