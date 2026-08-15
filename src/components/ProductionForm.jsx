@@ -1035,33 +1035,30 @@ const [assistantPin, setAssistantPin] = useState('');
   )}
 </div>
 
-  {/* STEP 3 */}
-  <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-      <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">3</span>
-        STEP 3: Rigging Selection & Chain Locking
-      </span>
-      <span className="text-[10px] text-slate-400 font-mono">Match chain gauge & secure load</span>
+{/* STEP 3 */}
+<div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+  <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+    <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">3</span>
+      STEP 3: Rigging Selection & Chain Locking
+    </span>
+    <span className="text-[10px] text-slate-400 font-mono">Match chain gauge & secure load</span>
+  </div>
+  
+  <div className="space-y-2 text-xs">
+    {/* 融合后的原版 Safety 卡片 */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
+      <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec, Wire Laps & Adapter Rules</div>
+      Match wire strand count or chain gauge strictly to part weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, use an <strong className="text-cyan-300">approved adapter</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.
     </div>
-    <div className="space-y-2 text-xs">
-      {/* Safety Item */}
-      <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec & Lock Engagement</div>
-        Match wire strand count or chain gauge strictly to part weight. Wrap min 1 full loop & engage min 2 notches to prevent load slippage.
-      </div>
-      {/* Quality Item 1 */}
-      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Orientation & Part Clearance</div>
-        Channel openings must face down/slanted to prevent acid pockets or air traps. Maintain ≥ 50mm clearance between adjacent parts.
-      </div>
-      {/* Quality Item 2 */}
-      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Minimizing Rigging Touch-Marks</div>
-        Position wires and chains on non-critical visual surfaces or secondary edges to minimize touch-mark repair after dipping.
-      </div>
+
+    {/* Quality Item */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Orientation & Part Clearance</div>
+      Maintain adequate spacing between adjacent parts to allow uniform acid pickle coverage and zinc bath flow without air pocket trapping.
     </div>
   </div>
+</div>
 
   {/* STEP 4 */}
   <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
