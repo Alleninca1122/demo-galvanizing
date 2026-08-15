@@ -1183,7 +1183,7 @@ const [assistantPin, setAssistantPin] = useState('');
       {/* Safety Item */}
       <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
         <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rack & Hanging Depth Limits</div>
-        Maintain top clearance ≥ 30mm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300mm to to ensure the rack clears other racks during crane transfer. 
+        Maintain top clearance ≥ 30mm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300mm to ensure the rack clears other racks during crane transfer. 
       </div>
       {/* Quality Item 1 */}
       <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
