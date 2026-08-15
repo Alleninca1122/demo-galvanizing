@@ -670,129 +670,186 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-6">
-{/* WORKFLOW STEPPER CONTAINER - 5 STATIC STEPS */}
-<div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
-  
-  {/* PIPELINE HEADER */}
-  <div className="flex items-center justify-between pb-3 border-b border-slate-800">
-    <div className="flex items-center gap-2">
-      <span className="text-sm">📋</span>
-      <h3 className="text-xs font-bold text-white uppercase tracking-wider">
-        Standard Operating Guidelines (5-Step Workflow)
-      </h3>
+
+{/* MANDATORY PPE PRE-CHECK BAR (Placed right above STEP 1) */}
+<div className="bg-slate-900/90 border border-amber-500/30 rounded-lg p-3 space-y-2">
+  <div className="flex items-center justify-between">
+    <div className="flex items-center gap-1.5 text-amber-400 font-mono text-[11px] font-bold uppercase tracking-wider">
+      <span>🛡️</span> Mandatory PPE Gear Requirements (Racking Station)
     </div>
-    <span className="text-[10px] bg-slate-900 text-cyan-400 px-2 py-0.5 rounded border border-slate-700 font-mono">
-      RACKING STATION SOP
+    <span className="text-[10px] bg-amber-500/10 text-amber-400 border border-amber-500/30 px-1.5 py-0.5 rounded font-mono">
+      PRE-START CHECK
     </span>
   </div>
 
-  {/* STEP 1 */}
-  <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-      <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">1</span>
-        STEP 1: Job Entry & Part Inspection
-      </span>
-      <span className="text-[10px] text-slate-400 font-mono">Scan barcode & evaluate raw parts</span>
+  {/* 6-Grid Visual Equipment Layout */}
+  <div className="grid grid-cols-2 md:grid-cols-6 gap-2 text-[10px]">
+    {/* Body-Zone 1 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">🥽</span>
+      <span className="text-slate-200 font-bold">Safety Glasses</span>
+      <span className="text-[9px] text-slate-500">Impact Protection</span>
     </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Cavity Venting & PPE</div>
-        Wear Cut-A5 gloves & impact glasses. Pipe/hollow parts MUST have vent holes (min 1/2 in / 13mm) at highest point to prevent 450°C kettle explosion.
-      </div>
-      <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Surface Assessment</div>
-        Evaluate oil, heavy paint, or scale (None / Medium / Heavy). Syncs pickling time to prevent bare spots and tank contamination.
-      </div>
+
+    {/* Body-Zone 2 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">🎧</span>
+      <span className="text-slate-200 font-bold">Earplugs</span>
+      <span className="text-[9px] text-slate-500">Noise Reduction</span>
+    </div>
+
+    {/* Body-Zone 3 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">😷</span>
+      <span className="text-slate-200 font-bold">Dust Mask</span>
+      <span className="text-[9px] text-slate-500">Particle Filter</span>
+    </div>
+
+    {/* Body-Zone 4 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">🥼</span>
+      <span className="text-slate-200 font-bold">Hi-Vis Cut Jacket</span>
+      <span className="text-[9px] text-slate-500">Long Sleeve & Strip</span>
+    </div>
+
+    {/* Body-Zone 5 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">🧤</span>
+      <span className="text-slate-200 font-bold">Cut & Puncture Gloves</span>
+      <span className="text-[9px] text-slate-500">ANSI A5 / Anti-Wire</span>
+    </div>
+
+    {/* Body-Zone 6 */}
+    <div className="bg-slate-950 p-2 rounded border border-slate-800 flex flex-col items-center text-center">
+      <span className="text-base mb-1">🥾</span>
+      <span className="text-slate-200 font-bold">Steel-Toe Boots</span>
+      <span className="text-[9px] text-slate-500">Anti-Crush & Pierce</span>
     </div>
   </div>
-
-  {/* STEP 2 */}
-  <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-      <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">2</span>
-        STEP 2: Load & Rigging Selection
-      </span>
-      <span className="text-[10px] text-slate-400 font-mono">Calculate load & match chains</span>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rigging Spec & No Wire</div>
-        Match chain gauge to part weight. Baling wire is STRICTLY PROHIBITED. Wear steel-toe boots & arm guards against sharp wire ends.
-      </div>
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rack WLL & Balance Limit</div>
-        Total rack load must remain ≤ 85% WLL. Ensure symmetrical load distribution to prevent dynamic tipping during crane transfer.
-      </div>
-    </div>
-  </div>
-
-  {/* STEP 3 */}
-  <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-      <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">3</span>
-        STEP 3: Racking Execution & Chain Locking
-      </span>
-      <span className="text-[10px] text-slate-400 font-mono">Secure parts & verify orientation</span>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Lock & Pinch Points</div>
-        Chains must wrap min 1 full loop around beam & engage min 2 notches. Keep hands out of pinch points during tightening.
-      </div>
-      <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Part Orientation & Spacing</div>
-        Channel openings must face DOWN/slanted to prevent air traps or acid pockets. Keep ≥ 50mm clearance between parts.
-      </div>
-    </div>
-  </div>
-
-  {/* STEP 4 */}
-  <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-      <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">4</span>
-        STEP 4: Pose & Angle Final Inspection
-      </span>
-      <span className="text-[10px] text-slate-400 font-mono">Check tilt angle & tank limits</span>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Kettle Clearance Limits</div>
-        Ensure top clearance ≥ 50cm and max depth ≤ 300cm to avoid kettle wall or tank bottom contact during transfer.
-      </div>
-      <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Hanging Pitch Angle</div>
-        Maintain 15° to 30° tilt angle for rapid, uniform zinc drainage, fast run-off, and zero ash trapping.
-      </div>
-    </div>
-  </div>
-
-  {/* STEP 5 */}
-  <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-      <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">5</span>
-        STEP 5: System Verification & Handoff
-      </span>
-      <span className="text-[10px] text-slate-400 font-mono">Sign-off & release to pickling</span>
-    </div>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
-      <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Center of Gravity Balance</div>
-        Perform 10cm test-lift to verify center of gravity. Ensure zero tilting or slippage during crane transit.
-      </div>
-      <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: RFID Tagging & Sign-Off</div>
-        Bind Load ID to rack RFID. Perform digital sign-off to push record to pre-treatment station.
-      </div>
-    </div>
-  </div>
-
 </div>
 
+{/* WORKFLOW STEPPER CONTAINER - 5 STATIC STEPS */}
+      <div className="bg-slate-950 border border-slate-800 rounded-xl p-4 space-y-4">
+        
+        {/* PIPELINE HEADER */}
+        <div className="flex items-center justify-between pb-3 border-b border-slate-800">
+          <div className="flex items-center gap-2">
+            <span className="text-sm">📋</span>
+            <h3 className="text-xs font-bold text-white uppercase tracking-wider">
+              Standard Operating Guidelines (5-Step Workflow)
+            </h3>
+          </div>
+          <span className="text-[10px] bg-slate-900 text-cyan-400 px-2 py-0.5 rounded border border-slate-700 font-mono">
+            RACKING STATION SOP
+          </span>
+        </div>
+
+        {/* STEP 1 */}
+        <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">1</span>
+              STEP 1: Job Entry & Part Inspection
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono">Scan barcode & evaluate raw parts</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+              <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Cavity Venting Check</div>
+              Pipe/hollow parts MUST have vent holes (min 1/2 in / 13mm) at highest point. Prevent 450°C kettle explosion.
+            </div>
+            <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+              <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Surface Assessment</div>
+              Evaluate oil, heavy paint, or scale (None / Medium / Heavy). Syncs pickling time to prevent bare spots.
+            </div>
+          </div>
+        </div>
+
+        {/* STEP 2 */}
+        <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">2</span>
+              STEP 2: Load & Rigging Selection
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono">Calculate load & match chains</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+              <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec & No Wire</div>
+              Match chain gauge to part weight. Tie wire / baling wire is STRICTLY PROHIBITED. Use AP-01 notch adapter if chain slips.
+            </div>
+            <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+              <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rack WLL Limit</div>
+              Total rack load must remain &le; 85% WLL. Dynamic warning triggers if overloaded.
+            </div>
+          </div>
+        </div>
+
+        {/* STEP 3 */}
+        <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">3</span>
+              STEP 3: Racking Execution & Chain Locking
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono">Secure parts & verify orientation</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+              <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Lock Engagement</div>
+              Chains must wrap at least 1 full loop around beam and engage min 2 chain notches to prevent slipping.
+            </div>
+            <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+              <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Part Orientation & Spacing</div>
+              Channel openings face DOWN/slanted to prevent air traps or acid pockets. Keep &ge; 50mm clearance between parts.
+            </div>
+          </div>
+        </div>
+
+        {/* STEP 4 */}
+        <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">4</span>
+              STEP 4: Pose & Angle Final Inspection
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono">Check tilt angle & tank limits</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+              <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Kettle Clearance Limits</div>
+              Ensure top clearance &ge; 50cm and max depth &le; 300cm to avoid kettle wall or bottom contact during transfer.
+            </div>
+            <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+              <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Hanging Tilt Angle</div>
+              Maintain 15 to 30 deg tilt angle for smooth zinc drainage and zero ash trapping.
+            </div>
+          </div>
+        </div>
+
+        {/* STEP 5 */}
+        <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+          <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+            <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">5</span>
+              STEP 5: System Verification & Handoff
+            </span>
+            <span className="text-[10px] text-slate-400 font-mono">Sign-off & release to pickling</span>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-2 text-xs">
+            <div className="p-2.5 bg-rose-950/40 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+              <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Center of Gravity Balance</div>
+              Verify center of gravity is aligned to prevent rack tilting during crane transit.
+            </div>
+            <div className="p-2.5 bg-cyan-950/40 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+              <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: RFID Tagging & Sign-Off</div>
+              Bind Load ID to rack RFID. Perform digital sign-off to push record to pre-treatment station.
+            </div>
+          </div>
+        </div>
+
+      </div>
         {/* 1. RACK & LOAD ID BOX */}
         <div className="bg-slate-950 p-5 rounded-xl border border-cyan-800/60 relative overflow-hidden">
           <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500"></div>
