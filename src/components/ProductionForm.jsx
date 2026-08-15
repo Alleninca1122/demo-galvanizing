@@ -1040,28 +1040,19 @@ const [assistantPin, setAssistantPin] = useState('');
   <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
     <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
       <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">3</span>
-      STEP 3: Rigging Selection (Chain & Wire Securing)
+      STEP 3: Rigging Selection & Chain Locking
     </span>
-    <span className="text-[10px] text-slate-400 font-mono">Verify wire turns, chain locking & adapters</span>
+    <span className="text-[10px] text-slate-400 font-mono">Match chain gauge & secure load</span>
   </div>
   
   <div className="space-y-2 text-xs">
-    {/* 合并后的精简 Safety 卡片 */}
-    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-      <div className="font-bold text-rose-300 mb-1">🛡️ Critical Safety: Wire Laps & Chain Adapter Rules</div>
-      <div className="space-y-1 leading-tight">
-        <div>• <strong className="text-amber-300">Wire Tie:</strong> Wrap <strong className="text-amber-300">min 4 full laps</strong> at Beam Rack and workpiece ends.</div>
-        <div>• <strong className="text-cyan-300">Chain Slippage:</strong> MUST use an <strong className="text-cyan-300">approved Adapter</strong>. <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.</div>
-      </div>
+    {/* 融合后的原版 Safety 卡片 */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300 leading-relaxed">
+      <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Chain Spec, Wire Laps & Adapter Rules</div>
+      Match wire strand count or chain gauge strictly to part weight. Wire ties MUST wrap <strong className="text-amber-300">min 4 full laps</strong>; chains require min 1 full loop & 2 notches. If chain slides, use an <strong className="text-cyan-300">approved adapter</strong> — <strong className="text-rose-400 underline decoration-rose-500">NEVER substitute with tie wire</strong>.
     </div>
 
-    {/* Quality Item 1 */}
-    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Chain Gauge & Notch Engagement</div>
-      Match chain gauge strictly to total part weight. Ensure chain locks engage at least 2 full notches with 1 full loop wrap around the rack beam.
-    </div>
-
-    {/* Quality Item 2 */}
+    {/* Quality Item */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Orientation & Part Clearance</div>
       Maintain adequate spacing between adjacent parts to allow uniform acid pickle coverage and zinc bath flow without air pocket trapping.
