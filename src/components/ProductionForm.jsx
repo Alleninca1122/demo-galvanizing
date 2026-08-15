@@ -793,33 +793,42 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>
 </div>
 
-  {/* STEP 2 */}
-  <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-      <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">2</span>
-        STEP 2: Cavity Venting & Surface Inspection
-      </span>
-      <span className="text-[10px] text-slate-400 font-mono">Verify vent holes & surface condition</span>
+ {/* STEP 2 */}
+<div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+  <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+    <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">2</span>
+      STEP 2: Cavity Venting & Surface Inspection
+    </span>
+    <span className="text-[10px] text-slate-400 font-mono">Verify vent holes & surface condition</span>
+  </div>
+  
+  <div className="space-y-2 text-xs">
+    {/* Safety Item */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Explosion Hazard Venting</div>
+      Hollow/pipe sections MUST have vent holes (min 1/2" / 13mm) at highest points to allow air escape and prevent catastrophic kettle explosions / zinc splash.
     </div>
-    <div className="space-y-2 text-xs">
-      {/* Safety Item */}
-      <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Explosion Hazard Venting</div>
-        Hollow/pipe sections MUST have vent holes (min 1/2" / 13mm) at highest points to allow air escape and prevent 450°C kettle explosion hazards.
-      </div>
-      {/* Quality Item 1 */}
-      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Surface Contaminant Assessment</div>
-        Inspect for oil, paint, varnish, or heavy mill scale (None / Medium / Heavy) in form to adjust acid tank immersion duration.
-      </div>
-      {/* Quality Item 2 */}
-      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Drainage Hole Verification</div>
-        Confirm presence of adequate drain holes at lowest structural points to enable complete acid pickling flow and molten zinc drainage.
-      </div>
+
+    {/* 1. 排气孔与排水孔检查 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Vent & Drain Hole Verification</div>
+      Confirm presence and size of required vent and drain holes at highest/lowest points to ensure smooth air escape, acid flow, and molten zinc drainage.
+    </div>
+
+    {/* 2. 油污与油漆检查 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Oil, Grease & Paint Assessment</div>
+      Inspect for oil, grease, paint, or varnish. Mark in form for solvent pre-cleaning (acid bath cannot remove organic contaminants).
+    </div>
+
+    {/* 3. 锈蚀与氧化皮程度检查 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Rust & Mill Scale Severity Check</div>
+      Evaluate initial surface rust grade (Light / Medium / Heavy scale) to properly estimate required acid bath pickling immersion time.
     </div>
   </div>
+</div>
 
   {/* STEP 3 */}
   <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
