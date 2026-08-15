@@ -814,7 +814,7 @@ const [assistantPin, setAssistantPin] = useState('');
       Hollow/pipe sections MUST have vent holes (min 1/2" / 13mm) at highest points to allow air escape and prevent catastrophic kettle explosions / zinc splash.
     </div>
 
-    {/* Quality Item 1 */}
+    {/* Quality Item 1: 带有 ASTM A385 图解弹窗 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="flex items-center justify-between mb-0.5">
         <span className="font-bold text-cyan-300">💎 Quality: Vent & Drain Hole Verification</span>
@@ -868,10 +868,10 @@ const [assistantPin, setAssistantPin] = useState('');
           </button>
         </div>
 
-        {/* Modal Content - 右侧优先下池的 SVG 图示 */}
+        {/* Modal Content */}
         <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
           
-          {/* 图解 1: 右端先下锌池的倾斜角度与孔位 */}
+          {/* 图解 1: 右端优先下池 (Leading Right / Trailing Left) */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
             <div className="font-bold text-cyan-300 text-[11px]">
               1. Vent/Drain Locations Relative to Racking Angle
@@ -887,7 +887,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 <path d="M 100 10 L 100 35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
                 <path d="M 220 10 L 220 75" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
                 
-                {/* 顺时针倾斜 18 度：右侧先进入锌池 */}
+                {/* 顺时针倾斜：右侧先进入锌池 */}
                 <g transform="rotate(18 160 60)">
                   {/* 管件主体 */}
                   <rect x="50" y="40" width="220" height="40" rx="4" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
@@ -944,6 +944,76 @@ const [assistantPin, setAssistantPin] = useState('');
                 <path d="M 145 28 C 155 20, 165 20, 175 28" stroke="#10b981" strokeWidth="1.5" fill="none" />
                 <text x="110" y="55" fill="#10b981" fontSize="9" textAnchor="middle">Air/Zinc Passage</text>
               </svg>
+            </div>
+          </div>
+
+          {/* 图解 3: 现场连通性快速实操检查 */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-cyan-300 text-[11px] flex items-center justify-between">
+              <span>3. Internal Passage & Continuity Verification</span>
+              <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded">Shop Floor Practical Tips</span>
+            </div>
+            <div className="text-[10px] text-slate-400 leading-relaxed">
+              Verify internal cavities, pipes, and stiffeners are fully connected to prevent internal air pockets, explosive acid trapping, or ungalvanized raw steel.
+            </div>
+            
+            {/* 双图对比：手电筒照光 vs 倒水流动 */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              
+              {/* 方法 A：手电筒照光法 */}
+              <div className="bg-slate-900/90 p-2 rounded border border-slate-800 space-y-1.5 text-center">
+                <div className="text-[10px] font-bold text-amber-300">
+                  🔦 Method A: Flashlight Light-Thru
+                </div>
+                <div className="w-full h-28 bg-slate-950 rounded flex items-center justify-center p-1">
+                  <svg viewBox="0 0 140 80" className="w-full h-full">
+                    {/* 管件 */}
+                    <rect x="20" y="25" width="100" height="30" fill="#1e293b" stroke="#475569" strokeWidth="1.5" />
+                    {/* 内部障碍筋板与过锌孔 */}
+                    <line x1="70" y1="25" x2="70" y2="35" stroke="#0284c7" strokeWidth="2" />
+                    <line x1="70" y1="45" x2="70" y2="55" stroke="#0284c7" strokeWidth="2" />
+                    <circle cx="70" cy="40" r="4" fill="none" stroke="#38bdf8" strokeWidth="1" strokeDasharray="1 1" />
+                    
+                    {/* 手电筒与光束 */}
+                    <rect x="5" y="32" width="10" height="16" fill="#f59e0b" rx="1" />
+                    <polygon points="15,35 66,37 66,43 15,45" fill="#fef08a" opacity="0.6" />
+                    <polygon points="74,38 125,28 125,52 74,42" fill="#fef08a" opacity="0.4" />
+                    
+                    {/* 光线穿透出孔 */}
+                    <path d="M 125 40 L 135 40" stroke="#fef08a" strokeWidth="2" strokeDasharray="1 1" />
+                    <text x="70" y="70" fill="#10b981" fontSize="7" fontWeight="bold" textAnchor="middle">✓ Light Pass-through</text>
+                  </svg>
+                </div>
+                <p className="text-[9px] text-slate-400">
+                  Shine light into trailing vent hole; verify visible light at leading drain hole to confirm line-of-sight.
+                </p>
+              </div>
+
+              {/* 方法 B：水流灌注测试 */}
+              <div className="bg-slate-900/90 p-2 rounded border border-slate-800 space-y-1.5 text-center">
+                <div className="text-[10px] font-bold text-cyan-300">
+                  🌊 Method B: Water Flow Test
+                </div>
+                <div className="w-full h-28 bg-slate-950 rounded flex items-center justify-center p-1">
+                  <svg viewBox="0 0 140 80" className="w-full h-full">
+                    {/* 弯管/复杂腔体 */}
+                    <path d="M 25 20 Q 70 20 70 45 T 115 60" fill="none" stroke="#334155" strokeWidth="16" strokeLinecap="round" />
+                    <path d="M 25 20 Q 70 20 70 45 T 115 60" fill="none" stroke="#1e293b" strokeWidth="12" strokeLinecap="round" />
+                    
+                    {/* 进水水流 */}
+                    <path d="M 25 10 L 25 22" stroke="#38bdf8" strokeWidth="2" strokeDasharray="2 2" />
+                    <text x="25" y="8" fill="#38bdf8" fontSize="7" textAnchor="middle">Pour Water</text>
+
+                    {/* 出水水流 */}
+                    <path d="M 115 60 C 118 68, 120 72, 122 78" stroke="#38bdf8" strokeWidth="2.5" fill="none" />
+                    <text x="70" y="70" fill="#10b981" fontSize="7" fontWeight="bold" textAnchor="middle">✓ Smooth Exit Flow</text>
+                  </svg>
+                </div>
+                <p className="text-[9px] text-slate-400">
+                  Pour water into highest vent. Continuous flow from lowest drain ensures no air traps or blockage inside.
+                </p>
+              </div>
+
             </div>
           </div>
 
