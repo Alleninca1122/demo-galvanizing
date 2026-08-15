@@ -162,6 +162,10 @@ const SURFACE_CONDITION_GRADE = { NONE: 'A', LIGHT: 'B', MEDIUM: 'C', HEAVY: 'D'
 const SURFACE_SPREAD_WARNING_THRESHOLD = 2;
 
 export default function ProductionForm({ currentUser, supabase }) {
+
+  // 控制 ASTM A385 图解弹窗的开关
+  const [showGuide, setShowGuide] = useState(false);
+
   // Global Rack & Load Session
   const [rackNo, setRackNo] = useState('');
   const [loadId, setLoadId] = useState('');
@@ -810,24 +814,225 @@ const [assistantPin, setAssistantPin] = useState('');
       Hollow/pipe sections MUST have vent holes (min 1/2" / 13mm) at highest points to allow air escape and prevent catastrophic kettle explosions / zinc splash.
     </div>
 
-    {/* Quality Item 1: 排气与排水孔 */}
+    {/* Quality Item 1: 带有 ASTM A385 图解弹窗 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-      <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Vent & Drain Hole Verification</div>
-      Confirm presence and size of required vent and drain holes at highest/lowest points to ensure smooth air escape, acid flow, and molten zinc drainage.
+      <div className="flex items-center justify-between mb-0.5">
+        <span className="font-bold text-cyan-300">💎 Quality: Vent & Drain Hole Verification</span>
+        
+        <button
+          type="button"
+          onClick={() => setShowGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>📐</span>
+          <span className="underline decoration-cyan-400/50">ASTM A385 Diagrams</span>
+        </button>
+      </div>
+      <div>
+        Confirm presence and size of required vent and drain holes at highest/lowest points to ensure smooth air escape, acid flow, and molten zinc drainage.
+      </div>
     </div>
 
-    {/* Quality Item 2: 表面油污与锈蚀 */}
+    {/* Quality Item 2 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Surface Condition Inspection</div>
       Inspect and log surface contaminants (oil, grease, paint) and rust severity in form as a reference for downstream degreasing and acid pickling processes.
     </div>
 
-    {/* Quality Item 3: 防镀/遮蔽剂位置检查 */}
+    {/* Quality Item 3 */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Masking / Stop-off Agent Check</div>
       If masked, position zones at BOTTOM or SIDES during racking to prevent pre-treatment runoff from dripping onto unmasked steel surfaces.
     </div>
   </div>
+
+  {/* ASTM A385 图解说明弹窗 (Modal) */}
+  {showGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        
+        {/* Modal Header */}
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-base">📐</span>
+            <h3 className="text-sm font-bold text-cyan-400">
+              Venting & Draining Standards (ASTM A385)
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowGuide(false)}
+            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        {/* Modal Content */}
+        <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
+          
+          {/* 图解 1: 右端优先下池 (Leading Right / Trailing Left) */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-cyan-300 text-[11px]">
+              1. Vent/Drain Locations Relative to Racking Angle
+            </div>
+            <div className="text-[10px] text-slate-400 leading-relaxed">
+              Venting MUST be at the highest point (Trailing / Left) and Draining at the lowest point (Leading / Right) <strong className="text-amber-400">when the rack enters kettle (typically 30°–45°)</strong>.
+            </div>
+            
+            {/* SVG 示意图 1 (右低左高) */}
+            <div className="w-full h-36 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+              <svg viewBox="0 0 320 120" className="w-full h-full">
+                {/* 吊索 (左长右短/右侧先下) */}
+                <path d="M 100 10 L 100 35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
+                <path d="M 220 10 L 220 75" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
+                
+                {/* 顺时针倾斜：右侧先进入锌池 */}
+                <g transform="rotate(18 160 60)">
+                  {/* 管件主体 */}
+                  <rect x="50" y="40" width="220" height="40" rx="4" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+                  
+                  {/* 左上角最高点 - 排气孔 (Vent Hole) */}
+                  <circle cx="60" cy="40" r="4" fill="#ef4444" stroke="#f87171" strokeWidth="1.5" />
+
+                  {/* 右下角最低点 - 排水/进锌孔 (Drain Hole) */}
+                  <circle cx="260" cy="80" r="4" fill="#38bdf8" stroke="#7dd3fc" strokeWidth="1.5" />
+                </g>
+
+                {/* 文字标注：左上排气 */}
+                <path d="M 70 30 L 70 18" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
+                <text x="70" y="12" fill="#ef4444" fontSize="9" fontWeight="bold" textAnchor="middle">Vent Hole (High Point / Air Escape)</text>
+
+                {/* 文字标注：右下进锌 */}
+                <path d="M 270 92 L 270 102" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="2 2" />
+                <text x="270" y="112" fill="#38bdf8" fontSize="9" fontWeight="bold" textAnchor="middle">Drain Hole (Low Point / Zinc In)</text>
+
+                {/* 锌池液位线 */}
+                <line x1="20" y1="95" x2="300" y2="95" stroke="#0284c7" strokeWidth="1" strokeDasharray="4 4" opacity="0.4" />
+                <text x="25" y="90" fill="#0284c7" fontSize="8" opacity="0.6">Zinc Kettle Bath Line →</text>
+              </svg>
+            </div>
+          </div>
+
+          {/* 图解 2: 内部筋板切角 */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-cyan-300 text-[11px]">
+              2. Internal Gusset & Stiffener Coping
+            </div>
+            <div className="text-[10px] text-slate-400 leading-relaxed">
+              Internal plates must have clipped corners (min 1" / 25mm) to prevent trapped air pockets inside sealed chambers.
+            </div>
+            
+            {/* SVG 示意图 2 */}
+            <div className="w-full h-32 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+              <svg viewBox="0 0 320 100" className="w-full h-full">
+                {/* 外部框体 */}
+                <rect x="60" y="15" width="200" height="70" fill="none" stroke="#475569" strokeWidth="2" />
+                
+                {/* 内部加强筋板 */}
+                <path d="M 160 15 L 160 30 L 160 70 L 160 85" stroke="#38bdf8" strokeWidth="2" />
+                
+                {/* 顶部切角 */}
+                <path d="M 160 30 L 175 15" stroke="#f59e0b" strokeWidth="2" strokeDasharray="2 2" />
+                <circle cx="160" cy="22" r="8" fill="none" stroke="#f59e0b" strokeWidth="1" />
+                <text x="210" y="25" fill="#f59e0b" fontSize="9" fontWeight="bold">Min 1" (25mm) Clipped Corner</text>
+
+                {/* 底部切角 */}
+                <path d="M 160 70 L 175 85" stroke="#f59e0b" strokeWidth="2" strokeDasharray="2 2" />
+                
+                {/* 穿流指示 */}
+                <path d="M 145 28 C 155 20, 165 20, 175 28" stroke="#10b981" strokeWidth="1.5" fill="none" />
+                <text x="110" y="55" fill="#10b981" fontSize="9" textAnchor="middle">Air/Zinc Passage</text>
+              </svg>
+            </div>
+          </div>
+
+          {/* 图解 3: 现场连通性快速实操检查 */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-cyan-300 text-[11px] flex items-center justify-between">
+              <span>3. Internal Passage & Continuity Verification</span>
+              <span className="text-[9px] font-mono text-emerald-400 bg-emerald-950/60 border border-emerald-500/30 px-1.5 py-0.5 rounded">Shop Floor Practical Tips</span>
+            </div>
+            <div className="text-[10px] text-slate-400 leading-relaxed">
+              Verify internal cavities, pipes, and stiffeners are fully connected to prevent internal air pockets, explosive acid trapping, or ungalvanized raw steel.
+            </div>
+            
+            {/* 双图对比：手电筒照光 vs 倒水流动 */}
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              
+              {/* 方法 A：手电筒照光法 */}
+              <div className="bg-slate-900/90 p-2 rounded border border-slate-800 space-y-1.5 text-center">
+                <div className="text-[10px] font-bold text-amber-300">
+                  🔦 Method A: Flashlight Light-Thru
+                </div>
+                <div className="w-full h-28 bg-slate-950 rounded flex items-center justify-center p-1">
+                  <svg viewBox="0 0 140 80" className="w-full h-full">
+                    {/* 管件 */}
+                    <rect x="20" y="25" width="100" height="30" fill="#1e293b" stroke="#475569" strokeWidth="1.5" />
+                    {/* 内部障碍筋板与过锌孔 */}
+                    <line x1="70" y1="25" x2="70" y2="35" stroke="#0284c7" strokeWidth="2" />
+                    <line x1="70" y1="45" x2="70" y2="55" stroke="#0284c7" strokeWidth="2" />
+                    <circle cx="70" cy="40" r="4" fill="none" stroke="#38bdf8" strokeWidth="1" strokeDasharray="1 1" />
+                    
+                    {/* 手电筒与光束 */}
+                    <rect x="5" y="32" width="10" height="16" fill="#f59e0b" rx="1" />
+                    <polygon points="15,35 66,37 66,43 15,45" fill="#fef08a" opacity="0.6" />
+                    <polygon points="74,38 125,28 125,52 74,42" fill="#fef08a" opacity="0.4" />
+                    
+                    {/* 光线穿透出孔 */}
+                    <path d="M 125 40 L 135 40" stroke="#fef08a" strokeWidth="2" strokeDasharray="1 1" />
+                    <text x="70" y="70" fill="#10b981" fontSize="7" fontWeight="bold" textAnchor="middle">✓ Light Pass-through</text>
+                  </svg>
+                </div>
+                <p className="text-[9px] text-slate-400">
+                  Shine light into trailing vent hole; verify visible light at leading drain hole to confirm line-of-sight.
+                </p>
+              </div>
+
+              {/* 方法 B：水流灌注测试 */}
+              <div className="bg-slate-900/90 p-2 rounded border border-slate-800 space-y-1.5 text-center">
+                <div className="text-[10px] font-bold text-cyan-300">
+                  🌊 Method B: Water Flow Test
+                </div>
+                <div className="w-full h-28 bg-slate-950 rounded flex items-center justify-center p-1">
+                  <svg viewBox="0 0 140 80" className="w-full h-full">
+                    {/* 弯管/复杂腔体 */}
+                    <path d="M 25 20 Q 70 20 70 45 T 115 60" fill="none" stroke="#334155" strokeWidth="16" strokeLinecap="round" />
+                    <path d="M 25 20 Q 70 20 70 45 T 115 60" fill="none" stroke="#1e293b" strokeWidth="12" strokeLinecap="round" />
+                    
+                    {/* 进水水流 */}
+                    <path d="M 25 10 L 25 22" stroke="#38bdf8" strokeWidth="2" strokeDasharray="2 2" />
+                    <text x="25" y="8" fill="#38bdf8" fontSize="7" textAnchor="middle">Pour Water</text>
+
+                    {/* 出水水流 */}
+                    <path d="M 115 60 C 118 68, 120 72, 122 78" stroke="#38bdf8" strokeWidth="2.5" fill="none" />
+                    <text x="70" y="70" fill="#10b981" fontSize="7" fontWeight="bold" textAnchor="middle">✓ Smooth Exit Flow</text>
+                  </svg>
+                </div>
+                <p className="text-[9px] text-slate-400">
+                  Pour water into highest vent. Continuous flow from lowest drain ensures no air traps or blockage inside.
+                </p>
+              </div>
+
+            </div>
+          </div>
+
+        </div>
+
+        {/* Modal Footer */}
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowGuide(false)}
+            className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+          >
+            Got It
+          </button>
+        </div>
+
+      </div>
+    </div>
+  )}
 </div>
 
   {/* STEP 3 */}
