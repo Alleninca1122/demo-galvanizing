@@ -188,6 +188,8 @@ export default function ProductionForm({ currentUser, supabase }) {
 
   const [showRiggingGuide, setShowRiggingGuide] = useState(false);
 
+  const [showAntiSwayGuide, setShowAntiSwayGuide] = useState(false);
+
   // 控制 ASTM A385 图解弹窗的开关
   const [showGuide, setShowGuide] = useState(false);
 
@@ -1315,7 +1317,7 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>
 
   <div className="space-y-2 text-xs">
-    {/* Safety Item */}
+    {/* Safety Item 1: Rigging Angle & Depth Limits */}
     <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
       <div className="flex items-center justify-between mb-0.5">
         <div className="font-bold text-rose-300">🛡️ Safety: Rack, Hanging Depth & Rigging Angle Limits</div>
@@ -1329,11 +1331,29 @@ const [assistantPin, setAssistantPin] = useState('');
         </button>
       </div>
       <div>
-        Maintain top clearance ≥ 30cm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300cm to ensure the rack clears other racks during transfer. Keep wires/chains as vertical as possible (&le; 15&deg;). Derate working load capacity to <strong>85%</strong> for angles between 15&deg;&ndash;30&deg;, and to <strong>70%</strong> for angles between 30&deg;&ndash;45&deg;. Rigging angles &gt; 45&deg; from vertical are <strong className="text-rose-400 underline decoration-rose-500">strictly prohibited</strong>.
+        Maintain top clearance &ge; 30cm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth &le; 300cm to ensure the rack clears other racks during transfer. Keep wires/chains as vertical as possible (&le; 15&deg;). Derate working load capacity to <strong>85%</strong> for angles between 15&deg;&ndash;30&deg;, and to <strong>70%</strong> for angles between 30&deg;&ndash;45&deg;. Rigging angles &gt; 45&deg; from vertical are <strong className="text-rose-400 underline decoration-rose-500">strictly prohibited</strong>.
       </div>
     </div>
 
-    {/* Quality Item 1 */}
+    {/* Safety Item 2: Workpiece Stability & Anti-Sway Control */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-rose-300">🛡️ Safety: Workpiece Stability & Anti-Sway Control</div>
+        <button
+          type="button"
+          onClick={() => setShowAntiSwayGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-rose-300 bg-rose-900/50 hover:bg-rose-800 border border-rose-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>🪢</span>
+          <span className="underline decoration-rose-400/50">Anti-Sway & Waist-Tie Guide</span>
+        </button>
+      </div>
+      <div>
+        Prohibit single-point hanging for large/flat plates. Mandatory dual-point suspension with waist-wire bundling across adjacent workpieces and tied tightly to Beam Rack side frames. Ensure &ge; 20cm lateral clearance from tank walls during lower/hoist movements.
+      </div>
+    </div>
+
+    {/* Quality Item 1: Hanging Pitch Angle */}
     <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
       <div className="flex items-center justify-between mb-0.5">
         <div className="font-bold text-cyan-300">💎 Quality: Hanging Pitch Angle</div>
@@ -1356,8 +1376,6 @@ const [assistantPin, setAssistantPin] = useState('');
   {showRiggingGuide && (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-        
-        {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
           <div className="flex items-center gap-2">
             <span className="text-base">⚖️</span>
@@ -1374,10 +1392,7 @@ const [assistantPin, setAssistantPin] = useState('');
           </button>
         </div>
 
-        {/* Modal Content */}
         <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-          
-          {/* Section 1: SVG Schematic Diagram */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
             <div className="font-bold text-rose-300 text-[11px]">
               1. Rigging Angle (&theta;) Reference Diagram
@@ -1385,37 +1400,29 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="text-[10px] text-slate-400 leading-relaxed">
               Rigging Angle (&theta;) is measured between the wire/chain and the <strong>vertical line</strong>. Larger angles increase tension and reduce working load limit (WLL).
             </div>
-            
-            {/* SVG Schematic */}
             <div className="w-full h-48 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 150" className="w-full h-full">
-                {/* Beam Rack */}
                 <rect x="30" y="12" width="260" height="12" rx="2" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
                 <text x="160" y="21" fill="#94a3b8" fontSize="8" fontWeight="bold" textAnchor="middle" className="font-mono">
                   Beam Rack
                 </text>
 
-                {/* Vertical Reference Line */}
                 <line x1="100" y1="24" x2="100" y2="125" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
                 <text x="105" y="40" fill="#64748b" fontSize="7" className="font-mono">0° Vertical Line</text>
 
-                {/* Left Wire/Chain (Angled) */}
                 <line x1="100" y1="24" x2="60" y2="110" stroke="#f43f5e" strokeWidth="2" />
                 <circle cx="100" cy="24" r="3" fill="#f43f5e" />
                 <circle cx="60" cy="110" r="3" fill="#f43f5e" />
 
-                {/* Right Wire/Chain (Angled) */}
                 <line x1="220" y1="24" x2="260" y2="110" stroke="#f43f5e" strokeWidth="2" />
                 <circle cx="220" cy="24" r="3" fill="#f43f5e" />
                 <circle cx="260" cy="110" r="3" fill="#f43f5e" />
 
-                {/* Angle Arc & Label */}
                 <path d="M 100 65 A 41 41 0 0 0 81 60" fill="none" stroke="#f59e0b" strokeWidth="2" />
                 <text x="82" y="76" fill="#f59e0b" fontSize="9" fontWeight="bold" className="font-mono">
                   θ (Rigging Angle)
                 </text>
 
-                {/* Workpiece */}
                 <rect x="40" y="110" width="240" height="18" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
                 <text x="160" y="122" fill="#38bdf8" fontSize="8" fontWeight="bold" textAnchor="middle">
                   Workpiece
@@ -1424,12 +1431,10 @@ const [assistantPin, setAssistantPin] = useState('');
             </div>
           </div>
 
-          {/* Section 2: Load Derating Rules Table */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
             <div className="font-bold text-rose-300 text-[11px]">
               2. Load Capacity Derating Rules
             </div>
-
             <div className="grid grid-cols-2 gap-2 text-[10px]">
               <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
                 <div className="font-bold text-emerald-400 flex justify-between">
@@ -1464,10 +1469,8 @@ const [assistantPin, setAssistantPin] = useState('');
               </div>
             </div>
           </div>
-
         </div>
 
-        {/* Modal Footer */}
         <div className="pt-2 border-t border-slate-800 flex justify-end">
           <button
             type="button"
@@ -1477,17 +1480,157 @@ const [assistantPin, setAssistantPin] = useState('');
             Got It
           </button>
         </div>
-
       </div>
     </div>
   )}
+
+ {/* Anti-Sway & Waist-Tie Guide Modal */}
+{showAntiSwayGuide && (
+  <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+      {/* Modal Header */}
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🪢</span>
+          <h3 className="text-sm font-bold text-rose-300">
+            Anti-Sway & Waist-Tie Operational Standard
+          </h3>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowAntiSwayGuide(false)}
+          className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
+        >
+          ✕ Close
+        </button>
+      </div>
+
+      {/* Modal Content */}
+      <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
+        {/* Section 1: SVG Diagram */}
+        <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+          <div className="font-bold text-rose-300 text-[11px]">
+            1. Rigging & Anti-Sway Configuration Diagram
+          </div>
+          <div className="text-[10px] text-slate-400 leading-relaxed">
+            Use dual-point suspension for large plates and run a continuous waist wire tied firmly to both ends of the Beam Rack.
+          </div>
+
+          {/* 容器高度提升至 h-64 */}
+          <div className="w-full h-64 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
+            <svg viewBox="0 0 800 420" className="w-full h-full">
+              <defs>
+                <pattern id="grid-sway" width="25" height="25" patternUnits="userSpaceOnUse">
+                  <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#1e293b" strokeWidth="0.8" />
+                </pattern>
+              </defs>
+
+              <rect width="800" height="420" fill="url(#grid-sway)" rx="4" />
+
+              {/* Beam Rack Header */}
+              <rect x="100" y="25" width="600" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
+              <text x="400" y="44" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">
+                BEAM RACK
+              </text>
+
+              {/* Outer Tension Lines */}
+              <line x1="120" y1="53" x2="80" y2="280" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="5 5" />
+              <line x1="680" y1="53" x2="720" y2="280" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="5 5" />
+
+              {/* Suspension Vertical Wires */}
+              <line x1="235" y1="53" x2="235" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+              <line x1="315" y1="53" x2="315" y2="163" stroke="#94a3b8" strokeWidth="2.5" />
+              <line x1="475" y1="53" x2="475" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+              <line x1="555" y1="53" x2="555" y2="163" stroke="#94a3b8" strokeWidth="2.5" />
+
+              {/* Dual-Point Callout (字号 14px，扩充底盒) */}
+              <rect x="185" y="82" width="180" height="32" rx="16" fill="#022c22" stroke="#10b981" strokeWidth="2" />
+              <text x="275" y="103" fill="#34d399" fontSize="14" fontWeight="bold" textAnchor="middle">
+                Dual-Point Suspension
+              </text>
+
+              {/* Workpiece #1 (字号从 12 提升至 16，字体设为纯白) */}
+              <g transform="translate(275, 235) rotate(-6)">
+                <rect x="-80" y="-85" width="160" height="170" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                <circle cx="-40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                <circle cx="40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                <text x="0" y="10" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle">
+                  Plate Workpiece #1
+                </text>
+              </g>
+
+              {/* Workpiece #2 (字号从 12 提升至 16，字体设为纯白) */}
+              <g transform="translate(515, 235) rotate(-6)">
+                <rect x="-80" y="-85" width="160" height="170" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                <circle cx="-40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                <circle cx="40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                <text x="0" y="10" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle">
+                  Plate Workpiece #2
+                </text>
+              </g>
+
+              {/* Waist Wire */}
+              <path d="M 80 280 L 275 268 L 515 272 L 720 280" fill="none" stroke="#f59e0b" strokeWidth="3.5" strokeDasharray="6 3" />
+              <circle cx="80" cy="280" r="6" fill="#f59e0b" />
+              <circle cx="720" cy="280" r="6" fill="#f59e0b" />
+              <circle cx="275" cy="268" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+              <circle cx="515" cy="272" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+
+              {/* Waist Wire Label (字号从 12 提升至 16，底盒加宽加大) */}
+              <line x1="395" y1="270" x2="395" y2="330" stroke="#f59e0b" strokeWidth="2" />
+              <rect x="235" y="330" width="320" height="42" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2.5" />
+              <text x="395" y="356" fill="#fbbf24" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">
+                Waist Wire (Anti-Sway Tie)
+              </text>
+            </svg>
+          </div>
+        </div>
+
+        {/* Section 2: Mandatory Controls Rules */}
+        <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+          <div className="font-bold text-rose-300 text-[11px]">
+            2. Mandatory Safety Controls
+          </div>
+          <div className="grid grid-cols-2 gap-2 text-[10px]">
+            <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
+              <div className="font-bold text-emerald-400">
+                ✓ Dual-Point Suspension
+              </div>
+              <div className="text-[9px] text-slate-400">
+                Large or flat plates must use at least two vertical hanging points to limit axial tilting.
+              </div>
+            </div>
+
+            <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
+              <div className="font-bold text-emerald-400">
+                ✓ Continuous Waist Wire
+              </div>
+              <div className="text-[9px] text-slate-400">
+                Pass binding wire through mid-body tie points on adjacent plates and anchor securely to rack ends.
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {/* Modal Footer */}
+      <div className="pt-2 border-t border-slate-800 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowAntiSwayGuide(false)}
+          className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+        >
+          Got It
+        </button>
+      </div>
+    </div>
+  </div>
+)}
 
   {/* Pitch Angle Guide Modal */}
   {showPitchGuide && (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-        
-        {/* Modal Header */}
         <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
           <div className="flex items-center gap-2">
             <span className="text-base">📐</span>
@@ -1504,10 +1647,7 @@ const [assistantPin, setAssistantPin] = useState('');
           </button>
         </div>
 
-        {/* Modal Content */}
         <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-          
-          {/* Section 1: Pitch Angle Diagram (Top) */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
             <div className="font-bold text-cyan-300 text-[11px]">
               1. Optimal 15°–30° Pitch Angle Dynamics
@@ -1516,7 +1656,6 @@ const [assistantPin, setAssistantPin] = useState('');
               Hanging at <strong className="text-amber-400">15° to 30°</strong> ensures smooth air purging upon entry and rapid molten zinc run-off upon exit, preventing zinc tears, spikes, and ash trapping.
             </div>
             
-            {/* SVG Pitch Diagram */}
             <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 140" className="w-full h-full">
                 <line x1="30" y1="95" x2="280" y2="95" stroke="#475569" strokeWidth="1.5" strokeDasharray="4 4" />
@@ -1548,7 +1687,6 @@ const [assistantPin, setAssistantPin] = useState('');
             </div>
           </div>
 
-          {/* Section 2: Pitch Angle Impact Comparison (Middle) */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
             <div className="font-bold text-cyan-300 text-[11px]">
               2. Pitch Angle Impact Comparison
@@ -1577,7 +1715,6 @@ const [assistantPin, setAssistantPin] = useState('');
             </div>
           </div>
 
-          {/* Section 3: Wire & Chain Length Calculator (Bottom) */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
               <div className="font-bold text-cyan-300 text-[11px] flex items-center gap-1.5">
@@ -1586,7 +1723,6 @@ const [assistantPin, setAssistantPin] = useState('');
               <span className="text-[9px] font-mono text-slate-400">Formula: L<sub>2</sub> = L<sub>1</sub> + D × sin(θ)</span>
             </div>
 
-            {/* Rigging Schematic Diagram */}
             <div className="w-full h-32 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 110" className="w-full h-full">
                 <line x1="20" y1="15" x2="300" y2="15" stroke="#475569" strokeWidth="3" />
@@ -1615,7 +1751,6 @@ const [assistantPin, setAssistantPin] = useState('');
               </svg>
             </div>
 
-            {/* Inputs */}
             <div className="grid grid-cols-3 gap-2 text-[10px]">
               <div>
                 <label className="block text-slate-400 mb-1">Pick Point Distance D (cm)</label>
@@ -1652,7 +1787,6 @@ const [assistantPin, setAssistantPin] = useState('');
               </div>
             </div>
 
-            {/* Calculation Result Box */}
             <div className="bg-slate-900/90 border border-cyan-500/30 rounded p-2.5 flex items-center justify-between">
               <div>
                 <div className="text-[10px] text-slate-400">Recommended Rear Wire Length L<sub>2</sub>:</div>
@@ -1666,7 +1800,6 @@ const [assistantPin, setAssistantPin] = useState('');
               </div>
             </div>
 
-            {/* Dynamic Safety Warning */}
             {rearWireLen > 300 && (
               <div className="bg-red-950/80 border border-red-500/60 rounded p-2 text-[10px] text-red-200 flex items-start gap-2">
                 <span className="text-red-400 text-sm leading-none">⚠️</span>
@@ -1680,10 +1813,8 @@ const [assistantPin, setAssistantPin] = useState('');
               </div>
             )}
           </div>
-
         </div>
 
-        {/* Modal Footer */}
         <div className="pt-2 border-t border-slate-800 flex justify-end">
           <button
             type="button"
@@ -1693,11 +1824,9 @@ const [assistantPin, setAssistantPin] = useState('');
             Got It
           </button>
         </div>
-
       </div>
     </div>
   )}
-
 </div>
 
   {/* STEP 5 */}
