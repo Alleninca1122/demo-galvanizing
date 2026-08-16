@@ -1349,7 +1349,7 @@ const [assistantPin, setAssistantPin] = useState('');
         </button>
       </div>
       <div>
-        Prohibit single-point hanging for large/flat plates. Mandatory dual-point suspension with waist-wire bundling across adjacent workpieces and tied tightly to Beam Rack side frames. Ensure &ge; 20cm lateral clearance from tank walls during lower/hoist movements.
+        Prohibit single-point hanging for large/flat plates. Mandatory dual-point suspension with waist binding wire through mid-body holes of adjacent workpieces to lock them into a single rigid row, preventing relative sway and collisions during dipping and transfer. Ensure &ge; 20cm lateral clearance from tank walls.
       </div>
     </div>
 
@@ -1484,10 +1484,10 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
   )}
 
- {/* Anti-Sway & Waist-Tie Guide Modal */}
+{/* Anti-Sway & Waist-Tie Guide Modal */}
 {showAntiSwayGuide && (
   <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+    <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-2xl w-full p-4 space-y-4 shadow-2xl">
       {/* Modal Header */}
       <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
         <div className="flex items-center gap-2">
@@ -1506,81 +1506,88 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
 
       {/* Modal Content */}
-      <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
+      <div className="space-y-3 text-xs text-slate-300 max-h-[70vh] overflow-y-auto pr-1">
         {/* Section 1: SVG Diagram */}
         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
           <div className="font-bold text-rose-300 text-[11px]">
-            1. Rigging & Anti-Sway Configuration Diagram
+            1. Interconnecting Anti-Sway Diagram
           </div>
           <div className="text-[10px] text-slate-400 leading-relaxed">
-            Use dual-point suspension for large plates and run a continuous waist wire tied firmly to both ends of the Beam Rack.
+            Use dual-point suspension for large plates. Connect adjacent workpieces with tie wire to form a single rigid row and eliminate relative movement.
           </div>
 
-          {/* 容器高度提升至 h-64 */}
-          <div className="w-full h-64 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
-            <svg viewBox="0 0 800 420" className="w-full h-full">
+          <div className="w-full h-72 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
+            <svg viewBox="0 0 850 420" className="w-full h-full">
               <defs>
-                <pattern id="grid-sway" width="25" height="25" patternUnits="userSpaceOnUse">
+                <pattern id="grid-sway-correct" width="25" height="25" patternUnits="userSpaceOnUse">
                   <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#1e293b" strokeWidth="0.8" />
                 </pattern>
               </defs>
 
-              <rect width="800" height="420" fill="url(#grid-sway)" rx="4" />
+              <rect width="850" height="420" fill="url(#grid-sway-correct)" rx="4" />
 
-              {/* Beam Rack Header */}
-              <rect x="100" y="25" width="600" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
-              <text x="400" y="44" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">
+              {/* Beam Rack */}
+              <rect x="50" y="25" width="750" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
+              <text x="425" y="44" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">
                 BEAM RACK
               </text>
 
-              {/* Outer Tension Lines */}
-              <line x1="120" y1="53" x2="80" y2="280" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="5 5" />
-              <line x1="680" y1="53" x2="720" y2="280" stroke="#f59e0b" strokeWidth="2.5" strokeDasharray="5 5" />
-
-              {/* Suspension Vertical Wires */}
-              <line x1="235" y1="53" x2="235" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
-              <line x1="315" y1="53" x2="315" y2="163" stroke="#94a3b8" strokeWidth="2.5" />
-              <line x1="475" y1="53" x2="475" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
-              <line x1="555" y1="53" x2="555" y2="163" stroke="#94a3b8" strokeWidth="2.5" />
-
-              {/* Dual-Point Callout (字号 14px，扩充底盒) */}
-              <rect x="185" y="82" width="180" height="32" rx="16" fill="#022c22" stroke="#10b981" strokeWidth="2" />
-              <text x="275" y="103" fill="#34d399" fontSize="14" fontWeight="bold" textAnchor="middle">
+              {/* Dual-Point Suspension Callout */}
+              <rect x="100" y="70" width="180" height="30" rx="15" fill="#022c22" stroke="#10b981" strokeWidth="2" />
+              <text x="190" y="90" fill="#34d399" fontSize="13" fontWeight="bold" textAnchor="middle">
                 Dual-Point Suspension
               </text>
 
-              {/* Workpiece #1 (字号从 12 提升至 16，字体设为纯白) */}
-              <g transform="translate(275, 235) rotate(-6)">
-                <rect x="-80" y="-85" width="160" height="170" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                <circle cx="-40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                <text x="0" y="10" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle">
-                  Plate Workpiece #1
+              {/* Vertical Suspension Wires (Left-High Tilt Layout) */}
+              <line x1="145" y1="53" x2="140" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+              <line x1="225" y1="53" x2="228" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+
+              <line x1="385" y1="53" x2="380" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+              <line x1="465" y1="53" x2="468" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+
+              <line x1="625" y1="53" x2="620" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+              <line x1="705" y1="53" x2="708" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+
+              {/* Workpiece #1 (Left-High Tilt: rotate -10) */}
+              <g transform="translate(185, 230) rotate(-10)">
+                <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
+                  Plate #1
                 </text>
               </g>
 
-              {/* Workpiece #2 (字号从 12 提升至 16，字体设为纯白) */}
-              <g transform="translate(515, 235) rotate(-6)">
-                <rect x="-80" y="-85" width="160" height="170" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                <circle cx="-40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                <text x="0" y="10" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle">
-                  Plate Workpiece #2
+              {/* Workpiece #2 (Left-High Tilt: rotate -10) */}
+              <g transform="translate(425, 230) rotate(-10)">
+                <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
+                  Plate #2
                 </text>
               </g>
 
-              {/* Waist Wire */}
-              <path d="M 80 280 L 275 268 L 515 272 L 720 280" fill="none" stroke="#f59e0b" strokeWidth="3.5" strokeDasharray="6 3" />
-              <circle cx="80" cy="280" r="6" fill="#f59e0b" />
-              <circle cx="720" cy="280" r="6" fill="#f59e0b" />
-              <circle cx="275" cy="268" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-              <circle cx="515" cy="272" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+              {/* Workpiece #3 (Left-High Tilt: rotate -10) */}
+              <g transform="translate(665, 230) rotate(-10)">
+                <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
+                  Plate #3
+                </text>
+              </g>
 
-              {/* Waist Wire Label (字号从 12 提升至 16，底盒加宽加大) */}
-              <line x1="395" y1="270" x2="395" y2="330" stroke="#f59e0b" strokeWidth="2" />
-              <rect x="235" y="330" width="320" height="42" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2.5" />
-              <text x="395" y="356" fill="#fbbf24" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">
-                Waist Wire (Anti-Sway Tie)
+              {/* Continuous Interconnecting Tie Line */}
+              <path d="M 127 276 L 255 253 L 367 276 L 495 253 L 607 276 L 735 253" fill="none" stroke="#f59e0b" strokeWidth="3.5" />
+
+              {/* Interconnection Connection Points */}
+              <circle cx="255" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+              <circle cx="367" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+              <circle cx="495" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+              <circle cx="607" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+
+              {/* Callout Lines & Label */}
+              <line x1="311" y1="264" x2="311" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
+              <line x1="551" y1="264" x2="551" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
+
+              <rect x="170" y="340" width="510" height="42" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
+              <text x="425" y="366" fill="#fbbf24" fontSize="14" fontWeight="bold" textAnchor="middle" className="font-mono">
+                Interconnecting Tie Wire (Connecting Adjacent Workpieces)
               </text>
             </svg>
           </div>
@@ -1589,7 +1596,7 @@ const [assistantPin, setAssistantPin] = useState('');
         {/* Section 2: Mandatory Controls Rules */}
         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
           <div className="font-bold text-rose-300 text-[11px]">
-            2. Mandatory Safety Controls
+            2. Mandatory Safety & Rigging Controls
           </div>
           <div className="grid grid-cols-2 gap-2 text-[10px]">
             <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
@@ -1603,10 +1610,10 @@ const [assistantPin, setAssistantPin] = useState('');
 
             <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
               <div className="font-bold text-emerald-400">
-                ✓ Continuous Waist Wire
+                ✓ Interconnecting Tie Wire
               </div>
               <div className="text-[9px] text-slate-400">
-                Pass binding wire through mid-body tie points on adjacent plates and anchor securely to rack ends.
+                Connect adjacent workpieces using tie wire to form a unified row, eliminating relative sway & collisions.
               </div>
             </div>
           </div>
