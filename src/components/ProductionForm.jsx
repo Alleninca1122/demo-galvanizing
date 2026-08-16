@@ -165,7 +165,7 @@ export default function ProductionForm({ currentUser, supabase }) {
 
   const [showPitchGuide, setShowPitchGuide] = React.useState(false);
 // Rigging Calculator State & Calculations (Unit: cm)
-  const [pointDistance, setPointDistance] = useState(''); // Pick point distance d (cm)
+  const [pointDistance, setPointDistance] = useState(''); // Pick point distance D (cm)
   const [frontWireLen, setFrontWireLen] = useState('');   // Front wire length L1 (cm)
   const [targetAngle, setTargetAngle] = useState(30);      // Default target pitch angle θ (30°)
 
@@ -1421,7 +1421,7 @@ const [assistantPin, setAssistantPin] = useState('');
 
             <div className="grid grid-cols-3 gap-2 text-[10px]">
               <div>
-                <label className="block text-slate-400 mb-1">Pick Point Distance d (cm)</label>
+                <label className="block text-slate-400 mb-1">Pick Point Distance D (cm)</label>
                 <input
                   type="number"
                   value={pointDistance}
