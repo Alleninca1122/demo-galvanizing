@@ -1443,7 +1443,7 @@ const [assistantPin, setAssistantPin] = useState('');
       <div>Pass tie-wires through corner or edge holes rather than mid-body holes. Keep wires pulled tight against workpiece contours.</div>
     </div>
 
-    {/* Quality Item: Corner-Down Tilt & Single Vertex Lowest Point */}
+{/* Quality Item: Corner-Down Tilt & Single Vertex Lowest Point */}
 <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
   <div className="flex items-center justify-between mb-0.5">
     <div className="font-bold text-cyan-300">💎 Quality: Corner-Down Tilt & Single Vertex Lowest Point</div>
@@ -1461,119 +1461,75 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>
 </div>
 
-  {/* ============ 原有 3 个 Modal ============ */}
+{/* ================= MODAL: Single Vertex Lowest Point Guide ================= */}
+{showUniqueLowPointGuide && (
+  <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-xl w-full p-4 space-y-4 shadow-2xl">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <h3 className="text-sm font-bold text-cyan-400">📐 Corner-Down Tilt vs. Flat Edge Hanging Standard</h3>
+        <button
+          type="button"
+          onClick={() => setShowUniqueLowPointGuide(false)}
+          className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
+        >
+          ✕ Close
+        </button>
+      </div>
 
-  {/* Rigging Angle & Derating Guide Modal (Safety Modal) */}
-  {showRiggingGuide && (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-          <div className="flex items-center gap-2">
-            <span className="text-base">⚖️</span>
-            <h3 className="text-sm font-bold text-rose-300">
-              Rigging Angle & Load Derating Standard (&le; 45&deg;)
-            </h3>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowRiggingGuide(false)}
-            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-          >
-            ✕ Close
-          </button>
+      <div className="space-y-3 text-xs text-slate-300">
+        <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 480 180" className="w-full h-full">
+            {/* Beam Rack */}
+            <line x1="30" y1="20" x2="450" y2="20" stroke="#475569" strokeWidth="3" />
+            <text x="240" y="14" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
+
+            {/* --- LEFT: CORRECT (Diamond / Corner-Down) --- */}
+            <g transform="translate(130, 95)">
+              <line x1="-50" y1="-75" x2="-35" y2="-35" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
+              <line x1="50" y1="-75" x2="35" y2="-35" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
+              <g transform="rotate(45)">
+                <rect x="-35" y="-35" width="70" height="70" rx="2" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              </g>
+              <circle cx="0" cy="53" r="5" fill="none" stroke="#10b981" strokeWidth="2.5" />
+              <circle cx="0" cy="53" r="2.5" fill="#10b981" />
+              <text x="0" y="72" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">✓ Correct (Single Vertex)</text>
+            </g>
+
+            {/* --- RIGHT: INCORRECT (Square / Flat Bottom Edge) --- */}
+            <g transform="translate(350, 95)">
+              <line x1="-35" y1="-75" x2="-35" y2="-35" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
+              <line x1="35" y1="-75" x2="35" y2="-35" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
+              <rect x="-35" y="-35" width="70" height="70" rx="2" fill="#1e293b" stroke="#f43f5e" strokeWidth="2" />
+              {/* Bottom Edge line highlight for pooling */}
+              <line x1="-35" y1="35" x2="35" y2="35" stroke="#f43f5e" strokeWidth="4" />
+              <text x="0" y="55" fill="#f43f5e" fontSize="11" fontWeight="bold" textAnchor="middle">❌ Incorrect (Edge Line Drips)</text>
+            </g>
+          </svg>
         </div>
 
-        <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-            <div className="font-bold text-rose-300 text-[11px]">
-              1. Rigging Angle (&theta;) Reference Diagram
-            </div>
-            <div className="text-[10px] text-slate-400 leading-relaxed">
-              Rigging Angle (&theta;) is measured between the wire/chain and the <strong>vertical line</strong>. Larger angles increase tension and reduce working load limit (WLL).
-            </div>
-            <div className="w-full h-56 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
-              <svg viewBox="0 0 320 150" className="w-full h-full">
-                <rect x="30" y="12" width="260" height="12" rx="2" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
-                <text x="160" y="21" fill="#cbd5e1" fontSize="11" fontWeight="normal" textAnchor="middle" className="font-mono">
-                  Beam Rack
-                </text>
-
-                <line x1="100" y1="24" x2="100" y2="125" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
-                <text x="105" y="40" fill="#cbd5e1" fontSize="11" fontWeight="normal" className="font-mono">0° Vertical Line</text>
-
-                <line x1="100" y1="24" x2="60" y2="110" stroke="#f43f5e" strokeWidth="2" />
-                <circle cx="100" cy="24" r="3" fill="#f43f5e" />
-                <circle cx="60" cy="110" r="3" fill="#f43f5e" />
-
-                <line x1="220" y1="24" x2="260" y2="110" stroke="#f43f5e" strokeWidth="2" />
-                <circle cx="220" cy="24" r="3" fill="#f43f5e" />
-                <circle cx="260" cy="110" r="3" fill="#f43f5e" />
-
-                <path d="M 100 65 A 41 41 0 0 0 81 60" fill="none" stroke="#f59e0b" strokeWidth="2" />
-                <text x="82" y="76" fill="#f59e0b" fontSize="13" fontWeight="bold" className="font-mono">
-                  θ (Rigging Angle)
-                </text>
-
-                <rect x="40" y="110" width="240" height="18" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
-                <text x="160" y="122" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">
-                  Workpiece
-                </text>
-              </svg>
-            </div>
+        <div className="bg-slate-950 p-2.5 rounded border border-slate-800 text-[11px] space-y-1 text-slate-300">
+          <div className="font-bold text-cyan-300 flex items-center gap-1">
+            <span>💡</span> Industry Best Practice:
           </div>
-
-          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-            <div className="font-bold text-rose-300 text-[11px]">
-              2. Load Capacity Derating Rules
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-[10px]">
-              <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
-                <div className="font-bold text-emerald-400 flex justify-between">
-                  <span>&le; 15&deg; (Optimal)</span>
-                  <span>100% WLL</span>
-                </div>
-                <div className="text-[9px] text-slate-400">Normal operating load. Minimal tension increase.</div>
-              </div>
-
-              <div className="bg-amber-950/20 p-2 rounded border border-amber-500/30 space-y-0.5">
-                <div className="font-bold text-amber-400 flex justify-between">
-                  <span>15&deg;&ndash;30&deg; (Caution)</span>
-                  <span>Derate to 85%</span>
-                </div>
-                <div className="text-[9px] text-slate-400">Wire/chain tension increases ~15%. Reduce max load.</div>
-              </div>
-
-              <div className="bg-orange-950/20 p-2 rounded border border-orange-500/30 space-y-0.5">
-                <div className="font-bold text-orange-400 flex justify-between">
-                  <span>30&deg;&ndash;45&deg; (Warning)</span>
-                  <span>Derate to 70%</span>
-                </div>
-                <div className="text-[9px] text-slate-400">High lateral tension forces. Strict weight checking required.</div>
-              </div>
-
-              <div className="bg-rose-950/30 p-2 rounded border border-rose-500/40 space-y-0.5">
-                <div className="font-bold text-rose-400 flex justify-between">
-                  <span>&gt; 45&deg; (DANGER)</span>
-                  <span className="underline">PROHIBITED</span>
-                </div>
-                <div className="text-[9px] text-slate-400">Extreme risk of wire failure, slip or workpiece damage.</div>
-              </div>
-            </div>
+          <div className="text-[10px] text-slate-400 leading-relaxed">
+            1. <strong>Correct (Diamond Corner-Down)</strong>: Tilt and rig the plate diagonally so drainage converges entirely to one lowest corner vertex for a clean drop-off.<br/>
+            2. <strong>Incorrect (Flat Bottom Edge)</strong>: Hanging square with a horizontal bottom edge causes zinc to pool along the entire line, creating heavy zinc icicles and surface defects.
           </div>
-        </div>
-
-        <div className="pt-2 border-t border-slate-800 flex justify-end">
-          <button
-            type="button"
-            onClick={() => setShowRiggingGuide(false)}
-            className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-          >
-            Got It
-          </button>
         </div>
       </div>
+
+      <div className="pt-2 border-t border-slate-800 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowUniqueLowPointGuide(false)}
+          className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+        >
+          Got It
+        </button>
+      </div>
     </div>
-  )}
+  </div>
+)}  
 
   {/* Anti-Sway & Waist-Tie Guide Modal */}
   {showAntiSwayGuide && (
