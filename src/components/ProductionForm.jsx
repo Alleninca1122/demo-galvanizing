@@ -1484,147 +1484,172 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
   )}
 
-  {/* Anti-Sway & Waist-Tie Guide Modal */}
-  {showAntiSwayGuide && (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-        {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-          <div className="flex items-center gap-2">
-            <span className="text-base">🪢</span>
-            <h3 className="text-sm font-bold text-rose-300">
-              Anti-Sway & Waist-Tie Operational Standard
-            </h3>
+{/* Anti-Sway & Waist-Tie Guide Modal */}
+{showAntiSwayGuide && (
+  <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-2xl w-full p-4 space-y-4 shadow-2xl">
+      {/* Modal Header */}
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <div className="flex items-center gap-2">
+          <span className="text-base">🪢</span>
+          <h3 className="text-sm font-bold text-rose-300">
+            Anti-Sway & Waist-Tie Operational Standard
+          </h3>
+        </div>
+        <button
+          type="button"
+          onClick={() => setShowAntiSwayGuide(false)}
+          className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
+        >
+          ✕ Close
+        </button>
+      </div>
+
+      {/* Modal Content */}
+      <div className="space-y-3 text-xs text-slate-300 max-h-[70vh] overflow-y-auto pr-1">
+        {/* Section 1: SVG Diagram */}
+        <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+          <div className="font-bold text-rose-300 text-[11px]">
+            1. Rigging & Corner Interconnecting Anti-Sway Diagram (3-Plate Row)
           </div>
-          <button
-            type="button"
-            onClick={() => setShowAntiSwayGuide(false)}
-            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-          >
-            ✕ Close
-          </button>
+          <div className="text-[10px] text-slate-400 leading-relaxed">
+            Use dual-point suspension for large plates. Thread tie wire through adjacent corner holes or wrap around outer edges of neighboring plates to lock them into a single rigid row.
+          </div>
+
+          <div className="w-full h-72 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
+            <svg viewBox="0 0 850 420" className="w-full h-full">
+              <defs>
+                <pattern id="grid-sway-3plates" width="25" height="25" patternUnits="userSpaceOnUse">
+                  <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#1e293b" strokeWidth="0.8" />
+                </pattern>
+              </defs>
+
+              <rect width="850" height="420" fill="url(#grid-sway-3plates)" rx="4" />
+
+              {/* Beam Rack */}
+              <rect x="50" y="25" width="750" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
+              <text x="425" y="44" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">
+                BEAM RACK FRAME
+              </text>
+
+              {/* Dual-Point Suspension Callout */}
+              <rect x="100" y="70" width="180" height="30" rx="15" fill="#022c22" stroke="#10b981" strokeWidth="2" />
+              <text x="190" y="90" fill="#34d399" fontSize="13" fontWeight="bold" textAnchor="middle">
+                Dual-Point Suspension
+              </text>
+
+              {/* Vertical Suspension Wires (Left-High Tilt Layout) */}
+              {/* Plate 1 Wires */}
+              <line x1="145" y1="53" x2="140" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+              <line x1="225" y1="53" x2="228" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+              {/* Plate 2 Wires */}
+              <line x1="385" y1="53" x2="380" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+              <line x1="465" y1="53" x2="468" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+              {/* Plate 3 Wires */}
+              <line x1="625" y1="53" x2="620" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+              <line x1="705" y1="53" x2="708" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+
+              {/* Workpiece #1 (Left-High Tilt: rotate -10) */}
+              <g transform="translate(185, 230) rotate(-10)">
+                <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                <circle cx="-35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                <circle cx="35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                {/* Corner Holes (Bottom Left & Right) */}
+                <circle cx="-45" cy="55" r="5" fill="none" stroke="#64748b" strokeWidth="1.5" />
+                <circle cx="45" cy="55" r="6" fill="#022c22" stroke="#f59e0b" strokeWidth="2" />
+                <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
+                  Plate #1
+                </text>
+              </g>
+
+              {/* Workpiece #2 (Left-High Tilt: rotate -10) */}
+              <g transform="translate(425, 230) rotate(-10)">
+                <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                <circle cx="-35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                <circle cx="35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                {/* Corner Holes (Bottom Left & Right) */}
+                <circle cx="-45" cy="55" r="6" fill="#022c22" stroke="#f59e0b" strokeWidth="2" />
+                <circle cx="45" cy="55" r="6" fill="#022c22" stroke="#f59e0b" strokeWidth="2" />
+                <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
+                  Plate #2
+                </text>
+              </g>
+
+              {/* Workpiece #3 (Left-High Tilt: rotate -10) */}
+              <g transform="translate(665, 230) rotate(-10)">
+                <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                <circle cx="-35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                <circle cx="35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
+                {/* Corner Holes (Bottom Left & Right) */}
+                <circle cx="-45" cy="55" r="6" fill="#022c22" stroke="#f59e0b" strokeWidth="2" />
+                <circle cx="45" cy="55" r="5" fill="none" stroke="#64748b" strokeWidth="1.5" />
+                <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
+                  Plate #3
+                </text>
+              </g>
+
+              {/* Interconnecting Tie Wire Path (Through Corner Holes across Plates #1, #2, #3) */}
+              <path d="M 120 280 L 220 270 L 370 270 L 460 270 L 610 270 L 710 260" fill="none" stroke="#f59e0b" strokeWidth="3.5" strokeDasharray="6 3" />
+              <path d="M 220 270 L 370 270 M 460 270 L 610 270" fill="none" stroke="#f59e0b" strokeWidth="3.5" />
+
+              {/* Tie Knots / Corner Lock Points (Green Dots at Corner Holes) */}
+              <circle cx="220" cy="270" r="7" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+              <circle cx="370" cy="270" r="7" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+              <circle cx="460" cy="270" r="7" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+              <circle cx="610" cy="270" r="7" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+
+              {/* Callout Lines & Label */}
+              <line x1="295" y1="270" x2="295" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
+              <line x1="535" y1="270" x2="535" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
+              
+              <rect x="180" y="340" width="490" height="42" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
+              <text x="425" y="366" fill="#fbbf24" fontSize="14" fontWeight="bold" textAnchor="middle" className="font-mono">
+                Interconnecting Tie Wire (Threaded Through Adjacent Corner Holes)
+              </text>
+            </svg>
+          </div>
         </div>
 
-        {/* Modal Content */}
-        <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-          {/* Section 1: SVG Diagram */}
-          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-            <div className="font-bold text-rose-300 text-[11px]">
-              1. Rigging & Interconnecting Anti-Sway Diagram
-            </div>
-            <div className="text-[10px] text-slate-400 leading-relaxed">
-              Use dual-point suspension for large plates. Pass a continuous waist wire through mid-body holes of adjacent workpieces to lock them into a single rigid row.
-            </div>
-
-            <div className="w-full h-64 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
-              <svg viewBox="0 0 800 420" className="w-full h-full">
-                <defs>
-                  <pattern id="grid-sway-fixed" width="25" height="25" patternUnits="userSpaceOnUse">
-                    <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#1e293b" strokeWidth="0.8" />
-                  </pattern>
-                </defs>
-
-                <rect width="800" height="420" fill="url(#grid-sway-fixed)" rx="4" />
-
-                {/* Beam Rack Header */}
-                <rect x="100" y="25" width="600" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
-                <text x="400" y="44" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">
-                  BEAM RACK FRAME
-                </text>
-
-                {/* Vertical Suspension Wires */}
-                <line x1="235" y1="53" x2="235" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
-                <line x1="315" y1="53" x2="315" y2="163" stroke="#94a3b8" strokeWidth="2.5" />
-                <line x1="475" y1="53" x2="475" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
-                <line x1="555" y1="53" x2="555" y2="163" stroke="#94a3b8" strokeWidth="2.5" />
-
-                {/* Dual-Point Callout */}
-                <rect x="185" y="82" width="180" height="32" rx="16" fill="#022c22" stroke="#10b981" strokeWidth="2" />
-                <text x="275" y="103" fill="#34d399" fontSize="14" fontWeight="bold" textAnchor="middle">
-                  Dual-Point Suspension
-                </text>
-
-                {/* Workpiece #1 */}
-                <g transform="translate(275, 235) rotate(-6)">
-                  <rect x="-80" y="-85" width="160" height="170" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                  <circle cx="-40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                  <circle cx="40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                  {/* Waist Hole */}
-                  <circle cx="0" cy="25" r="7" fill="#022c22" stroke="#f59e0b" strokeWidth="2" />
-                  <text x="0" y="-10" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle">
-                    Plate Workpiece #1
-                  </text>
-                </g>
-
-                {/* Workpiece #2 */}
-                <g transform="translate(515, 235) rotate(-6)">
-                  <rect x="-80" y="-85" width="160" height="170" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                  <circle cx="-40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                  <circle cx="40" cy="-65" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                  {/* Waist Hole */}
-                  <circle cx="0" cy="25" r="7" fill="#022c22" stroke="#f59e0b" strokeWidth="2" />
-                  <text x="0" y="-10" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle">
-                    Plate Workpiece #2
-                  </text>
-                </g>
-
-                {/* Interconnecting Waist Wire (直接穿过相邻板件腰孔串联绑扎) */}
-                <path d="M 180 270 L 275 260 L 515 260 L 610 250" fill="none" stroke="#f59e0b" strokeWidth="4" />
-                
-                {/* Tie Knots / Lock Points (腰孔处的绑扎节点) */}
-                <circle cx="275" cy="260" r="8" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-                <circle cx="515" cy="260" r="8" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-
-                {/* Waist Wire Label & Callout Line */}
-                <line x1="395" y1="260" x2="395" y2="325" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
-                <rect x="200" y="325" width="390" height="42" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2.5" />
-                <text x="395" y="351" fill="#fbbf24" fontSize="15" fontWeight="bold" textAnchor="middle" className="font-mono">
-                  Waist Wire Interconnection (Locks Plates Together)
-                </text>
-              </svg>
-            </div>
+        {/* Section 2: Mandatory Controls Rules */}
+        <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+          <div className="font-bold text-rose-300 text-[11px]">
+            2. Mandatory Safety & Rigging Controls
           </div>
-
-          {/* Section 2: Mandatory Controls Rules */}
-          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-            <div className="font-bold text-rose-300 text-[11px]">
-              2. Mandatory Safety Controls
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-[10px]">
-              <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
-                <div className="font-bold text-emerald-400">
-                  ✓ Dual-Point Suspension
-                </div>
-                <div className="text-[9px] text-slate-400">
-                  Large or flat plates must use at least two vertical hanging points to limit axial tilting.
-                </div>
+          <div className="grid grid-cols-2 gap-2 text-[10px]">
+            <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
+              <div className="font-bold text-emerald-400">
+                ✓ Dual-Point Suspension
               </div>
+              <div className="text-[9px] text-slate-400">
+                Large or flat plates must use at least two vertical hanging points to limit axial tilting.
+              </div>
+            </div>
 
-              <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
-                <div className="font-bold text-emerald-400">
-                  ✓ Interconnecting Waist Wire
-                </div>
-                <div className="text-[9px] text-slate-400">
-                  Pass binding wire through mid-body holes on adjacent plates to lock them into a unified row, eliminating relative sway & collisions.
-                </div>
+            <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
+              <div className="font-bold text-emerald-400">
+                ✓ Interconnecting Tie Wire
+              </div>
+              <div className="text-[9px] text-slate-400">
+                Thread tie wire through adjacent corner holes or wrap outer edges of neighboring plates to lock them into a unified row, eliminating relative sway & collisions.
               </div>
             </div>
           </div>
-        </div>
-
-        {/* Modal Footer */}
-        <div className="pt-2 border-t border-slate-800 flex justify-end">
-          <button
-            type="button"
-            onClick={() => setShowAntiSwayGuide(false)}
-            className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-          >
-            Got It
-          </button>
         </div>
       </div>
+
+      {/* Modal Footer */}
+      <div className="pt-2 border-t border-slate-800 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowAntiSwayGuide(false)}
+          className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+        >
+          Got It
+        </button>
+      </div>
     </div>
-  )}
+  </div>
+)} 
 
   {/* Pitch Angle Guide Modal */}
   {showPitchGuide && (
