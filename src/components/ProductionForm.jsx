@@ -1510,7 +1510,7 @@ const [assistantPin, setAssistantPin] = useState('');
         {/* Section 1: SVG Diagram */}
         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
           <div className="font-bold text-rose-300 text-[11px]">
-            1. Interconnecting Anti-Sway Diagram (3-Plate Row)
+            1. Interconnecting Anti-Sway Diagram
           </div>
           <div className="text-[10px] text-slate-400 leading-relaxed">
             Use dual-point suspension for large plates. Connect adjacent workpieces with tie wire to form a single rigid row and eliminate relative movement.
