@@ -1329,7 +1329,7 @@ const [assistantPin, setAssistantPin] = useState('');
           className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
         >
           <span>📐</span>
-          <span className="underline decoration-cyan-400/50">15°–30° Pitch Guide</span>
+          <span className="underline decoration-cyan-400/50">Pitch Guide & Wire Length Calculator</span>
         </button>
       </div>
       <div>
