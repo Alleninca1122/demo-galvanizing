@@ -3169,10 +3169,10 @@ const [assistantPin, setAssistantPin] = useState('');
   {isFormBlocked
     ? '🚨 CANNOT SUBMIT: FIX SAFETY HAZARDS ABOVE'
     : '🚨 Confirm & Sign-off →'}
-</button>  
-        </div>
-
-   {/* WORKFLOW STEPPER CONTAINER */}   </form>
-    </div>
-  );
+</button>
+</div>
+</div>
+</form>
+</div>
+);
 }
