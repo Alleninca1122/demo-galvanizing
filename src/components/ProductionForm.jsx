@@ -1316,7 +1316,7 @@ const [assistantPin, setAssistantPin] = useState('');
     {/* Safety Item */}
     <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rack, Hanging Depth & Rigging Angle Limits</div>
-      Maintain top clearance ≥ 30cm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300cm to ensure the rack clears other racks during crane transfer. Keep wires/chains as vertical as possible (&le; 15&deg;). Derate working load capacity to <strong>85%</strong> for angles between 15&deg;&ndash;30&deg;, and to <strong>70%</strong> for angles between 30&deg;&ndash;45&deg;. Rigging angles &gt; 45&deg; from vertical are <strong className="text-rose-400 underline decoration-rose-500">>strictly prohibited</strong>.
+      Maintain top clearance ≥ 30cm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300cm to ensure the rack clears other racks during crane transfer. Keep wires/chains as vertical as possible (&le; 15&deg;). Derate working load capacity to <strong>85%</strong> for angles between 15&deg;&ndash;30&deg;, and to <strong>70%</strong> for angles between 30&deg;&ndash;45&deg;. Rigging angles &gt; 45&deg; from vertical are <strong className="text-rose-400 underline decoration-rose-500">strictly prohibited</strong>.
     </div>
 
     {/* Quality Item 1 */}
