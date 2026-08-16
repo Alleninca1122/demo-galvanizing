@@ -2573,9 +2573,8 @@ const [assistantPin, setAssistantPin] = useState('');
   </div>
 {/* Spec & Strands Inputs */}
 {wp.stringingMethod === 'CHAIN_WIRE' ? (
-  /* ================= 1. CHAIN + WIRE 混合模式：拆分为两块 ================= */
   <div className="space-y-2.5 pt-1">
-    {/* 1.1 主承重链区 */}
+    {/* 主承重链区 */}
     <div className="bg-slate-900/90 p-2.5 rounded border border-cyan-900/50 space-y-2">
       <div className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1">
         <span>🔗</span> Main Backbone Chain (主承重链)
@@ -2612,7 +2611,6 @@ const [assistantPin, setAssistantPin] = useState('');
         </div>
       </div>
 
-      {/* 双挂点时的 Point 2 Chain */}
       {wp.hangingPoints === '2' && (
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
           <div>
@@ -2644,7 +2642,7 @@ const [assistantPin, setAssistantPin] = useState('');
       )}
     </div>
 
-    {/* 1.2 单件绑定铁丝区 */}
+    {/* 单件绑定铁丝区 */}
     <div className="bg-slate-900/90 p-2.5 rounded border border-amber-900/50 space-y-2">
       <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
         <span>🪢</span> Piece Tie Wire (单件绑定铁丝)
@@ -2682,7 +2680,6 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
   </div>
 ) : (
-  /* ================= 2. 纯铁链 (FULL_CHAIN) 或 纯铁丝 (PURE_WIRE) 模式 ================= */
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
     <div className="grid grid-cols-2 gap-2 bg-slate-900/80 p-2 rounded border border-slate-800">
       <div>
@@ -2753,8 +2750,6 @@ const [assistantPin, setAssistantPin] = useState('');
     )}
   </div>
 )}
-  </div>
-
   {/* 2. Anchor Shackle & 3/4. Safety Checkboxes */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-800/80">
     <div>
