@@ -1993,8 +1993,9 @@ const [assistantPin, setAssistantPin] = useState('');
             </g>
             <text x="50" y="22" fill="#10b981" fontSize="10" fontWeight="bold">✓ Corner/Edge Hole</text>
             <text x="50" y="35" fill="#10b981" fontSize="10" fontWeight="bold">(Tight Contour Wire)</text>
-            <text x="310" y="132" fill="#f43f5e" fontSize="10" fontWeight="bold" textAnchor="end">❌ Mid-Body Hole</text>
-            <text x="310" y="145" fill="#f43f5e" fontSize="10" fontWeight="bold" textAnchor="end">(Blocks Flow)</text>
+            <line x1="163" y1="72" x2="232" y2="52" stroke="#f43f5e" strokeWidth="1" strokeDasharray="2 2" />
+            <text x="310" y="50" fill="#f43f5e" fontSize="10" fontWeight="bold" textAnchor="end">❌ Mid-Body Hole</text>
+            <text x="310" y="63" fill="#f43f5e" fontSize="10" fontWeight="bold" textAnchor="end">(Blocks Flow)</text>
           </svg>
         </div>
         <div className="pt-2 border-t border-slate-800 flex justify-end">
