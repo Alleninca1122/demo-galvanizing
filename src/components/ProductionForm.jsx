@@ -163,6 +163,8 @@ const SURFACE_SPREAD_WARNING_THRESHOLD = 2;
 
 export default function ProductionForm({ currentUser, supabase }) {
 
+  const [showPitchGuide, setShowPitchGuide] = React.useState(false);
+
   const [showClearanceLoopingModal, setShowClearanceLoopingModal] = useState(false);
 
   const [showSocketSpigotModal, setShowSocketSpigotModal] = useState(false);
@@ -1283,28 +1285,160 @@ const [assistantPin, setAssistantPin] = useState('');
   )}
 </div>
 
-  {/* STEP 4 */}
-  <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-    <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-      <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">4</span>
-        STEP 4: Pose & Angle Final Inspection
-      </span>
-      <span className="text-[10px] text-slate-400 font-mono">Check tilt angle & tank limits</span>
+{/* STEP 4 */}
+<div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+  <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+    <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">4</span>
+      STEP 4: Pose & Angle Final Inspection
+    </span>
+    <span className="text-[10px] text-slate-400 font-mono">Check tilt angle & tank limits</span>
+  </div>
+
+  <div className="space-y-2 text-xs">
+    {/* Safety Item */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+      <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rack & Hanging Depth Limits</div>
+      Maintain top clearance ≥ 30mm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300mm to ensure the rack clears other racks during crane transfer. 
     </div>
-    <div className="space-y-2 text-xs">
-      {/* Safety Item */}
-      <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rack & Hanging Depth Limits</div>
-        Maintain top clearance ≥ 30mm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300mm to ensure the rack clears other racks during crane transfer. 
+
+    {/* Quality Item 1 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Hanging Pitch Angle</div>
+        <button
+          type="button"
+          onClick={() => setShowPitchGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>📐</span>
+          <span className="underline decoration-cyan-400/50">15°–30° Pitch Guide</span>
+        </button>
       </div>
-      {/* Quality Item 1 */}
-      <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-        <div className="font-bold text-cyan-300 mb-0.5">💎 Quality: Hanging Pitch Angle</div>
+      <div>
         Maintain 15° to 30° tilt angle for rapid, uniform zinc drainage, fast run-off, and zero ash trapping on flat surfaces.
       </div>
     </div>
   </div>
+
+  {/* Pitch Angle Guide Modal */}
+  {showPitchGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        
+        {/* Modal Header */}
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-base">📐</span>
+            <h3 className="text-sm font-bold text-cyan-400">
+              Hanging Pitch Angle & Drainage Standard (15°–30°)
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowPitchGuide(false)}
+            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        {/* Modal Content */}
+        <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
+          
+          {/* Section 1: Pitch Angle Diagram */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-cyan-300 text-[11px]">
+              1. Optimal 15°–30° Pitch Angle Dynamics
+            </div>
+            <div className="text-[10px] text-slate-400 leading-relaxed">
+              Hanging at <strong className="text-amber-400">15° to 30°</strong> ensures smooth air purging upon entry and rapid molten zinc run-off upon exit, preventing zinc tears, spikes, and ash trapping.
+            </div>
+            
+            {/* SVG Pitch Diagram (Left High, Right Low with Standard Angle Arc) */}
+            <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+              <svg viewBox="0 0 320 140" className="w-full h-full">
+                {/* Horizontal Reference Line */}
+                <line x1="30" y1="95" x2="280" y2="95" stroke="#475569" strokeWidth="1.5" strokeDasharray="4 4" />
+                <text x="282" y="98" fill="#64748b" fontSize="8" className="font-mono">0° Horizontal</text>
+
+                {/* Rigging Slings */}
+                <line x1="80" y1="10" x2="80" y2="35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
+                <line x1="240" y1="10" x2="240" y2="92" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
+
+                {/* Tilted Workpiece (Left High, Right Low) */}
+                <g transform="rotate(20 80 35)">
+                  <rect x="70" y="25" width="200" height="20" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+                  <circle cx="78" cy="25" r="3.5" fill="#ef4444" />
+                  <circle cx="262" cy="45" r="3.5" fill="#38bdf8" />
+                </g>
+
+                {/* Standard Pitch Angle Arc & Text (Shifted forward into the spacious open gap) */}
+                <path d="M 160 95 A 55 55 0 0 1 164 76" fill="none" stroke="#f59e0b" strokeWidth="2" />
+                <text x="148" y="82" fill="#f59e0b" fontSize="10" fontWeight="bold" fontFamily="sans-serif">
+                  15°–30°
+                </text>
+
+                {/* Air & Zinc Flow Annotations */}
+                <path d="M 80 30 L 80 18" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
+                <text x="80" y="12" fill="#ef4444" fontSize="8" fontWeight="bold" textAnchor="middle">Air Escape ↑ (Highest Vent)</text>
+
+                <path d="M 260 88 L 260 105" stroke="#38bdf8" strokeWidth="2" strokeDasharray="2 2" />
+                <text x="260" y="115" fill="#38bdf8" fontSize="8" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓ (Lowest Drain)</text>
+
+                {/* Zinc Kettle Bath Line */}
+                <line x1="20" y1="120" x2="180" y2="120" stroke="#0284c7" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+                <text x="25" y="115" fill="#0284c7" fontSize="8" opacity="0.7">Zinc Kettle Bath Line</text>
+              </svg>
+            </div>
+          </div>
+
+          {/* Section 2: Comparison */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-cyan-300 text-[11px]">
+              2. Pitch Angle Impact Comparison
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="bg-rose-950/20 p-2 rounded border border-rose-500/30 space-y-1">
+                <div className="text-[10px] font-bold text-rose-400">
+                  ❌ Too Flat (&lt; 15°)
+                </div>
+                <div className="text-[9px] text-slate-400 leading-tight">
+                  • Traps air pockets under flat surfaces.<br/>
+                  • Slow drainage leads to thick zinc tears, spikes & ash inclusion.
+                </div>
+              </div>
+
+              <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-1">
+                <div className="text-[10px] font-bold text-emerald-400">
+                  ✓ Optimal (15°–30°)
+                </div>
+                <div className="text-[9px] text-slate-400 leading-tight">
+                  • Instant air purging upon immersion.<br/>
+                  • Clean, uniform coating with minimal post-dip touch-up needed.
+                </div>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+        {/* Modal Footer */}
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowPitchGuide(false)}
+            className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+          >
+            Got It
+          </button>
+        </div>
+
+      </div>
+    </div>
+  )}
+</div>
 
   {/* STEP 5 */}
   <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
