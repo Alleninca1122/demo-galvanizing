@@ -1725,7 +1725,7 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 140" className="w-full h-full">
                 <line x1="30" y1="95" x2="280" y2="95" stroke="#475569" strokeWidth="1.5" strokeDasharray="4 4" />
-                <text x="282" y="98" fill="#cbd5e1" fontSize="13" fontWeight="bold" className="font-mono">0° Horizontal</text>
+                <text x="315" y="98" fill="#cbd5e1" fontSize="11" fontWeight="bold" textAnchor="end" className="font-mono">0° Horizontal</text>
 
                 <line x1="80" y1="10" x2="80" y2="35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
                 <line x1="240" y1="10" x2="240" y2="92" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
@@ -1737,7 +1737,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 </g>
 
                 <path d="M 160 95 A 55 55 0 0 1 164 76" fill="none" stroke="#f59e0b" strokeWidth="2" />
-                <text x="148" y="82" fill="#f59e0b" fontSize="14" fontWeight="bold" fontFamily="sans-serif">
+                <text x="148" y="80" fill="#f59e0b" fontSize="12" fontWeight="bold" fontFamily="sans-serif">
                   15°–30°
                 </text>
 
@@ -1745,7 +1745,8 @@ const [assistantPin, setAssistantPin] = useState('');
                 <text x="80" y="12" fill="#ef4444" fontSize="11" fontWeight="bold" textAnchor="middle">Air Escape ↑ (Highest Vent)</text>
 
                 <path d="M 260 88 L 260 105" stroke="#38bdf8" strokeWidth="2" strokeDasharray="2 2" />
-                <text x="260" y="115" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓ (Lowest Drain)</text>
+                <text x="260" y="109" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓</text>
+                <text x="260" y="123" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">(Lowest Drain)</text>
 
                 <line x1="20" y1="120" x2="180" y2="120" stroke="#0284c7" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
                 <text x="25" y="115" fill="#38bdf8" fontSize="12" fontWeight="bold" opacity="1">Zinc Kettle Bath Line</text>
