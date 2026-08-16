@@ -1744,8 +1744,8 @@ const [assistantPin, setAssistantPin] = useState('');
                 <text x="80" y="12" fill="#ef4444" fontSize="11" fontWeight="bold" textAnchor="middle">Air Escape ↑ (Highest Vent)</text>
 
                 <path d="M 260 88 L 260 105" stroke="#38bdf8" strokeWidth="2" strokeDasharray="2 2" />
-                <text x="260" y="118" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓</text>
-                <text x="260" y="132" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">(Lowest Drain)</text>
+                <text x="260" y="121" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓</text>
+                <text x="260" y="135" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">(Lowest Drain)</text>
 
                 <line x1="20" y1="120" x2="180" y2="120" stroke="#0284c7" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
                 <text x="25" y="115" fill="#38bdf8" fontSize="12" fontWeight="bold" opacity="1">Zinc Kettle Bath Line</text>
