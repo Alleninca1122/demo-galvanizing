@@ -164,6 +164,23 @@ const SURFACE_SPREAD_WARNING_THRESHOLD = 2;
 export default function ProductionForm({ currentUser, supabase }) {
 
   const [showPitchGuide, setShowPitchGuide] = React.useState(false);
+// Rigging Calculator State & Calculations (Unit: cm)
+  const [pointDistance, setPointDistance] = useState(''); // Pick point distance D (cm)
+  const [frontWireLen, setFrontWireLen] = useState('');   // Front wire length L1 (cm)
+  const [targetAngle, setTargetAngle] = useState(30);      // Default target pitch angle θ (30°)
+
+  const distNum = Number(pointDistance) || 0;
+  const frontNum = Number(frontWireLen) || 0;
+  const angleNum = Number(targetAngle) || 0;
+
+  const rad = (angleNum * Math.PI) / 180;
+  const deltaL = Math.round(distNum * Math.sin(rad));
+  const rearWireLen = frontNum + deltaL;
+
+  const minDelta = Math.round(distNum * Math.sin((15 * Math.PI) / 180));
+  const maxDelta = Math.round(distNum * Math.sin((30 * Math.PI) / 180));
+  const minRear = frontNum + minDelta;
+  const maxRear = frontNum + maxDelta;
 
   const [showClearanceLoopingModal, setShowClearanceLoopingModal] = useState(false);
 
@@ -1299,7 +1316,7 @@ const [assistantPin, setAssistantPin] = useState('');
     {/* Safety Item */}
     <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
       <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rack & Hanging Depth Limits</div>
-      Maintain top clearance ≥ 30mm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300mm to ensure the rack clears other racks during crane transfer. 
+      Maintain top clearance ≥ 30cm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300cm to ensure the rack clears other racks during crane transfer. 
     </div>
 
     {/* Quality Item 1 */}
@@ -1355,7 +1372,7 @@ const [assistantPin, setAssistantPin] = useState('');
               Hanging at <strong className="text-amber-400">15° to 30°</strong> ensures smooth air purging upon entry and rapid molten zinc run-off upon exit, preventing zinc tears, spikes, and ash trapping.
             </div>
             
-            {/* SVG Pitch Diagram (Left High, Right Low with Standard Angle Arc) */}
+            {/* SVG Pitch Diagram */}
             <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 140" className="w-full h-full">
                 {/* Horizontal Reference Line */}
@@ -1366,14 +1383,14 @@ const [assistantPin, setAssistantPin] = useState('');
                 <line x1="80" y1="10" x2="80" y2="35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
                 <line x1="240" y1="10" x2="240" y2="92" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
 
-                {/* Tilted Workpiece (Left High, Right Low) */}
+                {/* Tilted Workpiece */}
                 <g transform="rotate(20 80 35)">
                   <rect x="70" y="25" width="200" height="20" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
                   <circle cx="78" cy="25" r="3.5" fill="#ef4444" />
                   <circle cx="262" cy="45" r="3.5" fill="#38bdf8" />
                 </g>
 
-                {/* Standard Pitch Angle Arc & Text (Shifted forward into the spacious open gap) */}
+                {/* Pitch Angle Arc & Text */}
                 <path d="M 160 95 A 55 55 0 0 1 164 76" fill="none" stroke="#f59e0b" strokeWidth="2" />
                 <text x="148" y="82" fill="#f59e0b" fontSize="10" fontWeight="bold" fontFamily="sans-serif">
                   15°–30°
@@ -1393,10 +1410,70 @@ const [assistantPin, setAssistantPin] = useState('');
             </div>
           </div>
 
-          {/* Section 2: Comparison */}
+          {/* Section 2: Wire / Chain Length Calculator */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2.5">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+              <div className="font-bold text-cyan-300 text-[11px] flex items-center gap-1.5">
+                <span>🧮</span> 2. Wire & Chain Length Calculator
+              </div>
+              <span className="text-[9px] font-mono text-slate-400">Formula: L<sub>rear</sub> = L<sub>front</sub> + d × sin(θ)</span>
+            </div>
+
+            <div className="grid grid-cols-3 gap-2 text-[10px]">
+              <div>
+                <label className="block text-slate-400 mb-1">Pick Point Distance D (cm)</label>
+                <input
+                  type="number"
+                  value={pointDistance}
+                  onChange={(e) => setPointDistance(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-100 font-mono text-xs focus:outline-none focus:border-cyan-500"
+                  placeholder="Enter distance"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">Front Wire Length L<sub>1</sub> (cm)</label>
+                <input
+                  type="number"
+                  value={frontWireLen}
+                  onChange={(e) => setFrontWireLen(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-100 font-mono text-xs focus:outline-none focus:border-cyan-500"
+                  placeholder="Enter length"
+                />
+              </div>
+
+              <div>
+                <label className="block text-slate-400 mb-1">Target Pitch Angle θ (°)</label>
+                <input
+                  type="number"
+                  min="15"
+                  max="30"
+                  value={targetAngle}
+                  onChange={(e) => setTargetAngle(e.target.value)}
+                  className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-amber-400 font-bold font-mono text-xs focus:outline-none focus:border-amber-500"
+                />
+              </div>
+            </div>
+
+            {/* Calculation Result Box */}
+            <div className="bg-slate-900/90 border border-cyan-500/30 rounded p-2.5 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-slate-400">Recommended Rear Wire Length L<sub>2</sub>:</div>
+                <div className="text-base font-bold text-amber-400 font-mono">
+                  {rearWireLen} <span className="text-xs font-normal text-slate-400">cm</span>
+                </div>
+              </div>
+              <div className="text-right border-l border-slate-800 pl-3">
+                <div className="text-[9px] text-slate-400">Offset ΔL (L<sub>2</sub> - L<sub>1</sub>): <span className="font-mono text-cyan-300">+{deltaL} cm</span></div>
+                <div className="text-[9px] text-slate-400">15°–30° Optimal Range: <span className="font-mono text-emerald-400">{minRear} ~ {maxRear} cm</span></div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Comparison */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
             <div className="font-bold text-cyan-300 text-[11px]">
-              2. Pitch Angle Impact Comparison
+              3. Pitch Angle Impact Comparison
             </div>
 
             <div className="grid grid-cols-2 gap-2 pt-1">
