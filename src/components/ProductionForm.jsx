@@ -1530,7 +1530,7 @@ const [assistantPin, setAssistantPin] = useState('');
               {/* Beam Rack Header */}
               <rect x="100" y="25" width="600" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
               <text x="400" y="44" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">
-                BEAM RACK FRAME
+                BEAM RACK
               </text>
 
               {/* Outer Tension Lines */}
