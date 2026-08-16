@@ -1912,7 +1912,8 @@ const [assistantPin, setAssistantPin] = useState('');
               <circle cx="250" cy="75" r="11" fill="#0f172a" stroke="#10b981" strokeWidth="2.5" />
             </g>
             <text x="90" y="20" fill="#38bdf8" fontSize="11" fontWeight="bold">Air Vent (Small Hole ↑)</text>
-            <text x="245" y="140" fill="#10b981" fontSize="13" fontWeight="bold" textAnchor="middle">Zinc Run-off (Large Hole ↓)</text>
+            <text x="220" y="128" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">Zinc Run-off ↓</text>
+            <text x="220" y="142" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">(Large Hole)</text>
           </svg>
         </div>
         <div className="pt-2 border-t border-slate-800 flex justify-end">
@@ -1937,8 +1938,9 @@ const [assistantPin, setAssistantPin] = useState('');
               <rect x="55" y="50" width="10" height="50" fill="#f43f5e" />
               <line x1="220" y1="50" x2="220" y2="100" stroke="#10b981" strokeWidth="3" strokeDasharray="3 3" />
             </g>
-            <text x="80" y="30" fill="#f43f5e" fontSize="13" fontWeight="bold">Sealed Blind End (Top High)</text>
-            <text x="230" y="140" fill="#10b981" fontSize="13" fontWeight="bold" textAnchor="middle">Open Mouth (Lowest Point Drainage)</text>
+            <text x="80" y="30" fill="#f43f5e" fontSize="12" fontWeight="bold">Sealed Blind End (Top High)</text>
+            <text x="200" y="126" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">Open Mouth</text>
+            <text x="200" y="140" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">(Lowest Point Drainage)</text>
           </svg>
         </div>
         <div className="pt-2 border-t border-slate-800 flex justify-end">
@@ -1963,7 +1965,8 @@ const [assistantPin, setAssistantPin] = useState('');
               <circle cx="100" cy="55" r="4" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
               <circle cx="250" cy="120" r="4" fill="#10b981" />
             </g>
-            <text x="220" y="155" fill="#10b981" fontSize="11" fontWeight="bold">100% Free Lowest Tip (Clean Single Drip)</text>
+            <text x="170" y="144" fill="#10b981" fontSize="10" fontWeight="bold" textAnchor="middle">100% Free Lowest Tip</text>
+            <text x="170" y="157" fill="#10b981" fontSize="10" fontWeight="bold" textAnchor="middle">(Clean Single Drip)</text>
           </svg>
         </div>
         <div className="pt-2 border-t border-slate-800 flex justify-end">
@@ -1988,8 +1991,10 @@ const [assistantPin, setAssistantPin] = useState('');
               <circle cx="75" cy="48" r="4" fill="#10b981" />
               <circle cx="160" cy="75" r="4" fill="#f43f5e" />
             </g>
-            <text x="50" y="25" fill="#10b981" fontSize="11" fontWeight="bold">✓ Corner/Edge Hole (Tight Contour Wire)</text>
-            <text x="180" y="110" fill="#f43f5e" fontSize="11" fontWeight="bold">❌ Mid-Body Hole (Blocks Flow)</text>
+            <text x="50" y="22" fill="#10b981" fontSize="10" fontWeight="bold">✓ Corner/Edge Hole</text>
+            <text x="50" y="35" fill="#10b981" fontSize="10" fontWeight="bold">(Tight Contour Wire)</text>
+            <text x="310" y="132" fill="#f43f5e" fontSize="10" fontWeight="bold" textAnchor="end">❌ Mid-Body Hole</text>
+            <text x="310" y="145" fill="#f43f5e" fontSize="10" fontWeight="bold" textAnchor="end">(Blocks Flow)</text>
           </svg>
         </div>
         <div className="pt-2 border-t border-slate-800 flex justify-end">
