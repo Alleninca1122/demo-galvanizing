@@ -1443,7 +1443,7 @@ const [assistantPin, setAssistantPin] = useState('');
       <div>Pass tie-wires through corner or edge holes rather than mid-body holes. Keep wires pulled tight against workpiece contours.</div>
     </div>
 
- {/* Quality Item: Corner-Down Tilt & Single Vertex Lowest Point */}
+{/* Quality Item: Corner-Down Tilt & Single Vertex Lowest Point */}
 <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
   <div className="flex items-center justify-between mb-0.5">
     <div className="font-bold text-cyan-300">💎 Quality: Corner-Down Tilt & Single Vertex Lowest Point</div>
@@ -1464,9 +1464,9 @@ const [assistantPin, setAssistantPin] = useState('');
 {/* ================= MODAL: Single Vertex Lowest Point Guide ================= */}
 {showUniqueLowPointGuide && (
   <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-xl w-full p-4 space-y-4 shadow-2xl">
+    <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-2xl w-full p-4 space-y-4 shadow-2xl">
       <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <h3 className="text-sm font-bold text-cyan-400">📐 Corner-Down Tilt vs. Flat Edge Hanging Standard</h3>
+        <h3 className="text-sm font-bold text-cyan-400">📐 Corner-Down Tilt (Correct) vs. Flat Bottom Edge (Incorrect)</h3>
         <button
           type="button"
           onClick={() => setShowUniqueLowPointGuide(false)}
@@ -1477,35 +1477,54 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
 
       <div className="space-y-3 text-xs text-slate-300">
-        <div className="w-full h-56 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
-          <svg viewBox="0 0 480 180" className="w-full h-full">
-            {/* Beam Rack */}
-            <line x1="30" y1="20" x2="450" y2="20" stroke="#475569" strokeWidth="3" />
-            <text x="240" y="14" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
+        <div className="w-full h-64 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 560 200" className="w-full h-full">
+            {/* Center Divider */}
+            <line x1="280" y1="15" x2="280" y2="185" stroke="#334155" strokeWidth="1" strokeDasharray="4 4" />
 
-            {/* --- LEFT: CORRECT (Diamond / Corner-Down) --- */}
+            {/* ================= LEFT SIDE: CORRECT (Diamond / Corner-Down) ================= */}
             <g>
-              <line x1="105" y1="20" x2="107" y2="67" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
-              <line x1="155" y1="20" x2="153" y2="67" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
-              {/* Diamond Polygon */}
-              <polygon points="130,45 175,90 130,135 85,90" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              {/* Beam */}
+              <line x1="40" y1="25" x2="240" y2="25" stroke="#475569" strokeWidth="3" />
+              <text x="140" y="17" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
+
+              {/* Hanging Wires */}
+              <line x1="100" y1="25" x2="140" y2="55" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
+              <line x1="180" y1="25" x2="140" y2="55" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
+
+              {/* Diamond Plate */}
+              <polygon points="140,55 190,105 140,155 90,105" fill="#1e293b" stroke="#38bdf8" strokeWidth="2.5" />
+
               {/* Single Lowest Corner Vertex Highlight */}
-              <circle cx="130" cy="135" r="6" fill="none" stroke="#10b981" strokeWidth="2.5" />
-              <circle cx="130" cy="135" r="2.5" fill="#10b981" />
-              <text x="130" y="157" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">✓ Correct (Diamond)</text>
-              <text x="130" y="38" fill="#ef4444" fontSize="10" fontWeight="bold" textAnchor="middle">Top Vent ↑</text>
+              <circle cx="140" cy="155" r="7" fill="none" stroke="#10b981" strokeWidth="2.5" />
+              <circle cx="140" cy="155" r="3" fill="#10b981" />
+
+              {/* Labels */}
+              <text x="140" y="47" fill="#38bdf8" fontSize="10" fontWeight="bold" textAnchor="middle">Top Vent Corner ↑</text>
+              <text x="140" y="178" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">✓ Correct: Corner-Down</text>
+              <text x="140" y="192" fill="#94a3b8" fontSize="9" textAnchor="middle">Single lowest vertex = Clean run-off</text>
             </g>
 
-            {/* --- RIGHT: INCORRECT (Square / Flat Bottom Edge Line) --- */}
+            {/* ================= RIGHT SIDE: INCORRECT (Square / Flat Bottom) ================= */}
             <g>
-              <line x1="325" y1="20" x2="325" y2="55" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
-              <line x1="375" y1="20" x2="375" y2="55" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
-              {/* Square Rect */}
-              <rect x="310" y="55" width="80" height="80" rx="2" fill="#1e293b" stroke="#f43f5e" strokeWidth="2" />
-              {/* Bottom Edge Line Highlight (Error) */}
-              <line x1="310" y1="135" x2="390" y2="135" stroke="#f43f5e" strokeWidth="4" />
-              <text x="350" y="157" fill="#f43f5e" fontSize="11" fontWeight="bold" textAnchor="middle">❌ Incorrect (Square Edge)</text>
-              <text x="350" y="48" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle">Horizontal Top</text>
+              {/* Beam */}
+              <line x1="320" y1="25" x2="520" y2="25" stroke="#475569" strokeWidth="3" />
+              <text x="420" y="17" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
+
+              {/* Hanging Wires */}
+              <line x1="370" y1="25" x2="370" y2="65" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
+              <line x1="470" y1="25" x2="470" y2="65" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
+
+              {/* Square Rect Plate */}
+              <rect x="350" y="65" width="140" height="90" rx="2" fill="#1e293b" stroke="#f43f5e" strokeWidth="2.5" />
+
+              {/* Bottom Edge Line Highlight (Error / Pooling) */}
+              <line x1="350" y1="155" x2="490" y2="155" stroke="#f43f5e" strokeWidth="4" />
+
+              {/* Labels */}
+              <text x="420" y="55" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle">Horizontal Top Edge</text>
+              <text x="420" y="178" fill="#f43f5e" fontSize="11" fontWeight="bold" textAnchor="middle">❌ Incorrect: Flat Bottom</text>
+              <text x="420" y="192" fill="#94a3b8" fontSize="9" textAnchor="middle">Full edge line = Heavy zinc icicles</text>
             </g>
           </svg>
         </div>
@@ -1515,8 +1534,8 @@ const [assistantPin, setAssistantPin] = useState('');
             <span>💡</span> Industry Best Practice:
           </div>
           <div className="text-[10px] text-slate-400 leading-relaxed">
-            1. <strong>Correct (Diamond Corner-Down)</strong>: Tilt and rig the plate diagonally so drainage converges strictly to one single lowest corner vertex for clean run-off.<br/>
-            2. <strong>Incorrect (Square Flat Bottom)</strong>: Hanging with a flat horizontal bottom edge causes zinc to pool across the entire edge line, creating heavy zinc icicles and defects.
+            1. <strong>Left (Correct - Corner-Down / Diamond)</strong>: Workpiece is tilted diagonally, ensuring zinc drainage converges strictly to a single lowest corner vertex for clean run-off.<br/>
+            2. <strong>Right (Incorrect - Flat Bottom Edge)</strong>: Hanging with a flat horizontal bottom edge causes zinc to pool across the entire lower edge line, creating severe zinc icicles and coating defects.
           </div>
         </div>
       </div>
@@ -1532,7 +1551,7 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
   </div>
-)} 
+)}  
 
   {/* Anti-Sway & Waist-Tie Guide Modal */}
   {showAntiSwayGuide && (
