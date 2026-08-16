@@ -1481,7 +1481,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 </text>
 
                 <line x1="100" y1="24" x2="100" y2="125" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
-                <text x="105" y="40" fill="#64748b" fontSize="10" className="font-mono">0° Vertical Line</text>
+                <text x="105" y="40" fill="#cbd5e1" fontSize="13" fontWeight="bold" className="font-mono">0° Vertical Line</text>
 
                 <line x1="100" y1="24" x2="60" y2="110" stroke="#f43f5e" strokeWidth="2" />
                 <circle cx="100" cy="24" r="3" fill="#f43f5e" />
@@ -1646,8 +1646,8 @@ const [assistantPin, setAssistantPin] = useState('');
                 <line x1="311" y1="264" x2="311" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
                 <line x1="551" y1="264" x2="551" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
 
-                <rect x="170" y="340" width="510" height="42" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
-                <text x="425" y="366" fill="#fbbf24" fontSize="20" fontWeight="bold" textAnchor="middle" className="font-mono">
+                <rect x="115" y="336" width="620" height="48" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
+                <text x="425" y="366" fill="#fbbf24" fontSize="15" fontWeight="bold" textAnchor="middle" className="font-mono">
                   Interconnecting Tie Wire (Connecting Adjacent Workpieces)
                 </text>
               </svg>
@@ -1725,7 +1725,7 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 140" className="w-full h-full">
                 <line x1="30" y1="95" x2="280" y2="95" stroke="#475569" strokeWidth="1.5" strokeDasharray="4 4" />
-                <text x="282" y="98" fill="#64748b" fontSize="11" className="font-mono">0° Horizontal</text>
+                <text x="282" y="98" fill="#cbd5e1" fontSize="13" fontWeight="bold" className="font-mono">0° Horizontal</text>
 
                 <line x1="80" y1="10" x2="80" y2="35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
                 <line x1="240" y1="10" x2="240" y2="92" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
@@ -1748,7 +1748,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 <text x="260" y="115" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓ (Lowest Drain)</text>
 
                 <line x1="20" y1="120" x2="180" y2="120" stroke="#0284c7" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
-                <text x="25" y="115" fill="#0284c7" fontSize="11" opacity="0.7">Zinc Kettle Bath Line</text>
+                <text x="25" y="115" fill="#38bdf8" fontSize="12" fontWeight="bold" opacity="1">Zinc Kettle Bath Line</text>
               </svg>
             </div>
           </div>
@@ -1792,7 +1792,7 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="w-full h-40 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 110" className="w-full h-full">
                 <line x1="20" y1="15" x2="300" y2="15" stroke="#475569" strokeWidth="3" />
-                <text x="25" y="10" fill="#64748b" fontSize="10" className="font-mono">Beam Rack</text>
+                <text x="25" y="10" fill="#cbd5e1" fontSize="12" fontWeight="bold" className="font-mono">Beam Rack</text>
 
                 <line x1="80" y1="15" x2="80" y2="40" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
                 <text x="65" y="30" fill="#38bdf8" fontSize="13" fontWeight="bold" className="font-mono">L₁</text>
