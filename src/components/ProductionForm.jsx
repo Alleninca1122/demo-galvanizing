@@ -1466,7 +1466,7 @@ const [assistantPin, setAssistantPin] = useState('');
   <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-xl w-full p-4 space-y-4 shadow-2xl">
       <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <h3 className="text-sm font-bold text-cyan-400">📐 Corner-Down Tilt vs. Flat Edge Hanging Standard</h3>
+        <h3 className="text-sm font-bold text-cyan-400">📐 Corner-Down Tilt vs. Flat Bottom Edge Standard</h3>
         <button
           type="button"
           onClick={() => setShowUniqueLowPointGuide(false)}
@@ -1477,32 +1477,35 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
 
       <div className="space-y-3 text-xs text-slate-300">
-        <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+        <div className="w-full h-56 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
           <svg viewBox="0 0 480 180" className="w-full h-full">
             {/* Beam Rack */}
             <line x1="30" y1="20" x2="450" y2="20" stroke="#475569" strokeWidth="3" />
             <text x="240" y="14" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
 
-            {/* --- LEFT: CORRECT (Diamond / Corner-Down) --- */}
-            <g transform="translate(130, 95)">
-              <line x1="-50" y1="-75" x2="-35" y2="-35" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
-              <line x1="50" y1="-75" x2="35" y2="-35" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
-              <g transform="rotate(45)">
-                <rect x="-35" y="-35" width="70" height="70" rx="2" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
-              </g>
-              <circle cx="0" cy="53" r="5" fill="none" stroke="#10b981" strokeWidth="2.5" />
-              <circle cx="0" cy="53" r="2.5" fill="#10b981" />
-              <text x="0" y="72" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">✓ Correct (Single Vertex)</text>
+            {/* --- LEFT: CORRECT (Diamond / Corner-Down Single Vertex) --- */}
+            <g>
+              <line x1="105" y1="20" x2="107" y2="67" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
+              <line x1="155" y1="20" x2="153" y2="67" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
+              {/* Diamond Polygon */}
+              <polygon points="130,45 175,90 130,135 85,90" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              {/* Single Lowest Corner Vertex Highlight */}
+              <circle cx="130" cy="135" r="6" fill="none" stroke="#10b981" strokeWidth="2.5" />
+              <circle cx="130" cy="135" r="2.5" fill="#10b981" />
+              <text x="130" y="157" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">✓ Correct (Single Vertex)</text>
+              <text x="130" y="38" fill="#ef4444" fontSize="10" fontWeight="bold" textAnchor="middle">Top Vent ↑</text>
             </g>
 
-            {/* --- RIGHT: INCORRECT (Square / Flat Bottom Edge) --- */}
-            <g transform="translate(350, 95)">
-              <line x1="-35" y1="-75" x2="-35" y2="-35" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
-              <line x1="35" y1="-75" x2="35" y2="-35" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
-              <rect x="-35" y="-35" width="70" height="70" rx="2" fill="#1e293b" stroke="#f43f5e" strokeWidth="2" />
-              {/* Bottom Edge line highlight for pooling */}
-              <line x1="-35" y1="35" x2="35" y2="35" stroke="#f43f5e" strokeWidth="4" />
-              <text x="0" y="55" fill="#f43f5e" fontSize="11" fontWeight="bold" textAnchor="middle">❌ Incorrect (Edge Line Drips)</text>
+            {/* --- RIGHT: INCORRECT (Square / Flat Bottom Edge Line) --- */}
+            <g>
+              <line x1="325" y1="20" x2="325" y2="55" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
+              <line x1="375" y1="20" x2="375" y2="55" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
+              {/* Square Rect */}
+              <rect x="310" y="55" width="80" height="80" rx="2" fill="#1e293b" stroke="#f43f5e" strokeWidth="2" />
+              {/* Bottom Edge Line Highlight (Error) */}
+              <line x1="310" y1="135" x2="390" y2="135" stroke="#f43f5e" strokeWidth="4" />
+              <text x="350" y="157" fill="#f43f5e" fontSize="11" fontWeight="bold" textAnchor="middle">❌ Incorrect (Edge Line Drips)</text>
+              <text x="350" y="48" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle">Horizontal Top</text>
             </g>
           </svg>
         </div>
@@ -1512,8 +1515,8 @@ const [assistantPin, setAssistantPin] = useState('');
             <span>💡</span> Industry Best Practice:
           </div>
           <div className="text-[10px] text-slate-400 leading-relaxed">
-            1. <strong>Correct (Diamond Corner-Down)</strong>: Tilt and rig the plate diagonally so drainage converges entirely to one lowest corner vertex for a clean drop-off.<br/>
-            2. <strong>Incorrect (Flat Bottom Edge)</strong>: Hanging square with a horizontal bottom edge causes zinc to pool along the entire line, creating heavy zinc icicles and surface defects.
+            1. <strong>Correct (Diamond Corner-Down)</strong>: Tilt and rig the plate diagonally so drainage converges strictly to one single lowest corner vertex for clean run-off.<br/>
+            2. <strong>Incorrect (Square Flat Bottom)</strong>: Hanging with a flat horizontal bottom edge causes zinc to pool across the entire edge line, creating heavy zinc icicles and defects.
           </div>
         </div>
       </div>
