@@ -194,6 +194,7 @@ export default function ProductionForm({ currentUser, supabase }) {
   const [showBlindEndGuide, setShowBlindEndGuide] = useState(false);
   const [showDripCornerGuide, setShowDripCornerGuide] = useState(false);
   const [showCornerTieGuide, setShowCornerTieGuide] = useState(false);
+  const [showUniqueLowPointGuide, setShowUniqueLowPointGuide] = useState(false);
 
   // 控制 ASTM A385 图解弹窗的开关
   const [showGuide, setShowGuide] = useState(false);
@@ -1441,121 +1442,114 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
       <div>Pass tie-wires through corner or edge holes rather than mid-body holes. Keep wires pulled tight against workpiece contours.</div>
     </div>
+
+{/* Quality Item: Corner-Down Tilt & Single Vertex Lowest Point */}
+<div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+  <div className="flex items-center justify-between mb-0.5">
+    <div className="font-bold text-cyan-300">💎 Quality: Corner-Down Tilt & Single Vertex Lowest Point</div>
+    <button
+      type="button"
+      onClick={() => setShowUniqueLowPointGuide(true)}
+      className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+    >
+      <span>📐</span>
+      <span className="underline decoration-cyan-400/50">Single-Point Guide</span>
+    </button>
   </div>
+  <div>
+    Hang the workpiece with a diagonal/corner-down tilt. Ensure zinc drainage converges strictly to a single lowest corner vertex (one point) rather than an entire lower edge (line), minimizing zinc icicles and drips.
+  </div>
+</div>
 
-  {/* ============ 原有 3 个 Modal ============ */}
+{/* ================= MODAL: Single Vertex Lowest Point Guide ================= */}
+{showUniqueLowPointGuide && (
+  <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-2xl w-full p-4 space-y-4 shadow-2xl">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <h3 className="text-sm font-bold text-cyan-400">📐 Corner-Down Tilt (Correct) vs. Flat Bottom Edge (Incorrect)</h3>
+        <button
+          type="button"
+          onClick={() => setShowUniqueLowPointGuide(false)}
+          className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
+        >
+          ✕ Close
+        </button>
+      </div>
 
-  {/* Rigging Angle & Derating Guide Modal (Safety Modal) */}
-  {showRiggingGuide && (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-          <div className="flex items-center gap-2">
-            <span className="text-base">⚖️</span>
-            <h3 className="text-sm font-bold text-rose-300">
-              Rigging Angle & Load Derating Standard (&le; 45&deg;)
-            </h3>
-          </div>
-          <button
-            type="button"
-            onClick={() => setShowRiggingGuide(false)}
-            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-          >
-            ✕ Close
-          </button>
+      <div className="space-y-3 text-xs text-slate-300">
+        <div className="w-full h-64 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 560 200" className="w-full h-full">
+            {/* Center Divider */}
+            <line x1="280" y1="15" x2="280" y2="185" stroke="#334155" strokeWidth="1" strokeDasharray="4 4" />
+
+            {/* ================= LEFT SIDE: CORRECT (Diamond / Corner-Down) ================= */}
+            <g>
+              {/* Beam */}
+              <line x1="40" y1="25" x2="240" y2="25" stroke="#475569" strokeWidth="3" />
+              <text x="140" y="17" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
+
+              {/* Hanging Wires */}
+              <line x1="140" y1="25" x2="140" y2="55" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
+              {/* Diamond Plate */}
+              <polygon points="140,55 190,105 140,155 90,105" fill="#1e293b" stroke="#38bdf8" strokeWidth="2.5" />
+
+              {/* Single Lowest Corner Vertex Highlight */}
+              <circle cx="140" cy="155" r="7" fill="none" stroke="#10b981" strokeWidth="2.5" />
+              <circle cx="140" cy="155" r="3" fill="#10b981" />
+
+              {/* Labels */}
+              <text x="140" y="47" fill="#38bdf8" fontSize="10" fontWeight="bold" textAnchor="middle">Top Vent Corner ↑</text>
+              <text x="140" y="178" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">✓ Correct: Corner-Down</text>
+              <text x="140" y="192" fill="#94a3b8" fontSize="9" textAnchor="middle">Single lowest vertex = Clean run-off</text>
+            </g>
+
+            {/* ================= RIGHT SIDE: INCORRECT (Square / Flat Bottom) ================= */}
+            <g>
+              {/* Beam */}
+              <line x1="320" y1="25" x2="520" y2="25" stroke="#475569" strokeWidth="3" />
+              <text x="420" y="17" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
+
+              {/* Hanging Wires */}
+              <line x1="370" y1="25" x2="370" y2="65" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
+              <line x1="470" y1="25" x2="470" y2="65" stroke="#f43f5e" strokeWidth="2" strokeDasharray="3 3" />
+
+              {/* Square Rect Plate */}
+              <rect x="350" y="65" width="140" height="90" rx="2" fill="#1e293b" stroke="#f43f5e" strokeWidth="2.5" />
+
+              {/* Bottom Edge Line Highlight (Error / Pooling) */}
+              <line x1="350" y1="155" x2="490" y2="155" stroke="#f43f5e" strokeWidth="4" />
+
+              {/* Labels */}
+              <text x="420" y="55" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle">Horizontal Top Edge</text>
+              <text x="420" y="178" fill="#f43f5e" fontSize="11" fontWeight="bold" textAnchor="middle">❌ Incorrect: Flat Bottom</text>
+              <text x="420" y="192" fill="#94a3b8" fontSize="9" textAnchor="middle">Full edge line = Heavy zinc icicles</text>
+            </g>
+          </svg>
         </div>
 
-        <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-            <div className="font-bold text-rose-300 text-[11px]">
-              1. Rigging Angle (&theta;) Reference Diagram
-            </div>
-            <div className="text-[10px] text-slate-400 leading-relaxed">
-              Rigging Angle (&theta;) is measured between the wire/chain and the <strong>vertical line</strong>. Larger angles increase tension and reduce working load limit (WLL).
-            </div>
-            <div className="w-full h-56 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
-              <svg viewBox="0 0 320 150" className="w-full h-full">
-                <rect x="30" y="12" width="260" height="12" rx="2" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
-                <text x="160" y="21" fill="#94a3b8" fontSize="11" fontWeight="bold" textAnchor="middle" className="font-mono">
-                  Beam Rack
-                </text>
-
-                <line x1="100" y1="24" x2="100" y2="125" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
-                <text x="105" y="40" fill="#cbd5e1" fontSize="13" fontWeight="bold" className="font-mono">0° Vertical Line</text>
-
-                <line x1="100" y1="24" x2="60" y2="110" stroke="#f43f5e" strokeWidth="2" />
-                <circle cx="100" cy="24" r="3" fill="#f43f5e" />
-                <circle cx="60" cy="110" r="3" fill="#f43f5e" />
-
-                <line x1="220" y1="24" x2="260" y2="110" stroke="#f43f5e" strokeWidth="2" />
-                <circle cx="220" cy="24" r="3" fill="#f43f5e" />
-                <circle cx="260" cy="110" r="3" fill="#f43f5e" />
-
-                <path d="M 100 65 A 41 41 0 0 0 81 60" fill="none" stroke="#f59e0b" strokeWidth="2" />
-                <text x="82" y="76" fill="#f59e0b" fontSize="13" fontWeight="bold" className="font-mono">
-                  θ (Rigging Angle)
-                </text>
-
-                <rect x="40" y="110" width="240" height="18" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
-                <text x="160" y="122" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">
-                  Workpiece
-                </text>
-              </svg>
-            </div>
+        <div className="bg-slate-950 p-2.5 rounded border border-slate-800 text-[11px] space-y-1 text-slate-300">
+          <div className="font-bold text-cyan-300 flex items-center gap-1">
+            <span>💡</span> Industry Best Practice:
           </div>
-
-          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-            <div className="font-bold text-rose-300 text-[11px]">
-              2. Load Capacity Derating Rules
-            </div>
-            <div className="grid grid-cols-2 gap-2 text-[10px]">
-              <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
-                <div className="font-bold text-emerald-400 flex justify-between">
-                  <span>&le; 15&deg; (Optimal)</span>
-                  <span>100% WLL</span>
-                </div>
-                <div className="text-[9px] text-slate-400">Normal operating load. Minimal tension increase.</div>
-              </div>
-
-              <div className="bg-amber-950/20 p-2 rounded border border-amber-500/30 space-y-0.5">
-                <div className="font-bold text-amber-400 flex justify-between">
-                  <span>15&deg;&ndash;30&deg; (Caution)</span>
-                  <span>Derate to 85%</span>
-                </div>
-                <div className="text-[9px] text-slate-400">Wire/chain tension increases ~15%. Reduce max load.</div>
-              </div>
-
-              <div className="bg-orange-950/20 p-2 rounded border border-orange-500/30 space-y-0.5">
-                <div className="font-bold text-orange-400 flex justify-between">
-                  <span>30&deg;&ndash;45&deg; (Warning)</span>
-                  <span>Derate to 70%</span>
-                </div>
-                <div className="text-[9px] text-slate-400">High lateral tension forces. Strict weight checking required.</div>
-              </div>
-
-              <div className="bg-rose-950/30 p-2 rounded border border-rose-500/40 space-y-0.5">
-                <div className="font-bold text-rose-400 flex justify-between">
-                  <span>&gt; 45&deg; (DANGER)</span>
-                  <span className="underline">PROHIBITED</span>
-                </div>
-                <div className="text-[9px] text-slate-400">Extreme risk of wire failure, slip or workpiece damage.</div>
-              </div>
-            </div>
+          <div className="text-[10px] text-slate-400 leading-relaxed">
+            1. <strong>Left (Correct - Corner-Down / Diamond)</strong>: Workpiece is tilted diagonally, ensuring zinc drainage converges strictly to a single lowest corner vertex for clean run-off.<br/>
+            2. <strong>Right (Incorrect - Flat Bottom Edge)</strong>: Hanging with a flat horizontal bottom edge causes zinc to pool across the entire lower edge line, creating severe zinc icicles and coating defects.
           </div>
-        </div>
-
-        <div className="pt-2 border-t border-slate-800 flex justify-end">
-          <button
-            type="button"
-            onClick={() => setShowRiggingGuide(false)}
-            className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-          >
-            Got It
-          </button>
         </div>
       </div>
+
+      <div className="pt-2 border-t border-slate-800 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowUniqueLowPointGuide(false)}
+          className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+        >
+          Got It
+        </button>
+      </div>
     </div>
-  )}
+  </div>
+)}  
 
   {/* Anti-Sway & Waist-Tie Guide Modal */}
   {showAntiSwayGuide && (
@@ -1597,7 +1591,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 <rect width="850" height="420" fill="url(#grid-sway-correct)" rx="4" />
 
                 <rect x="50" y="25" width="750" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
-                <text x="425" y="44" fill="#ffffff" fontSize="22" fontWeight="bold" textAnchor="middle" className="font-mono">
+                <text x="425" y="44" fill="#cbd5e1" fontSize="14" fontWeight="normal" textAnchor="middle" className="font-mono">
                   BEAM RACK
                 </text>
 
@@ -1617,21 +1611,21 @@ const [assistantPin, setAssistantPin] = useState('');
 
                 <g transform="translate(185, 230) rotate(-10)">
                   <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                  <text x="0" y="-5" fill="#ffffff" fontSize="20" fontWeight="bold" textAnchor="middle">
+                  <text x="0" y="-5" fill="#cbd5e1" fontSize="13" fontWeight="normal" textAnchor="middle">
                     Plate #1
                   </text>
                 </g>
 
                 <g transform="translate(425, 230) rotate(-10)">
                   <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                  <text x="0" y="-5" fill="#ffffff" fontSize="20" fontWeight="bold" textAnchor="middle">
+                  <text x="0" y="-5" fill="#cbd5e1" fontSize="13" fontWeight="normal" textAnchor="middle">
                     Plate #2
                   </text>
                 </g>
 
                 <g transform="translate(665, 230) rotate(-10)">
                   <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                  <text x="0" y="-5" fill="#ffffff" fontSize="20" fontWeight="bold" textAnchor="middle">
+                  <text x="0" y="-5" fill="#cbd5e1" fontSize="13" fontWeight="normal" textAnchor="middle">
                     Plate #3
                   </text>
                 </g>
@@ -1792,7 +1786,7 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="w-full h-40 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 110" className="w-full h-full">
                 <line x1="20" y1="15" x2="300" y2="15" stroke="#475569" strokeWidth="3" />
-                <text x="25" y="10" fill="#cbd5e1" fontSize="12" fontWeight="bold" className="font-mono">Beam Rack</text>
+                <text x="25" y="10" fill="#cbd5e1" fontSize="11" fontWeight="normal" className="font-mono">Beam Rack</text>
 
                 <line x1="80" y1="15" x2="80" y2="40" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
                 <text x="65" y="30" fill="#38bdf8" fontSize="13" fontWeight="bold" className="font-mono">L₁</text>
@@ -2004,6 +1998,7 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
   )}
+
 </div>
 
 
@@ -3083,10 +3078,10 @@ const [assistantPin, setAssistantPin] = useState('');
   {isFormBlocked
     ? '🚨 CANNOT SUBMIT: FIX SAFETY HAZARDS ABOVE'
     : '🚨 Confirm & Sign-off →'}
-</button>  
-        </div>
-
-   {/* WORKFLOW STEPPER CONTAINER */}   </form>
-    </div>
-  );
+</button>
+</div>
+</div>
+</form>
+</div>
+);
 }
