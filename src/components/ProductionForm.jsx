@@ -164,19 +164,23 @@ const SURFACE_SPREAD_WARNING_THRESHOLD = 2;
 export default function ProductionForm({ currentUser, supabase }) {
 
   const [showPitchGuide, setShowPitchGuide] = React.useState(false);
-// 悬挂计算器状态与公式
-  const [pointDistance, setPointDistance] = useState(1000); // 吊点间距 d (mm)
-  const [frontWireLen, setFrontWireLen] = useState(500);     // 前吊绳长 L1 (mm)
-  const [targetAngle, setTargetAngle] = useState(20);        // 目标倾角 θ (°)
+// Rigging Calculator State & Calculations (Unit: cm)
+  const [pointDistance, setPointDistance] = useState(''); // Pick point distance d (cm)
+  const [frontWireLen, setFrontWireLen] = useState('');   // Front wire length L1 (cm)
+  const [targetAngle, setTargetAngle] = useState(30);      // Default target pitch angle θ (30°)
 
-  const rad = (targetAngle * Math.PI) / 180;
-  const deltaL = Math.round((Number(pointDistance) || 0) * Math.sin(rad));
-  const rearWireLen = (Number(frontWireLen) || 0) + deltaL;
+  const distNum = Number(pointDistance) || 0;
+  const frontNum = Number(frontWireLen) || 0;
+  const angleNum = Number(targetAngle) || 0;
 
-  const minDelta = Math.round((Number(pointDistance) || 0) * Math.sin((15 * Math.PI) / 180));
-  const maxDelta = Math.round((Number(pointDistance) || 0) * Math.sin((30 * Math.PI) / 180));
-  const minRear = (Number(frontWireLen) || 0) + minDelta;
-  const maxRear = (Number(frontWireLen) || 0) + maxDelta;
+  const rad = (angleNum * Math.PI) / 180;
+  const deltaL = Math.round(distNum * Math.sin(rad));
+  const rearWireLen = frontNum + deltaL;
+
+  const minDelta = Math.round(distNum * Math.sin((15 * Math.PI) / 180));
+  const maxDelta = Math.round(distNum * Math.sin((30 * Math.PI) / 180));
+  const minRear = frontNum + minDelta;
+  const maxRear = frontNum + maxDelta;
 
   const [showClearanceLoopingModal, setShowClearanceLoopingModal] = useState(false);
 
