@@ -1510,10 +1510,10 @@ const [assistantPin, setAssistantPin] = useState('');
         {/* Section 1: SVG Diagram */}
         <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
           <div className="font-bold text-rose-300 text-[11px]">
-            1. Interconnecting Edge-Tie Anti-Sway Diagram (3-Plate Row)
+            1. Interconnecting Anti-Sway Diagram (3-Plate Row)
           </div>
           <div className="text-[10px] text-slate-400 leading-relaxed">
-            Use dual-point suspension for large plates. Wrap tie wire securely around adjacent side edges/corners of neighboring plates to lock them into a single rigid row.
+            Use dual-point suspension for large plates. Connect adjacent workpieces with tie wire to form a single rigid row and eliminate relative movement.
           </div>
 
           <div className="w-full h-72 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
@@ -1551,8 +1551,6 @@ const [assistantPin, setAssistantPin] = useState('');
               {/* Workpiece #1 (Left-High Tilt: rotate -10) */}
               <g transform="translate(185, 230) rotate(-10)">
                 <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                <circle cx="-35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
                 <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
                   Plate #1
                 </text>
@@ -1561,8 +1559,6 @@ const [assistantPin, setAssistantPin] = useState('');
               {/* Workpiece #2 (Left-High Tilt: rotate -10) */}
               <g transform="translate(425, 230) rotate(-10)">
                 <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                <circle cx="-35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
                 <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
                   Plate #2
                 </text>
@@ -1571,18 +1567,15 @@ const [assistantPin, setAssistantPin] = useState('');
               {/* Workpiece #3 (Left-High Tilt: rotate -10) */}
               <g transform="translate(665, 230) rotate(-10)">
                 <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                <circle cx="-35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="35" cy="-55" r="5" fill="none" stroke="#38bdf8" strokeWidth="2" />
                 <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
                   Plate #3
                 </text>
               </g>
 
-              {/* Continuous Interconnecting Tie Wire Path (Accurately Calculated Edge Coordinates) */}
-              {/* Outer Left Start (127, 276) -> Plate 1 Right Edge (255, 253) -> Plate 2 Left Edge (367, 276) -> Plate 2 Right Edge (495, 253) -> Plate 3 Left Edge (607, 276) -> Outer Right End (735, 253) */}
+              {/* Continuous Interconnecting Tie Line */}
               <path d="M 127 276 L 255 253 L 367 276 L 495 253 L 607 276 L 735 253" fill="none" stroke="#f59e0b" strokeWidth="3.5" />
 
-              {/* Exact Edge Tie Knots / Wrap Points (Sitting Exactly on Plate Borders) */}
+              {/* Interconnection Connection Points */}
               <circle cx="255" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
               <circle cx="367" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
               <circle cx="495" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
@@ -1592,9 +1585,9 @@ const [assistantPin, setAssistantPin] = useState('');
               <line x1="311" y1="264" x2="311" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
               <line x1="551" y1="264" x2="551" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
 
-              <rect x="180" y="340" width="490" height="42" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
+              <rect x="170" y="340" width="510" height="42" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
               <text x="425" y="366" fill="#fbbf24" fontSize="14" fontWeight="bold" textAnchor="middle" className="font-mono">
-                Interconnecting Tie Wire (Wrapped Around Adjacent Edges)
+                Interconnecting Tie Wire (Connecting Adjacent Workpieces)
               </text>
             </svg>
           </div>
@@ -1620,7 +1613,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 ✓ Interconnecting Tie Wire
               </div>
               <div className="text-[9px] text-slate-400">
-                Secure tie wire around adjacent outer edges or corner holes of neighboring plates to lock them into a unified row, eliminating relative sway & collisions.
+                Connect adjacent workpieces using tie wire to form a unified row, eliminating relative sway & collisions.
               </div>
             </div>
           </div>
