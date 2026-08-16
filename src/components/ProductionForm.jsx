@@ -1916,8 +1916,7 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
   )}
-
- {/* MODAL 2: 盲端大倾角 */}
+{/* MODAL 2: 盲端大倾角 */}
 {showBlindEndGuide && (
   <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
@@ -1927,27 +1926,27 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
       <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
         <svg viewBox="0 0 320 150" className="w-full h-full">
-          {/* 1. 水平参考线 (锌液面/基准线) */}
-          <line x1="30" y1="75" x2="260" y2="75" stroke="#64748b" strokeWidth="1.5" strokeDasharray="4 4" />
-          <text x="263" y="78" fill="#64748b" fontSize="9" fontWeight="500">Horizontal Level</text>
-
-          {/* 2. 管体 (旋转 35°) */}
+          {/* 1. 管体 (旋转 35°) */}
           <g transform="rotate(35 160 75)">
             {/* 管身中心轴线 */}
-            <line x1="50" y1="75" x2="230" y2="75" stroke="#38bdf8" strokeWidth="1" strokeDasharray="2 2" opacity="0.4" />
+            <line x1="50" y1="75" x2="230" y2="75" stroke="#38bdf8" strokeWidth="1" strokeDasharray="2 2" opacity="0.3" />
             <path d="M 60 50 L 220 50 L 220 100 L 60 100 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
             <rect x="55" y="50" width="10" height="50" fill="#f43f5e" />
             <line x1="220" y1="50" x2="220" y2="100" stroke="#10b981" strokeWidth="3" strokeDasharray="3 3" />
           </g>
 
-          {/* 3. 倾角弧线与 35°–45° 角度标注 */}
-          <path d="M 115 75 A 45 45 0 0 1 123.1 49.2" fill="none" stroke="#facc15" strokeWidth="2" />
-          <text x="72" y="58" fill="#facc15" fontSize="12" fontWeight="bold">35°–45°</text>
+          {/* 2. 水平参考线 (下移至开口端区域 y=109.4) */}
+          <line x1="110" y1="109.4" x2="260" y2="109.4" stroke="#64748b" strokeWidth="1.5" strokeDasharray="4 4" />
+          <text x="263" y="112" fill="#64748b" fontSize="9" fontWeight="500">Horizontal Level</text>
+
+          {/* 3. 倾角弧线与 35°–45° 角度标注 (位于 Open Mouth 上方) */}
+          <path d="M 169.1 109.4 A 40 40 0 0 1 176.4 86.5" fill="none" stroke="#facc15" strokeWidth="2" />
+          <text x="142" y="93" fill="#facc15" fontSize="12" fontWeight="bold">35°–45°</text>
 
           {/* 4. 盲端与开口文字标注 */}
           <text x="80" y="22" fill="#f43f5e" fontSize="12" fontWeight="bold">Sealed Blind End (Top High)</text>
-          <text x="200" y="126" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">Open Mouth</text>
-          <text x="200" y="140" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">(Lowest Point Drainage)</text>
+          <text x="200" y="128" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">Open Mouth</text>
+          <text x="200" y="142" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">(Lowest Point Drainage)</text>
         </svg>
       </div>
       <div className="pt-2 border-t border-slate-800 flex justify-end">
@@ -1955,7 +1954,7 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
   </div>
-)} 
+)}
 
   {/* MODAL 3: 最低滴锌角避让 */}
   {showDripCornerGuide && (
