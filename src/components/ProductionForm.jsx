@@ -1410,7 +1410,7 @@ const [assistantPin, setAssistantPin] = useState('');
             </div>
           </div>
 
-{/* Section 2: Wire / Chain Length Calculator */}
+{/* Section 2: Wire & Chain Length Calculator */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
               <div className="font-bold text-cyan-300 text-[11px] flex items-center gap-1.5">
@@ -1419,36 +1419,29 @@ const [assistantPin, setAssistantPin] = useState('');
               <span className="text-[9px] font-mono text-slate-400">Formula: L<sub>2</sub> = L<sub>1</sub> + D × sin(θ)</span>
             </div>
 
-            {/* Rigging Schematic Diagram (D, L1, L2 Annotation) */}
+            {/* Rigging Schematic Diagram */}
             <div className="w-full h-32 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 110" className="w-full h-full">
-                {/* Horizontal Crane Rail/Beam */}
                 <line x1="20" y1="15" x2="300" y2="15" stroke="#475569" strokeWidth="3" />
                 <text x="25" y="10" fill="#64748b" fontSize="7" className="font-mono">Crane Beam / Rigging Bar</text>
 
-                {/* Front Wire L1 */}
                 <line x1="80" y1="15" x2="80" y2="40" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
                 <text x="65" y="30" fill="#38bdf8" fontSize="9" fontWeight="bold" className="font-mono">L₁</text>
 
-                {/* Rear Wire L2 */}
                 <line x1="240" y1="15" x2="240" y2="90" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
                 <text x="246" y="55" fill="#f59e0b" fontSize="9" fontWeight="bold" className="font-mono">L₂</text>
 
-                {/* Tilted Workpiece */}
                 <g transform="rotate(18 80 40)">
                   <rect x="70" y="32" width="180" height="14" rx="2" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
-                  {/* Pick Points */}
                   <circle cx="80" cy="32" r="3" fill="#ef4444" />
                   <circle cx="240" cy="32" r="3" fill="#ef4444" />
                   
-                  {/* Pick Point Distance D Line */}
-                  <line x1="80" y1="22" x2="240" y2="22" stroke="#a855f7" strokeWidth="1.5" markerEnd="url(#arrow)" />
+                  <line x1="80" y1="22" x2="240" y2="22" stroke="#a855f7" strokeWidth="1.5" />
                   <line x1="80" y1="18" x2="80" y2="26" stroke="#a855f7" strokeWidth="1" />
                   <line x1="240" y1="18" x2="240" y2="26" stroke="#a855f7" strokeWidth="1" />
                   <text x="150" y="18" fill="#c084fc" fontSize="9" fontWeight="bold" textAnchor="middle" className="font-mono">Distance D</text>
                 </g>
 
-                {/* Angle θ Label */}
                 <line x1="80" y1="90" x2="280" y2="90" stroke="#475569" strokeWidth="1" strokeDasharray="2 2" />
                 <path d="M 190 90 A 45 45 0 0 1 193 78" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
                 <text x="180" y="85" fill="#f59e0b" fontSize="8" fontWeight="bold">θ</text>
@@ -1496,7 +1489,7 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="bg-slate-900/90 border border-cyan-500/30 rounded p-2.5 flex items-center justify-between">
               <div>
                 <div className="text-[10px] text-slate-400">Recommended Rear Wire Length L<sub>2</sub>:</div>
-                <div className="text-base font-bold text-amber-400 font-mono">
+                <div className={`text-base font-bold font-mono ${rearWireLen > 300 ? 'text-red-400' : 'text-amber-400'}`}>
                   {rearWireLen} <span className="text-xs font-normal text-slate-400">cm</span>
                 </div>
               </div>
@@ -1505,6 +1498,20 @@ const [assistantPin, setAssistantPin] = useState('');
                 <div className="text-[9px] text-slate-400">15°–30° Optimal Range: <span className="font-mono text-emerald-400">{minRear} ~ {maxRear} cm</span></div>
               </div>
             </div>
+
+            {/* Dynamic Safety Warning */}
+            {rearWireLen > 300 && (
+              <div className="bg-red-950/80 border border-red-500/60 rounded p-2 text-[10px] text-red-200 flex items-start gap-2">
+                <span className="text-red-400 text-sm leading-none">⚠️</span>
+                <div className="space-y-0.5">
+                  <div className="font-bold text-red-400">Exceeds Max Hanging Depth Limit (300 cm / 3m)!</div>
+                  <div>
+                    Calculated L₂ (<strong>{rearWireLen} cm</strong>) exceeds the 3m safety limit.
+                    Please <strong>reduce target pitch angle θ</strong> (e.g. towards 15°) or <strong>shorten front wire length L₁</strong> (min. 30 cm) to lower L₂.
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Section 3: Comparison */}
