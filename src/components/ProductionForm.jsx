@@ -457,18 +457,33 @@ const [assistantPin, setAssistantPin] = useState('');
           const userStrands = parseInt(userStrandsRaw, 10) || 0;
           if (userStrands <= 0) return;
 
-          if (specObj.type === 'WIRE') {
-            if (userStrands < wireRec.perPoint) {
-              deficiencies.push(`${label}: ${pointLabel} wire count (${userStrands}) is below the Reo-certified recommendation (${wireRec.perPoint}) for ${wireBasisNote}.`);
-            }
-          } else if (specObj.type === 'CHAIN') {
-            // Chain always carries the shared structural load (loadPerPt), regardless of stringing
-            // method - a Chain+Wire line's chain point is still the backbone for the whole string.
-            const req = Math.max(1, Math.ceil(loadPerPt / specObj.swl));
-            if (userStrands < req) {
-              deficiencies.push(`${label}: ${pointLabel} chain strand count (${userStrands}) is below the required (${req}) for a ${specObj.label} rated at ${specObj.swl} lb WLL.`);
-            }
+      // 设定单点绑丝安全根数上限（超出此上限提示改用铁链）
+      const MAX_SAFE_WIRE_STRANDS = 8;
+
+      if (specObj.type === 'WIRE') {
+        const reqStrands = wireRec.perPoint;
+        if (userStrands < reqStrands) {
+          if (reqStrands > MAX_SAFE_WIRE_STRANDS) {
+            // 计算根数超出安全上限（如 14 根），提示不宜继续增加铁丝，强制建议切铁链
+            deficiencies.push(
+              `${label}: ${pointLabel} load (${Math.round(loadPerPt)} lb) requires ${reqStrands} wires, exceeding safe wire limit (${MAX_SAFE_WIRE_STRANDS}). Strongly recommend switching to CHAIN.`
+            );
+          } else {
+            // 安全范围内，提示增加铁丝根数
+            deficiencies.push(
+              `${label}: ${pointLabel} wire count (${userStrands}) is below recommendation (${reqStrands}) for ${wireBasisNote}.`
+            );
           }
+        }
+      } else if (specObj.type === 'CHAIN') {
+        // 铁链逻辑：直接对比 WLL 与挂点载荷
+        const reqLoad = Math.round(loadPerPt);
+        if (specObj.swl < loadPerPt) {
+          deficiencies.push(
+            `${label}: ${pointLabel} capacity (${specObj.swl} lb WLL) is below required load (${reqLoad} lb) for ${specObj.label}. Please upgrade chain size.`
+          );
+        }
+      }
         };
 
         checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
@@ -2543,10 +2558,10 @@ const [assistantPin, setAssistantPin] = useState('');
     {lineDeficiencies.length > 0 && criticalViolations.length === 0 && (
       <div className="p-3 bg-amber-950/70 border border-amber-800 rounded-lg text-amber-200 text-xs space-y-1">
         <div className="font-bold text-amber-300 flex items-center gap-1.5">
-          ⚠️ NOTICE: Wire strand count below reference value
+          ⚠️ NOTICE: Insufficient Rigging Load Capacity
         </div>
         <p className="text-[11px] text-amber-200/90">
-          One or more workpiece lines have wire strand counts below the theoretical safety recommendation. Please review item details.
+        One or more attachment points do not meet the minimum load safety requirement. Please increase wire strand count or switch to a higher-rated chain.
         </p>
         <ul className="list-disc list-inside text-[10px] space-y-0.5 text-amber-200/80 mt-1">
           {lineDeficiencies.map((detail, idx) => (
