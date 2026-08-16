@@ -2571,131 +2571,13 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     )}
   </div>
-{/* Spec & Strands Inputs */}
-{wp.stringingMethod === 'CHAIN_WIRE' ? (
-  <div className="space-y-2.5 pt-1">
-    {/* Main Backbone Chain */}
-    <div className="bg-slate-900/90 p-2.5 rounded border border-cyan-900/50 space-y-2">
-      <div className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1">
-        <span>🔗</span> Main Backbone Chain
-      </div>
-      
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div>
-          <label className="block text-[10px] text-slate-400 mb-0.5">
-            {wp.hangingPoints === '2' ? 'Point 1 Chain Spec *' : 'Chain Spec *'}
-          </label>
-          <select
-            value={wp.point1SpecId || ''}
-            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point1SpecId', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
-            required
-          >
-            <option value="">Select Chain...</option>
-            {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'CHAIN').map(r => (
-              <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
-            ))}
-          </select>
-        </div>
 
-        {wp.hangingPoints === '2' && (
-          <div>
-            <label className="block text-[10px] text-slate-400 mb-0.5">Point 2 Chain Spec *</label>
-            <select
-              value={wp.point2SpecId || ''}
-              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point2SpecId', e.target.value)}
-              className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
-              required
-            >
-              <option value="">Select Chain...</option>
-              {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'CHAIN').map(r => (
-                <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
-              ))}
-            </select>
-          </div>
-        )}
-      </div>
-    </div>
-
-    {/* Piece Tie Wire */}
-    <div className="bg-slate-900/90 p-2.5 rounded border border-amber-900/50 space-y-2">
-      <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
-        <span>🪢</span> Piece Tie Wire
-      </div>
-
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-        <div>
-          <label className="block text-[10px] text-slate-400 mb-0.5">Tie Wire Spec *</label>
-          <select
-            value={wp.tieWireSpecId || ''}
-            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'tieWireSpecId', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
-            required
-          >
-            <option value="">Select Wire...</option>
-            {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'WIRE').map(r => (
-              <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
-            ))}
-          </select>
-        </div>
-
-        <div>
-          <label className="block text-[10px] text-slate-400 mb-0.5">Wires per Piece *</label>
-          <input
-            type="number"
-            min="1"
-            placeholder="e.g. 2"
-            value={wp.tieWireStrands || ''}
-            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'tieWireStrands', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-amber-300 font-bold"
-            required
-          />
-        </div>
-      </div>
-    </div>
-  </div>
-) : wp.stringingMethod === 'FULL_CHAIN' ? (
-  <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
-    <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
-      <label className="block text-[10px] text-slate-400 mb-0.5">
-        {wp.hangingPoints === '2' ? 'Point 1 Chain Spec *' : 'Chain Spec *'}
-      </label>
-      <select
-        value={wp.point1SpecId || ''}
-        onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point1SpecId', e.target.value)}
-        className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
-        required
-      >
-        <option value="">Select Chain...</option>
-        {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'CHAIN').map(r => (
-          <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
-        ))}
-      </select>
-    </div>
-
-    {wp.hangingPoints === '2' && (
-      <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
-        <label className="block text-[10px] text-slate-400 mb-0.5">Point 2 Chain Spec *</label>
-        <select
-          value={wp.point2SpecId || ''}
-          onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point2SpecId', e.target.value)}
-          className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
-          required
-        >
-          <option value="">Select Chain...</option>
-          {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'CHAIN').map(r => (
-            <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
-          ))}
-        </select>
-      </div>
-    )}
-  </div>
-) : (
+  {/* Spec & Strands Inputs (Your original layout logic) */}
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
     <div className="grid grid-cols-2 gap-2 bg-slate-900/80 p-2 rounded border border-slate-800">
       <div>
         <label className="block text-[10px] text-slate-400 mb-0.5">
-          {wp.hangingPoints === '2' ? 'Point 1 Wire Spec *' : 'Wire Spec *'}
+          {wp.hangingPoints === '2' ? 'Point 1 Spec *' : 'Hanging Spec *'}
         </label>
         <select
           value={wp.point1SpecId || ''}
@@ -2703,22 +2585,20 @@ const [assistantPin, setAssistantPin] = useState('');
           className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
           required
         >
-          <option value="">Select Wire...</option>
-          {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'WIRE').map(r => (
+          {RIGGING_SPECS.map(r => (
             <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
           ))}
         </select>
       </div>
-
       <div>
-        <label className="block text-[10px] text-slate-400 mb-0.5">Wire Strands *</label>
+        <label className="block text-[10px] text-slate-400 mb-0.5">Strands / Lines *</label>
         <input
           type="number"
           min="1"
           placeholder="e.g. 3"
           value={wp.point1Strands || ''}
           onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point1Strands', e.target.value)}
-          className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold"
+          className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
           required
         />
       </div>
@@ -2727,36 +2607,34 @@ const [assistantPin, setAssistantPin] = useState('');
     {wp.hangingPoints === '2' && (
       <div className="grid grid-cols-2 gap-2 bg-slate-900/80 p-2 rounded border border-slate-800">
         <div>
-          <label className="block text-[10px] text-slate-400 mb-0.5">Point 2 Wire Spec *</label>
+          <label className="block text-[10px] text-slate-400 mb-0.5">Point 2 Spec *</label>
           <select
             value={wp.point2SpecId || ''}
             onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point2SpecId', e.target.value)}
             className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
             required
           >
-            <option value="">Select Wire...</option>
-            {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'WIRE').map(r => (
+            {RIGGING_SPECS.map(r => (
               <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
             ))}
           </select>
         </div>
-
         <div>
-          <label className="block text-[10px] text-slate-400 mb-0.5">Wire Strands *</label>
+          <label className="block text-[10px] text-slate-400 mb-0.5">Strands / Lines *</label>
           <input
             type="number"
             min="1"
             placeholder="e.g. 3"
             value={wp.point2Strands || ''}
             onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point2Strands', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold"
+            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             required
           />
         </div>
       </div>
     )}
   </div>
-)}
+
   {/* 2. Anchor Shackle & 3/4. Safety Checkboxes */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-800/80">
     <div>
