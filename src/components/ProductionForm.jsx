@@ -1498,9 +1498,10 @@ const [assistantPin, setAssistantPin] = useState('');
                 <div className="text-[9px] text-slate-400">15°–30° Optimal Range: <span className="font-mono text-emerald-400">{minRear} ~ {maxRear} cm</span></div>
               </div>
             </div>
-          {/* Dynamic Safety Warning for L2 > 300cm (3m Limit) */}
+
+            {/* Dynamic Safety Warning for L2 > 300cm (3m Limit) */}
             {rearWireLen > 300 && (
-              <div className="bg-red-950/80 border border-red-500/60 rounded p-2 text-[10px] text-red-200 flex items-start gap-2 animate-pulse">
+              <div className="bg-red-950/80 border border-red-500/60 rounded p-2 text-[10px] text-red-200 flex items-start gap-2">
                 <span className="text-red-400 text-sm leading-none">⚠️</span>
                 <div className="space-y-0.5">
                   <div className="font-bold text-red-400">Exceeds Max Hanging Depth Limit (300 cm / 3m)!</div>
@@ -1510,8 +1511,6 @@ const [assistantPin, setAssistantPin] = useState('');
                   </div>
                 </div>
               </div>
-            )}
-       /div>
             )}
           </div>
 
