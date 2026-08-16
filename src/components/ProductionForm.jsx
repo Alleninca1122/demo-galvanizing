@@ -1315,8 +1315,8 @@ const [assistantPin, setAssistantPin] = useState('');
   <div className="space-y-2 text-xs">
     {/* Safety Item */}
     <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-      <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rack & Hanging Depth Limits</div>
-      Maintain top clearance ≥ 30cm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300cm to ensure the rack clears other racks during crane transfer. 
+      <div className="font-bold text-rose-300 mb-0.5">🛡️ Safety: Rack, Hanging Depth & Rigging Angle Limits</div>
+      Maintain top clearance ≥ 30cm to ensure the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300cm to ensure the rack clears other racks during crane transfer. Keep wires/chains as vertical as possible ($\le 15^\circ$). For rigging angles between $15^\circ$–$30^\circ$, derate load capacity to 85%; between $30^\circ$–$45^\circ$, derate to 70%. Rigging angles $> 45^\circ$ from vertical are strictly prohibited.
     </div>
 
     {/* Quality Item 1 */}
