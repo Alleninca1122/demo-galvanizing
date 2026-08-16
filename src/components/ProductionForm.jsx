@@ -1443,24 +1443,23 @@ const [assistantPin, setAssistantPin] = useState('');
       <div>Pass tie-wires through corner or edge holes rather than mid-body holes. Keep wires pulled tight against workpiece contours.</div>
     </div>
 
-    {/* Entry 5: 长短线姿态与唯一最低点 */}
-    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-      <div className="flex items-center justify-between mb-0.5">
-        <div className="font-bold text-cyan-300">💎 Quality: Long-Short Lines Pose & Unique Lowest Point</div>
-        <button
-          type="button"
-          onClick={() => setShowUniqueLowPointGuide(true)}
-          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
-        >
-          <span>📐</span>
-          <span className="underline decoration-cyan-400/50">Unique Low-Point Guide</span>
-        </button>
-      </div>
-      <div>
-        During rack operation, adjust the workpiece posture to a 15°–45° tilt using different hanging line lengths (or auxiliary rigging). Ensure that the suspended workpiece has one and only one clear lowest extreme point in space for clean run-off.
-      </div>
-    </div>
+    {/* Quality Item: Corner-Down Tilt & Single Vertex Lowest Point */}
+<div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+  <div className="flex items-center justify-between mb-0.5">
+    <div className="font-bold text-cyan-300">💎 Quality: Corner-Down Tilt & Single Vertex Lowest Point</div>
+    <button
+      type="button"
+      onClick={() => setShowUniqueLowPointGuide(true)}
+      className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+    >
+      <span>📐</span>
+      <span className="underline decoration-cyan-400/50">Single-Point Guide</span>
+    </button>
   </div>
+  <div>
+    Hang the workpiece with a diagonal/corner-down tilt. Ensure zinc drainage converges strictly to a single lowest corner vertex (one point) rather than an entire lower edge (line), minimizing zinc icicles and drips.
+  </div>
+</div>
 
   {/* ============ 原有 3 个 Modal ============ */}
 
@@ -2024,80 +2023,73 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
   )}
 
-  {/* MODAL 5: 长短线姿态与唯一最低点 */}
-  {showUniqueLowPointGuide && (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-          <h3 className="text-sm font-bold text-cyan-400">📐 Long-Short Lines Pose & Unique Lowest Point (15°–45°)</h3>
-          <button
-            type="button"
-            onClick={() => setShowUniqueLowPointGuide(false)}
-            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-          >
-            ✕ Close
-          </button>
+{/* ================= MODAL: Single Vertex Lowest Point Guide ================= */}
+{showUniqueLowPointGuide && (
+  <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <h3 className="text-sm font-bold text-cyan-400">📐 Corner-Down Tilt & Single Vertex Lowest Point Standard</h3>
+        <button
+          type="button"
+          onClick={() => setShowUniqueLowPointGuide(false)}
+          className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
+        >
+          ✕ Close
+        </button>
+      </div>
+
+      <div className="space-y-3 text-xs text-slate-300">
+        <div className="w-full h-48 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 320 160" className="w-full h-full">
+            {/* Beam Rack */}
+            <line x1="40" y1="20" x2="280" y2="20" stroke="#475569" strokeWidth="3" />
+            <text x="160" y="14" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
+
+            {/* Hanging Wires to Top Corners */}
+            <line x1="80" y1="20" x2="110" y2="45" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
+            <line x1="240" y1="20" x2="190" y2="45" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
+
+            {/* Diamond / Corner-Down Tilted Workpiece (Rotated 45 deg to make bottom corner a single point) */}
+            <g transform="translate(160, 85) rotate(45)">
+              <rect x="-45" y="-45" width="90" height="90" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+            </g>
+
+            {/* Single Lowest Corner Vertex Highlight */}
+            <circle cx="160" cy="142" r="6" fill="none" stroke="#10b981" strokeWidth="2.5" />
+            <circle cx="160" cy="142" r="3" fill="#10b981" />
+            
+            {/* SVG Annotation Texts */}
+            <text x="160" y="125" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">
+              ✓ Single Lowest Corner Vertex (Minimal Zinc Drips)
+            </text>
+            <text x="160" y="38" fill="#ef4444" fontSize="10" fontWeight="bold" textAnchor="middle">Top Vent Corner ↑</text>
+            <text x="65" y="90" fill="#94a3b8" fontSize="10" fontWeight="bold">❌ Avoid Edge Line Drainage</text>
+          </svg>
         </div>
 
-        <div className="space-y-3 text-xs text-slate-300">
-          <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
-            <svg viewBox="0 0 320 150" className="w-full h-full">
-              {/* Beam Rack */}
-              <line x1="30" y1="20" x2="290" y2="20" stroke="#475569" strokeWidth="3" />
-              <text x="160" y="15" fill="#cbd5e1" fontSize="11" fontWeight="normal" textAnchor="middle" className="font-mono">Beam Rack</text>
-
-              {/* Short Line L1 & Long Line L2 */}
-              <line x1="90" y1="20" x2="90" y2="45" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
-              <text x="75" y="35" fill="#38bdf8" fontSize="10" fontWeight="bold" className="font-mono">L₁ (Short)</text>
-
-              <line x1="230" y1="20" x2="230" y2="95" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
-              <text x="240" y="60" fill="#f59e0b" fontSize="10" fontWeight="bold" className="font-mono">L₂ (Long)</text>
-
-              {/* Inclined Workpiece Body (Rotated 25 deg) */}
-              <g transform="rotate(25 90 45)">
-                <rect x="80" y="35" width="150" height="25" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
-                <circle cx="90" cy="47" r="3.5" fill="#38bdf8" />
-                <circle cx="230" cy="47" r="3.5" fill="#10b981" />
-              </g>
-
-              {/* Unique Lowest Point Highlight */}
-              <circle cx="258" cy="108" r="6" fill="none" stroke="#10b981" strokeWidth="2" />
-              <circle cx="258" cy="108" r="2.5" fill="#10b981" />
-
-              {/* SVG Annotation Texts */}
-              <text x="160" y="128" fill="#10b981" fontSize="10" fontWeight="bold" textAnchor="middle">
-                ✓ Single Lowest Extreme Point
-              </text>
-              <text x="160" y="141" fill="#10b981" fontSize="10" fontWeight="bold" textAnchor="middle">
-                (Prevent Secondary Pooling)
-              </text>
-              <text x="90" y="70" fill="#ef4444" fontSize="10" fontWeight="bold">Vent High Point ↑</text>
-            </svg>
+        <div className="bg-slate-950 p-2.5 rounded border border-slate-800 text-[11px] space-y-1 text-slate-300">
+          <div className="font-bold text-cyan-300 flex items-center gap-1">
+            <span>💡</span> Industry Best Practice:
           </div>
-
-          <div className="bg-slate-950 p-2.5 rounded border border-slate-800 text-[11px] space-y-1 text-slate-300">
-            <div className="font-bold text-cyan-300 flex items-center gap-1">
-              <span>💡</span> Operational Guidelines:
-            </div>
-            <div className="text-[10px] text-slate-400 leading-relaxed">
-              1. <strong>Flexible On-Site Adjustment</strong>: Workers manually adjust line lengths to establish a natural 15°–45° tilt angle.<br/>
-              2. <strong>Unique Lowest Point</strong>: Ensure the suspended workpiece has one and only one distinct lowest contact point/discharge port, completely eliminating flat pooling or runner formation.
-            </div>
+          <div className="text-[10px] text-slate-400 leading-relaxed">
+            1. <strong>Corner-Down Suspension</strong>: Tilt and rig the plate diagonally so that drainage converges entirely to one lowest corner vertex.<br/>
+            2. <strong>Eliminate Edge Pooling</strong>: Strictly prevent bottom edges from hanging horizontally (which causes a line of thick zinc icicles). One single point ensures clean drop-off.
           </div>
-        </div>
-
-        <div className="pt-2 border-t border-slate-800 flex justify-end">
-          <button
-            type="button"
-            onClick={() => setShowUniqueLowPointGuide(false)}
-            className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-          >
-            Got It
-          </button>
         </div>
       </div>
+
+      <div className="pt-2 border-t border-slate-800 flex justify-end">
+        <button
+          type="button"
+          onClick={() => setShowUniqueLowPointGuide(false)}
+          className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+        >
+          Got It
+        </button>
+      </div>
     </div>
-  )}
+  </div>
+)}
 </div>
 
 
