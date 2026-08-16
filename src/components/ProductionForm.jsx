@@ -2546,7 +2546,7 @@ const [assistantPin, setAssistantPin] = useState('');
           ⚠️ NOTICE: Wire strand count below reference value
         </div>
         <p className="text-[11px] text-amber-200/90">
-          One or more workpiece lines have wire strand counts below the theoretical safety recommendation. Please review item details.
+        One or more attachment points do not meet the minimum load safety requirement. Please increase wire strand count or switch to a higher-rated chain.
         </p>
         <ul className="list-disc list-inside text-[10px] space-y-0.5 text-amber-200/80 mt-1">
           {lineDeficiencies.map((detail, idx) => (
