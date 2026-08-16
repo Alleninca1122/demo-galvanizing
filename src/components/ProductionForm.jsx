@@ -190,6 +190,11 @@ export default function ProductionForm({ currentUser, supabase }) {
 
   const [showAntiSwayGuide, setShowAntiSwayGuide] = useState(false);
 
+  const [showDrainHoleGuide, setShowDrainHoleGuide] = useState(false);
+  const [showBlindEndGuide, setShowBlindEndGuide] = useState(false);
+  const [showDripCornerGuide, setShowDripCornerGuide] = useState(false);
+  const [showCornerTieGuide, setShowCornerTieGuide] = useState(false);
+
   // 控制 ASTM A385 图解弹窗的开关
   const [showGuide, setShowGuide] = useState(false);
 
