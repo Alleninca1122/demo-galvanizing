@@ -1337,8 +1337,7 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
   </div>
-
-  {/* Pitch Angle Guide Modal */}
+{/* Pitch Angle Guide Modal */}
   {showPitchGuide && (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
       <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
@@ -1363,7 +1362,7 @@ const [assistantPin, setAssistantPin] = useState('');
         {/* Modal Content */}
         <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
           
-          {/* Section 1: Pitch Angle Diagram */}
+          {/* Section 1: Pitch Angle Diagram (Top) */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
             <div className="font-bold text-cyan-300 text-[11px]">
               1. Optimal 15°–30° Pitch Angle Dynamics
@@ -1375,46 +1374,69 @@ const [assistantPin, setAssistantPin] = useState('');
             {/* SVG Pitch Diagram */}
             <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 140" className="w-full h-full">
-                {/* Horizontal Reference Line */}
                 <line x1="30" y1="95" x2="280" y2="95" stroke="#475569" strokeWidth="1.5" strokeDasharray="4 4" />
                 <text x="282" y="98" fill="#64748b" fontSize="8" className="font-mono">0° Horizontal</text>
 
-                {/* Rigging Slings */}
                 <line x1="80" y1="10" x2="80" y2="35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
                 <line x1="240" y1="10" x2="240" y2="92" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
 
-                {/* Tilted Workpiece */}
                 <g transform="rotate(20 80 35)">
                   <rect x="70" y="25" width="200" height="20" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
                   <circle cx="78" cy="25" r="3.5" fill="#ef4444" />
                   <circle cx="262" cy="45" r="3.5" fill="#38bdf8" />
                 </g>
 
-                {/* Pitch Angle Arc & Text */}
                 <path d="M 160 95 A 55 55 0 0 1 164 76" fill="none" stroke="#f59e0b" strokeWidth="2" />
                 <text x="148" y="82" fill="#f59e0b" fontSize="10" fontWeight="bold" fontFamily="sans-serif">
                   15°–30°
                 </text>
 
-                {/* Air & Zinc Flow Annotations */}
                 <path d="M 80 30 L 80 18" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
                 <text x="80" y="12" fill="#ef4444" fontSize="8" fontWeight="bold" textAnchor="middle">Air Escape ↑ (Highest Vent)</text>
 
                 <path d="M 260 88 L 260 105" stroke="#38bdf8" strokeWidth="2" strokeDasharray="2 2" />
                 <text x="260" y="115" fill="#38bdf8" fontSize="8" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓ (Lowest Drain)</text>
 
-                {/* Zinc Kettle Bath Line */}
                 <line x1="20" y1="120" x2="180" y2="120" stroke="#0284c7" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
                 <text x="25" y="115" fill="#0284c7" fontSize="8" opacity="0.7">Zinc Kettle Bath Line</text>
               </svg>
             </div>
           </div>
 
-{/* Section 2: Wire & Chain Length Calculator */}
+          {/* Section 2: Pitch Angle Impact Comparison (Middle) */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-cyan-300 text-[11px]">
+              2. Pitch Angle Impact Comparison
+            </div>
+
+            <div className="grid grid-cols-2 gap-2 pt-1">
+              <div className="bg-rose-950/20 p-2 rounded border border-rose-500/30 space-y-1">
+                <div className="text-[10px] font-bold text-rose-400">
+                  ❌ Too Flat (&lt; 15°)
+                </div>
+                <div className="text-[9px] text-slate-400 leading-tight">
+                  • Traps air pockets under flat surfaces.<br/>
+                  • Slow drainage leads to thick zinc tears, spikes & ash inclusion.
+                </div>
+              </div>
+
+              <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-1">
+                <div className="text-[10px] font-bold text-emerald-400">
+                  ✓ Optimal (15°–30°)
+                </div>
+                <div className="text-[9px] text-slate-400 leading-tight">
+                  • Instant air purging upon immersion.<br/>
+                  • Clean, uniform coating with minimal post-dip touch-up needed.
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Section 3: Wire & Chain Length Calculator (Bottom) */}
           <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-3">
             <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
               <div className="font-bold text-cyan-300 text-[11px] flex items-center gap-1.5">
-                <span>🧮</span> 2. Wire & Chain Length Calculator
+                <span>🧮</span> 3. Wire & Chain Length Calculator
               </div>
               <span className="text-[9px] font-mono text-slate-400">Formula: L<sub>2</sub> = L<sub>1</sub> + D × sin(θ)</span>
             </div>
@@ -1514,35 +1536,6 @@ const [assistantPin, setAssistantPin] = useState('');
             )}
           </div>
 
-          {/* Section 3: Comparison */}
-          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-            <div className="font-bold text-cyan-300 text-[11px]">
-              3. Pitch Angle Impact Comparison
-            </div>
-
-            <div className="grid grid-cols-2 gap-2 pt-1">
-              <div className="bg-rose-950/20 p-2 rounded border border-rose-500/30 space-y-1">
-                <div className="text-[10px] font-bold text-rose-400">
-                  ❌ Too Flat (&lt; 15°)
-                </div>
-                <div className="text-[9px] text-slate-400 leading-tight">
-                  • Traps air pockets under flat surfaces.<br/>
-                  • Slow drainage leads to thick zinc tears, spikes & ash inclusion.
-                </div>
-              </div>
-
-              <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-1">
-                <div className="text-[10px] font-bold text-emerald-400">
-                  ✓ Optimal (15°–30°)
-                </div>
-                <div className="text-[9px] text-slate-400 leading-tight">
-                  • Instant air purging upon immersion.<br/>
-                  • Clean, uniform coating with minimal post-dip touch-up needed.
-                </div>
-              </div>
-            </div>
-          </div>
-
         </div>
 
         {/* Modal Footer */}
@@ -1559,6 +1552,7 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
   )}
+ 
 </div>
 
   {/* STEP 5 */}
