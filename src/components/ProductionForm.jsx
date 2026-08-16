@@ -1737,7 +1737,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 </g>
 
                 <path d="M 160 95 A 55 55 0 0 1 164 76" fill="none" stroke="#f59e0b" strokeWidth="2" />
-                <text x="140" y="80" fill="#f59e0b" fontSize="12" fontWeight="bold" fontFamily="sans-serif" textAnchor="end">
+                <text x="148" y="90" fill="#f59e0b" fontSize="12" fontWeight="bold" fontFamily="sans-serif" textAnchor="end">
                   15°–30°
                 </text>
 
