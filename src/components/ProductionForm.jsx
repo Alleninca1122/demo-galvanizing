@@ -2655,7 +2655,6 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
   </div>
 ) : wp.stringingMethod === 'FULL_CHAIN' ? (
-  /* FULL_CHAIN Mode: Chain Specs only, no strands input */
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
     <div className="bg-slate-900/80 p-2 rounded border border-slate-800">
       <label className="block text-[10px] text-slate-400 mb-0.5">
@@ -2692,7 +2691,6 @@ const [assistantPin, setAssistantPin] = useState('');
     )}
   </div>
 ) : (
-  /* PURE_WIRE Mode: Wire Spec + Wire Strands per point */
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
     <div className="grid grid-cols-2 gap-2 bg-slate-900/80 p-2 rounded border border-slate-800">
       <div>
