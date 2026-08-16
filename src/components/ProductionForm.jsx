@@ -1499,7 +1499,7 @@ const [assistantPin, setAssistantPin] = useState('');
               </div>
             </div>
 
-            {/* Dynamic Safety Warning for L2 > 300cm (3m Limit) */}
+            {/* Dynamic Safety Warning */}
             {rearWireLen > 300 && (
               <div className="bg-red-950/80 border border-red-500/60 rounded p-2 text-[10px] text-red-200 flex items-start gap-2">
                 <span className="text-red-400 text-sm leading-none">⚠️</span>
@@ -1507,7 +1507,7 @@ const [assistantPin, setAssistantPin] = useState('');
                   <div className="font-bold text-red-400">Exceeds Max Hanging Depth Limit (300 cm / 3m)!</div>
                   <div>
                     Calculated L₂ (<strong>{rearWireLen} cm</strong>) exceeds the 3m safety limit.
-                    Please <strong>reduce target pitch angle θ</strong> (e.g. towards 15°) or <strong>shorten front wire length L₁</strong> to lower L₂.
+                    Please <strong>reduce target pitch angle θ</strong> (e.g. towards 15°) or <strong>shorten front wire length L₁</strong> (min. 30 cm) to lower L₂.
                   </div>
                 </div>
               </div>
