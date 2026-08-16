@@ -190,6 +190,11 @@ export default function ProductionForm({ currentUser, supabase }) {
 
   const [showAntiSwayGuide, setShowAntiSwayGuide] = useState(false);
 
+  const [showDrainHoleGuide, setShowDrainHoleGuide] = useState(false);
+  const [showBlindEndGuide, setShowBlindEndGuide] = useState(false);
+  const [showDripCornerGuide, setShowDripCornerGuide] = useState(false);
+  const [showCornerTieGuide, setShowCornerTieGuide] = useState(false);
+
   // 控制 ASTM A385 图解弹窗的开关
   const [showGuide, setShowGuide] = useState(false);
 
@@ -1306,749 +1311,387 @@ const [assistantPin, setAssistantPin] = useState('');
   )}
 </div>
 
-import React, { useState } from 'react';
+{/* STEP 4 检验区域 - 开始 */}
+<div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
+  {/* Header */}
+  <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
+    <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
+      <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">
+        4
+      </span>
+      STEP 4: Pose & Angle Final Inspection
+    </span>
+    <span className="text-[10px] text-slate-400 font-mono">Check tilt angle, drainage & tank limits</span>
+  </div>
 
-export default function Step4Inspection() {
-  // State for Safety & Quality Modal Popups
-  const [showRiggingGuide, setShowRiggingGuide] = useState(false);
-  const [showAntiSwayGuide, setShowAntiSwayGuide] = useState(false);
-  const [showPitchGuide, setShowPitchGuide] = useState(false);
-  const [showDrainHoleGuide, setShowDrainHoleGuide] = useState(false);
-  const [showBlindEndGuide, setShowBlindEndGuide] = useState(false);
-  const [showDripCornerGuide, setShowDripCornerGuide] = useState(false);
-  const [showCornerTieGuide, setShowCornerTieGuide] = useState(false);
-
-  // Calculator states for Pitch Guide
-  const [pointDistance, setPointDistance] = useState('');
-  const [frontWireLen, setFrontWireLen] = useState('');
-  const [targetAngle, setTargetAngle] = useState('30');
-
-  // Calculation logic
-  const d = parseFloat(pointDistance) || 0;
-  const l1 = parseFloat(frontWireLen) || 0;
-  const rad = (parseFloat(targetAngle) || 30) * (Math.PI / 180);
-  const deltaL = Math.round(d * Math.sin(rad));
-  const rearWireLen = l1 + deltaL;
-  const minRear = l1 + Math.round(d * Math.sin(15 * (Math.PI / 180)));
-  const maxRear = l1 + Math.round(d * Math.sin(30 * (Math.PI / 180)));
-
-  return (
-    <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
-      {/* Header */}
-      <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
-        <span className="text-xs font-bold text-cyan-400 flex items-center gap-2">
-          <span className="flex h-5 w-5 items-center justify-center rounded-full bg-cyan-500 text-[10px] font-bold text-slate-950">
-            4
-          </span>
-          STEP 4: Pose & Angle Final Inspection
-        </span>
-        <span className="text-[10px] text-slate-400 font-mono">Check tilt angle, drainage & tank limits</span>
+  <div className="space-y-2 text-xs">
+    {/* Safety 1: 吊挂角与深度 */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-rose-300">🛡️ Safety: Rack, Hanging Depth & Rigging Angle Limits</div>
+        <button
+          type="button"
+          onClick={() => setShowRiggingGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-rose-300 bg-rose-900/50 hover:bg-rose-800 border border-rose-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>⚖️</span>
+          <span className="underline decoration-rose-400/50">Rigging Angle & Load Guide</span>
+        </button>
       </div>
-
-      <div className="space-y-2 text-xs">
-        {/* Safety Item 1: Rigging Angle & Depth Limits */}
-        <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="font-bold text-rose-300">🛡️ Safety: Rack, Hanging Depth & Rigging Angle Limits</div>
-            <button
-              type="button"
-              onClick={() => setShowRiggingGuide(true)}
-              className="flex items-center gap-1 text-[10px] font-mono text-rose-300 bg-rose-900/50 hover:bg-rose-800 border border-rose-500/40 px-2 py-0.5 rounded transition-colors"
-            >
-              <span>⚖️</span>
-              <span className="underline decoration-rose-400/50">Rigging Angle & Load Guide</span>
-            </button>
-          </div>
-          <div>
-            Maintain top clearance &ge; 30cm to ensure workpiece fully immerses. Control hanging depth &le; 300cm. Keep rigging wires/chains &le; 15&deg; from vertical. Derate load capacity to <strong>85%</strong> for 15&deg;&ndash;30&deg;, and <strong>70%</strong> for 30&deg;&ndash;45&deg;. Angles &gt; 45&deg; are <strong className="text-rose-400 underline decoration-rose-500">strictly prohibited</strong>.
-          </div>
-        </div>
-
-        {/* Safety Item 2: Workpiece Stability & Anti-Sway Control */}
-        <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="font-bold text-rose-300">🛡️ Safety: Workpiece Stability & Anti-Sway Control</div>
-            <button
-              type="button"
-              onClick={() => setShowAntiSwayGuide(true)}
-              className="flex items-center gap-1 text-[10px] font-mono text-rose-300 bg-rose-900/50 hover:bg-rose-800 border border-rose-500/40 px-2 py-0.5 rounded transition-colors"
-            >
-              <span>🪢</span>
-              <span className="underline decoration-rose-400/50">Anti-Sway & Interconnect Guide</span>
-            </button>
-          </div>
-          <div>
-            Prohibit single-point hanging for large/flat plates. Mandatory dual-point suspension with interconnecting tie wire through corner/edge holes of adjacent workpieces to lock them into a rigid row, preventing sway and tank collisions (&ge; 20cm lateral wall clearance).
-          </div>
-        </div>
-
-        {/* Quality Item 1: Hanging Pitch Angle */}
-        <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="font-bold text-cyan-300">💎 Quality: Hanging Pitch Angle (15°–30°)</div>
-            <button
-              type="button"
-              onClick={() => setShowPitchGuide(true)}
-              className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
-            >
-              <span>📐</span>
-              <span className="underline decoration-cyan-400/50">Pitch Guide & Calculator</span>
-            </button>
-          </div>
-          <div>
-            Maintain 15° to 30° tilt angle for rapid, uniform zinc drainage, fast run-off, and zero ash trapping on flat surfaces.
-          </div>
-        </div>
-
-        {/* Quality Item 2: Vent & Drain Hole Orientation */}
-        <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="font-bold text-cyan-300">💎 Quality: Vent & Drain Hole Orientation (Large Low / Small High)</div>
-            <button
-              type="button"
-              onClick={() => setShowDrainHoleGuide(true)}
-              className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
-            >
-              <span>🕳️</span>
-              <span className="underline decoration-cyan-400/50">Drain/Vent Hole Orientation Guide</span>
-            </button>
-          </div>
-          <div>
-            Always orient workpieces so larger holes are at the lowest point (for zinc drainage) and smaller holes are at the highest point (for air venting). Prevents zinc blockage, icicles, and trapped air.
-          </div>
-        </div>
-
-        {/* Quality Item 3: Blind-End Workpiece Pose */}
-        <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="font-bold text-cyan-300">💎 Quality: Blind-End Workpiece Hanging Pose</div>
-            <button
-              type="button"
-              onClick={() => setShowBlindEndGuide(true)}
-              className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
-            >
-              <span>🪣</span>
-              <span className="underline decoration-cyan-400/50">Blind-End Pose Guide</span>
-            </button>
-          </div>
-          <div>
-            For single-opening/blind-end workpieces, enforce a steep 35°–45° tilt with the open mouth facing downwards to serve as the lowest drainage point during withdrawal.
-          </div>
-        </div>
-
-        {/* Quality Item 4: Lowest Drip-Corner Clearance */}
-        <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="font-bold text-cyan-300">💎 Quality: Lowest Drip-Corner Clearance</div>
-            <button
-              type="button"
-              onClick={() => setShowDripCornerGuide(true)}
-              className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
-            >
-              <span>📍</span>
-              <span className="underline decoration-cyan-400/50">Drip Corner Clearance Guide</span>
-            </button>
-          </div>
-          <div>
-            Never tie wire or attach rigging directly over the lowest drip corner. Keep the lowest tip 100% unobstructed so molten zinc releases cleanly without pooling or forming thick zinc lumps.
-          </div>
-        </div>
-
-        {/* Quality Item 5: Corner Tie-In Location & Contour */}
-        <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
-          <div className="flex items-center justify-between mb-0.5">
-            <div className="font-bold text-cyan-300">💎 Quality: Wire Tie-In Location & Contour Line</div>
-            <button
-              type="button"
-              onClick={() => setShowCornerTieGuide(true)}
-              className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
-            >
-              <span>🔗</span>
-              <span className="underline decoration-cyan-400/50">Corner Tie-In & Contour Guide</span>
-            </button>
-          </div>
-          <div>
-            Pass tie-wires through corner or edge holes rather than mid-body holes. Keep wires pulled tight against workpiece contours to prevent horizontal "zinc-blocking" lines on flat surfaces.
-          </div>
-        </div>
+      <div>
+        Maintain top clearance &ge; 30cm to ensure workpiece fully immerses. Control hanging depth &le; 300cm. Keep rigging wires/chains &le; 15&deg; from vertical. Derate load capacity to <strong>85%</strong> for 15&deg;&ndash;30&deg;, and <strong>70%</strong> for 30&deg;&ndash;45&deg;. Angles &gt; 45&deg; are <strong className="text-rose-400 underline decoration-rose-500">strictly prohibited</strong>.
       </div>
-
-      {/* ================= MODAL 1: Rigging Angle & Load Derating Standard ================= */}
-      {showRiggingGuide && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-base">⚖️</span>
-                <h3 className="text-sm font-bold text-rose-300">
-                  Rigging Angle & Load Derating Standard (&le; 45&deg;)
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowRiggingGuide(false)}
-                className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-              >
-                ✕ Close
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-                <div className="font-bold text-rose-300 text-[11px]">
-                  1. Rigging Angle (&theta;) Reference Diagram
-                </div>
-                <div className="text-[10px] text-slate-400 leading-relaxed">
-                  Rigging Angle (&theta;) is measured between the wire/chain and the <strong>vertical line</strong>.
-                </div>
-                <div className="w-full h-48 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
-                  <svg viewBox="0 0 320 150" className="w-full h-full">
-                    <rect x="30" y="12" width="260" height="12" rx="2" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
-                    <text x="160" y="21" fill="#94a3b8" fontSize="8" fontWeight="bold" textAnchor="middle" className="font-mono">
-                      Beam Rack
-                    </text>
-                    <line x1="100" y1="24" x2="100" y2="125" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
-                    <text x="105" y="40" fill="#64748b" fontSize="7" className="font-mono">0° Vertical Line</text>
-                    <line x1="100" y1="24" x2="60" y2="110" stroke="#f43f5e" strokeWidth="2" />
-                    <circle cx="100" cy="24" r="3" fill="#f43f5e" />
-                    <circle cx="60" cy="110" r="3" fill="#f43f5e" />
-                    <line x1="220" y1="24" x2="260" y2="110" stroke="#f43f5e" strokeWidth="2" />
-                    <circle cx="220" cy="24" r="3" fill="#f43f5e" />
-                    <circle cx="260" cy="110" r="3" fill="#f43f5e" />
-                    <path d="M 100 65 A 41 41 0 0 0 81 60" fill="none" stroke="#f59e0b" strokeWidth="2" />
-                    <text x="82" y="76" fill="#f59e0b" fontSize="9" fontWeight="bold" className="font-mono">
-                      θ (Rigging Angle)
-                    </text>
-                    <rect x="40" y="110" width="240" height="18" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
-                    <text x="160" y="122" fill="#38bdf8" fontSize="8" fontWeight="bold" textAnchor="middle">
-                      Workpiece
-                    </text>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-                <div className="font-bold text-rose-300 text-[11px]">
-                  2. Load Capacity Derating Rules
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-[10px]">
-                  <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
-                    <div className="font-bold text-emerald-400 flex justify-between">
-                      <span>&le; 15&deg; (Optimal)</span>
-                      <span>100% WLL</span>
-                    </div>
-                    <div className="text-[9px] text-slate-400">Normal operating load. Minimal tension increase.</div>
-                  </div>
-                  <div className="bg-amber-950/20 p-2 rounded border border-amber-500/30 space-y-0.5">
-                    <div className="font-bold text-amber-400 flex justify-between">
-                      <span>15&deg;&ndash;30&deg; (Caution)</span>
-                      <span>Derate to 85%</span>
-                    </div>
-                    <div className="text-[9px] text-slate-400">Wire/chain tension increases ~15%. Reduce max load.</div>
-                  </div>
-                  <div className="bg-orange-950/20 p-2 rounded border border-orange-500/30 space-y-0.5">
-                    <div className="font-bold text-orange-400 flex justify-between">
-                      <span>30&deg;&ndash;45&deg; (Warning)</span>
-                      <span>Derate to 70%</span>
-                    </div>
-                    <div className="text-[9px] text-slate-400">High lateral tension forces. Strict weight checking required.</div>
-                  </div>
-                  <div className="bg-rose-950/30 p-2 rounded border border-rose-500/40 space-y-0.5">
-                    <div className="font-bold text-rose-400 flex justify-between">
-                      <span>&gt; 45&deg; (DANGER)</span>
-                      <span className="underline">PROHIBITED</span>
-                    </div>
-                    <div className="text-[9px] text-slate-400">Extreme risk of wire failure or workpiece slip.</div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowRiggingGuide(false)}
-                className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-              >
-                Got It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= MODAL 2: Anti-Sway & Waist-Tie Guide ================= */}
-      {showAntiSwayGuide && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-2xl w-full p-4 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-base">🪢</span>
-                <h3 className="text-sm font-bold text-rose-300">
-                  Anti-Sway & Interconnecting Operational Standard
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowAntiSwayGuide(false)}
-                className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-              >
-                ✕ Close
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-slate-300 max-h-[70vh] overflow-y-auto pr-1">
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-                <div className="font-bold text-rose-300 text-[11px]">
-                  1. Interconnecting Anti-Sway Diagram (Left-High to Right-Low Tilt)
-                </div>
-                <div className="text-[10px] text-slate-400 leading-relaxed">
-                  Use dual-point suspension for large plates. Connect adjacent workpieces with tie wire via corner holes to form a single rigid row.
-                </div>
-
-                <div className="w-full h-72 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
-                  <svg viewBox="0 0 850 420" className="w-full h-full">
-                    <rect width="850" height="420" fill="#090d16" rx="4" />
-                    <rect x="50" y="25" width="750" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
-                    <text x="425" y="44" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">
-                      BEAM RACK
-                    </text>
-
-                    {/* Suspension Wires (Left-High Tilt Layout) */}
-                    <line x1="145" y1="53" x2="140" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
-                    <line x1="225" y1="53" x2="228" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
-                    <line x1="385" y1="53" x2="380" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
-                    <line x1="465" y1="53" x2="468" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
-                    <line x1="625" y1="53" x2="620" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
-                    <line x1="705" y1="53" x2="708" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
-
-                    {/* Workpieces rotated Left-High to Right-Low (-10 deg) */}
-                    <g transform="translate(185, 230) rotate(-10)">
-                      <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                      <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">Plate #1</text>
-                    </g>
-                    <g transform="translate(425, 230) rotate(-10)">
-                      <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                      <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">Plate #2</text>
-                    </g>
-                    <g transform="translate(665, 230) rotate(-10)">
-                      <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                      <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">Plate #3</text>
-                    </g>
-
-                    {/* Interconnecting Wire Line */}
-                    <path d="M 127 276 L 255 253 L 367 276 L 495 253 L 607 276 L 735 253" fill="none" stroke="#f59e0b" strokeWidth="3.5" />
-                    <circle cx="255" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-                    <circle cx="367" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-                    <circle cx="495" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-                    <circle cx="607" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-
-                    <rect x="170" y="340" width="510" height="42" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
-                    <text x="425" y="366" fill="#fbbf24" fontSize="14" fontWeight="bold" textAnchor="middle" className="font-mono">
-                      Interconnecting Tie Wire (Passed Through Corner Holes)
-                    </text>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowAntiSwayGuide(false)}
-                className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-              >
-                Got It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= MODAL 3: Pitch Angle Guide & Calculator ================= */}
-      {showPitchGuide && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-base">📐</span>
-                <h3 className="text-sm font-bold text-cyan-400">
-                  Hanging Pitch Angle & Drainage Standard (15°–30°)
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowPitchGuide(false)}
-                className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-              >
-                ✕ Close
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-                <div className="font-bold text-cyan-300 text-[11px]">
-                  1. Optimal 15°–30° Pitch Angle Dynamics (Left-High / Right-Low)
-                </div>
-                <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
-                  <svg viewBox="0 0 320 140" className="w-full h-full">
-                    <line x1="30" y1="95" x2="280" y2="95" stroke="#475569" strokeWidth="1.5" strokeDasharray="4 4" />
-                    <text x="282" y="98" fill="#64748b" fontSize="8" className="font-mono">0° Horizontal</text>
-                    <line x1="80" y1="10" x2="80" y2="35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
-                    <line x1="240" y1="10" x2="240" y2="92" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
-
-                    <g transform="rotate(20 80 35)">
-                      <rect x="70" y="25" width="200" height="20" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
-                      <circle cx="78" cy="25" r="3.5" fill="#ef4444" />
-                      <circle cx="262" cy="45" r="3.5" fill="#38bdf8" />
-                    </g>
-
-                    <path d="M 160 95 A 55 55 0 0 1 164 76" fill="none" stroke="#f59e0b" strokeWidth="2" />
-                    <text x="148" y="82" fill="#f59e0b" fontSize="10" fontWeight="bold">15°–30°</text>
-                    <text x="75" y="12" fill="#ef4444" fontSize="8" fontWeight="bold">Air Escape ↑ (Left High)</text>
-                    <text x="245" y="115" fill="#38bdf8" fontSize="8" fontWeight="bold">Rapid Run-off ↓ (Right Low)</text>
-                  </svg>
-                </div>
-              </div>
-
-              {/* Wire Calculator */}
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-3">
-                <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
-                  <div className="font-bold text-cyan-300 text-[11px] flex items-center gap-1.5">
-                    <span>🧮</span> Wire & Chain Length Calculator
-                  </div>
-                  <span className="text-[9px] font-mono text-slate-400">Formula: L<sub>2</sub> = L<sub>1</sub> + D × sin(θ)</span>
-                </div>
-
-                <div className="grid grid-cols-3 gap-2 text-[10px]">
-                  <div>
-                    <label className="block text-slate-400 mb-1">Pick Point Distance D (cm)</label>
-                    <input
-                      type="number"
-                      value={pointDistance}
-                      onChange={(e) => setPointDistance(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-100 font-mono text-xs focus:outline-none focus:border-cyan-500"
-                      placeholder="Enter distance"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1">Front Wire L<sub>1</sub> (cm)</label>
-                    <input
-                      type="number"
-                      value={frontWireLen}
-                      onChange={(e) => setFrontWireLen(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-100 font-mono text-xs focus:outline-none focus:border-cyan-500"
-                      placeholder="Enter length"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-slate-400 mb-1">Target Angle θ (°)</label>
-                    <input
-                      type="number"
-                      min="15"
-                      max="30"
-                      value={targetAngle}
-                      onChange={(e) => setTargetAngle(e.target.value)}
-                      className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-amber-400 font-bold font-mono text-xs focus:outline-none focus:border-amber-500"
-                    />
-                  </div>
-                </div>
-
-                <div className="bg-slate-900/90 border border-cyan-500/30 rounded p-2.5 flex items-center justify-between">
-                  <div>
-                    <div className="text-[10px] text-slate-400">Recommended Rear Wire Length L<sub>2</sub>:</div>
-                    <div className={`text-base font-bold font-mono ${rearWireLen > 300 ? 'text-red-400' : 'text-amber-400'}`}>
-                      {rearWireLen} <span className="text-xs font-normal text-slate-400">cm</span>
-                    </div>
-                  </div>
-                  <div className="text-right border-l border-slate-800 pl-3">
-                    <div className="text-[9px] text-slate-400">Offset ΔL: <span className="font-mono text-cyan-300">+{deltaL} cm</span></div>
-                    <div className="text-[9px] text-slate-400">15°–30° Range: <span className="font-mono text-emerald-400">{minRear} ~ {maxRear} cm</span></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowPitchGuide(false)}
-                className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-              >
-                Got It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= MODAL 4: Drain & Vent Hole Orientation ================= */}
-      {showDrainHoleGuide && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-base">🕳️</span>
-                <h3 className="text-sm font-bold text-cyan-400">
-                  Drain & Vent Hole Orientation Standard (Large Low / Small High)
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowDrainHoleGuide(false)}
-                className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-              >
-                ✕ Close
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-                <div className="font-bold text-cyan-300 text-[11px]">
-                  1. Unequal Hole Orientation Rule (Left-High / Right-Low)
-                </div>
-                <div className="text-[10px] text-slate-400 leading-relaxed">
-                  Top/Highest point only needs a small aperture to release air. Bottom/Lowest point requires maximum cross-sectional area to drain viscous molten zinc before solidification.
-                </div>
-
-                <div className="w-full h-48 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
-                  <svg viewBox="0 0 320 150" className="w-full h-full">
-                    <g transform="rotate(20 160 75)">
-                      <rect x="50" y="55" width="220" height="40" rx="4" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
-                      {/* Top Small Vent Hole */}
-                      <circle cx="70" cy="75" r="4" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
-                      {/* Bottom Large Drain Hole */}
-                      <circle cx="250" cy="75" r="11" fill="#0f172a" stroke="#10b981" strokeWidth="2.5" />
-                    </g>
-                    {/* Air Vent Label */}
-                    <path d="M 90 35 L 90 20" stroke="#38bdf8" strokeWidth="1.5" strokeDasharray="2 2" />
-                    <text x="90" y="14" fill="#38bdf8" fontSize="8" fontWeight="bold" textAnchor="middle">Air Vent (Small Hole ↑)</text>
-                    {/* Zinc Drain Label */}
-                    <path d="M 245 110 L 245 130" stroke="#10b981" strokeWidth="2" strokeDasharray="2 2" />
-                    <text x="245" y="140" fill="#10b981" fontSize="9" fontWeight="bold" textAnchor="middle">Zinc Run-off (Large Hole ↓)</text>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-[10px]">
-                <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-1">
-                  <div className="font-bold text-emerald-400">✓ Correct Orientation</div>
-                  <div>Large hole at lowest corner ensures rapid zinc outflow with zero freeze-up or icicles.</div>
-                </div>
-                <div className="bg-rose-950/20 p-2 rounded border border-rose-500/30 space-y-1">
-                  <div className="font-bold text-rose-400">❌ Inverted Orientation</div>
-                  <div>Small hole at bottom clogs quickly, trapping zinc inside and causing thick zinc spikes.</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowDrainHoleGuide(false)}
-                className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-              >
-                Got It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= MODAL 5: Blind-End Workpiece Pose ================= */}
-      {showBlindEndGuide && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-base">🪣</span>
-                <h3 className="text-sm font-bold text-cyan-400">
-                  Blind-End / Single-Opening Workpiece Pose Standard
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowBlindEndGuide(false)}
-                className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-              >
-                ✕ Close
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-                <div className="font-bold text-cyan-300 text-[11px]">
-                  1. Blind-End Single-Opening Drainage Dynamics (Left-High / Right-Low)
-                </div>
-                <div className="text-[10px] text-slate-400 leading-relaxed">
-                  For objects with only one opening (blind end), set an aggressive 35°–45° tilt with the open mouth pointing downward at the lowest corner to dump liquid zinc cleanly upon exit.
-                </div>
-
-                <div className="w-full h-48 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
-                  <svg viewBox="0 0 320 150" className="w-full h-full">
-                    {/* Tilted Blind Cup/Tube */}
-                    <g transform="rotate(35 160 75)">
-                      <path d="M 60 50 L 220 50 L 220 100 L 60 100 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
-                      {/* Sealed End at Left-High */}
-                      <rect x="55" y="50" width="10" height="50" fill="#f43f5e" />
-                      {/* Open Mouth at Right-Low */}
-                      <line x1="220" y1="50" x2="220" y2="100" stroke="#10b981" strokeWidth="3" strokeDasharray="3 3" />
-                    </g>
-                    <text x="80" y="30" fill="#f43f5e" fontSize="9" fontWeight="bold">Sealed Blind End (Top High)</text>
-                    <path d="M 230 105 L 230 130" stroke="#10b981" strokeWidth="2" strokeDasharray="2 2" />
-                    <text x="230" y="140" fill="#10b981" fontSize="9" fontWeight="bold" textAnchor="middle">Open Mouth (Lowest Point Drainage)</text>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowBlindEndGuide(false)}
-                className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-              >
-                Got It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= MODAL 6: Drip Corner Clearance Guide ================= */}
-      {showDripCornerGuide && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-base">📍</span>
-                <h3 className="text-sm font-bold text-cyan-400">
-                  Lowest Drip-Corner Clearance Standard
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowDripCornerGuide(false)}
-                className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-              >
-                ✕ Close
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-                <div className="font-bold text-cyan-300 text-[11px]">
-                  1. Drip-Corner Unobstructed Rule (Left-High / Right-Low)
-                </div>
-                <div className="text-[10px] text-slate-400 leading-relaxed">
-                  The lowest tip of the workpiece is the single point where zinc droplets detach. Never wrap wire around this tip; tie wires to upper side holes instead.
-                </div>
-
-                <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
-                  <svg viewBox="0 0 320 160" className="w-full h-full">
-                    <g transform="rotate(25 160 80)">
-                      <rect x="70" y="40" width="180" height="80" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
-                      {/* Wire on Side Hole */}
-                      <circle cx="100" cy="55" r="4" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
-                      {/* Clean Lowest Corner */}
-                      <circle cx="250" cy="120" r="4" fill="#10b981" />
-                    </g>
-                    {/* Wire Path */}
-                    <line x1="120" y1="10" x2="110" y2="45" stroke="#f59e0b" strokeWidth="2" />
-                    <text x="125" y="25" fill="#f59e0b" fontSize="8" className="font-mono">Rigging Wire Tied Above</text>
-                    {/* Single Drip Point */}
-                    <path d="M 270 125 C 270 135, 267 140, 267 145" fill="none" stroke="#38bdf8" strokeWidth="2" />
-                    <circle cx="267" cy="147" r="2.5" fill="#38bdf8" />
-                    <text x="220" y="155" fill="#10b981" fontSize="8" fontWeight="bold">100% Free Lowest Tip (Clean Single Drip)</text>
-                  </svg>
-                </div>
-              </div>
-
-              <div className="grid grid-cols-2 gap-2 text-[10px]">
-                <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-1">
-                  <div className="font-bold text-emerald-400">✓ Free Lowest Corner</div>
-                  <div>Zinc drops break away smoothly without surface tension interference.</div>
-                </div>
-                <div className="bg-rose-950/20 p-2 rounded border border-rose-500/30 space-y-1">
-                  <div className="font-bold text-rose-400">❌ Wire Wrapped on Tip</div>
-                  <div>Creates capillary trap, pooling zinc into a massive lump/icicle.</div>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowDripCornerGuide(false)}
-                className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-              >
-                Got It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* ================= MODAL 7: Wire Tie-In Location & Contour Guide ================= */}
-      {showCornerTieGuide && (
-        <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-          <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-            <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-              <div className="flex items-center gap-2">
-                <span className="text-base">🔗</span>
-                <h3 className="text-sm font-bold text-cyan-400">
-                  Corner Hole Wire Tie-In & Contour Alignment Standard
-                </h3>
-              </div>
-              <button
-                type="button"
-                onClick={() => setShowCornerTieGuide(false)}
-                className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-              >
-                ✕ Close
-              </button>
-            </div>
-
-            <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
-              <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-                <div className="font-bold text-cyan-300 text-[11px]">
-                  1. Edge Hole Tie-In Rule (Left-High / Right-Low)
-                </div>
-                <div className="text-[10px] text-slate-400 leading-relaxed">
-                  Tie wires must pass through corner or edge holes and fit snugly along the workpiece boundary. Never pass wires through mid-body holes where they sag and block zinc flow across flat surfaces.
-                </div>
-
-                <div className="w-full h-48 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
-                  <svg viewBox="0 0 320 150" className="w-full h-full">
-                    <g transform="rotate(20 160 75)">
-                      <rect x="60" y="35" width="200" height="80" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
-                      {/* Corner Hole */}
-                      <circle cx="75" cy="48" r="4" fill="#10b981" />
-                      {/* Mid Body Hole (Do not tie) */}
-                      <circle cx="160" cy="75" r="4" fill="#f43f5e" />
-                    </g>
-                    <text x="50" y="25" fill="#10b981" fontSize="8" fontWeight="bold">✓ Corner/Edge Hole (Tight Contour Wire)</text>
-                    <text x="180" y="110" fill="#f43f5e" fontSize="8" fontWeight="bold">❌ Mid-Body Hole (Blocks Flow across Face)</text>
-                  </svg>
-                </div>
-              </div>
-            </div>
-
-            <div className="pt-2 border-t border-slate-800 flex justify-end">
-              <button
-                type="button"
-                onClick={() => setShowCornerTieGuide(false)}
-                className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-              >
-                Got It
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
-  );
-}
+
+    {/* Safety 2: 串连防晃 */}
+    <div className="p-2.5 bg-rose-950/30 border-l-2 border-l-rose-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-rose-300">🛡️ Safety: Workpiece Stability & Anti-Sway Control</div>
+        <button
+          type="button"
+          onClick={() => setShowAntiSwayGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-rose-300 bg-rose-900/50 hover:bg-rose-800 border border-rose-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>🪢</span>
+          <span className="underline decoration-rose-400/50">Anti-Sway & Interconnect Guide</span>
+        </button>
+      </div>
+      <div>
+        Prohibit single-point hanging for large/flat plates. Mandatory dual-point suspension with interconnecting tie wire through corner/edge holes of adjacent workpieces to lock them into a rigid row, preventing sway and tank collisions (&ge; 20cm lateral wall clearance).
+      </div>
+    </div>
+
+    {/* Quality 1: 倾角 15°-30° */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Hanging Pitch Angle (15°–30°)</div>
+        <button
+          type="button"
+          onClick={() => setShowPitchGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>📐</span>
+          <span className="underline decoration-cyan-400/50">Pitch Guide & Calculator</span>
+        </button>
+      </div>
+      <div>
+        Maintain 15° to 30° tilt angle for rapid, uniform zinc drainage, fast run-off, and zero ash trapping on flat surfaces.
+      </div>
+    </div>
+
+    {/* Quality 2: 孔位定向 大下小上 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Vent & Drain Hole Orientation (Large Low / Small High)</div>
+        <button
+          type="button"
+          onClick={() => setShowDrainHoleGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>🕳️</span>
+          <span className="underline decoration-cyan-400/50">Drain/Vent Hole Orientation Guide</span>
+        </button>
+      </div>
+      <div>
+        Always orient workpieces so larger holes are at the lowest point (for zinc drainage) and smaller holes are at the highest point (for air venting). Prevents zinc blockage, icicles, and trapped air.
+      </div>
+    </div>
+
+    {/* Quality 3: 盲端大倾角 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Blind-End Workpiece Hanging Pose</div>
+        <button
+          type="button"
+          onClick={() => setShowBlindEndGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>🪣</span>
+          <span className="underline decoration-cyan-400/50">Blind-End Pose Guide</span>
+        </button>
+      </div>
+      <div>
+        For single-opening/blind-end workpieces, enforce a steep 35°–45° tilt with the open mouth facing downwards to serve as the lowest drainage point during withdrawal.
+      </div>
+    </div>
+
+    {/* Quality 4: 最低滴锌角避让 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Lowest Drip-Corner Clearance</div>
+        <button
+          type="button"
+          onClick={() => setShowDripCornerGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>📍</span>
+          <span className="underline decoration-cyan-400/50">Drip Corner Clearance Guide</span>
+        </button>
+      </div>
+      <div>
+        Never tie wire or attach rigging directly over the lowest drip corner. Keep the lowest tip 100% unobstructed so molten zinc releases cleanly without pooling or forming thick zinc lumps.
+      </div>
+    </div>
+
+    {/* Quality 5: 角孔绑扎与轮廓贴合 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Wire Tie-In Location & Contour Line</div>
+        <button
+          type="button"
+          onClick={() => setShowCornerTieGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>🔗</span>
+          <span className="underline decoration-cyan-400/50">Corner Tie-In & Contour Guide</span>
+        </button>
+      </div>
+      <div>
+        Pass tie-wires through corner or edge holes rather than mid-body holes. Keep wires pulled tight against workpiece contours to prevent horizontal "zinc-blocking" lines on flat surfaces.
+      </div>
+    </div>
+  </div>
+
+  {/* ================= MODAL 1: 吊挂角与负荷折减弹窗 ================= */}
+  {showRiggingGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-base">⚖️</span>
+            <h3 className="text-sm font-bold text-rose-300">Rigging Angle & Load Derating Standard (&le; 45&deg;)</h3>
+          </div>
+          <button type="button" onClick={() => setShowRiggingGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors">✕ Close</button>
+        </div>
+        <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-rose-300 text-[11px]">1. Rigging Angle (&theta;) Reference Diagram</div>
+            <div className="w-full h-48 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+              <svg viewBox="0 0 320 150" className="w-full h-full">
+                <rect x="30" y="12" width="260" height="12" rx="2" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
+                <text x="160" y="21" fill="#94a3b8" fontSize="8" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
+                <line x1="100" y1="24" x2="100" y2="125" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
+                <line x1="100" y1="24" x2="60" y2="110" stroke="#f43f5e" strokeWidth="2" />
+                <circle cx="100" cy="24" r="3" fill="#f43f5e" />
+                <circle cx="60" cy="110" r="3" fill="#f43f5e" />
+                <line x1="220" y1="24" x2="260" y2="110" stroke="#f43f5e" strokeWidth="2" />
+                <circle cx="220" cy="24" r="3" fill="#f43f5e" />
+                <circle cx="260" cy="110" r="3" fill="#f43f5e" />
+                <path d="M 100 65 A 41 41 0 0 0 81 60" fill="none" stroke="#f59e0b" strokeWidth="2" />
+                <text x="82" y="76" fill="#f59e0b" fontSize="9" fontWeight="bold" className="font-mono">θ (Rigging Angle)</text>
+                <rect x="40" y="110" width="240" height="18" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
+                <text x="160" y="122" fill="#38bdf8" fontSize="8" fontWeight="bold" textAnchor="middle">Workpiece</text>
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowRiggingGuide(false)} className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ================= MODAL 2: 串连防晃弹窗 ================= */}
+  {showAntiSwayGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-2xl w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🪢</span>
+            <h3 className="text-sm font-bold text-rose-300">Anti-Sway & Interconnecting Standard</h3>
+          </div>
+          <button type="button" onClick={() => setShowAntiSwayGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors">✕ Close</button>
+        </div>
+        <div className="space-y-3 text-xs text-slate-300 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-rose-300 text-[11px]">1. Interconnecting Tie-Wire (Left-High to Right-Low Tilt)</div>
+            <div className="w-full h-64 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+              <svg viewBox="0 0 850 420" className="w-full h-full">
+                <rect width="850" height="420" fill="#090d16" rx="4" />
+                <rect x="50" y="25" width="750" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
+                <text x="425" y="44" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">BEAM RACK</text>
+                <line x1="145" y1="53" x2="140" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+                <line x1="225" y1="53" x2="228" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+                <line x1="385" y1="53" x2="380" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+                <line x1="465" y1="53" x2="468" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+                <line x1="625" y1="53" x2="620" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+                <line x1="705" y1="53" x2="708" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+                <g transform="translate(185, 230) rotate(-10)"><rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" /><text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">Plate #1</text></g>
+                <g transform="translate(425, 230) rotate(-10)"><rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" /><text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">Plate #2</text></g>
+                <g transform="translate(665, 230) rotate(-10)"><rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" /><text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">Plate #3</text></g>
+                <path d="M 127 276 L 255 253 L 367 276 L 495 253 L 607 276 L 735 253" fill="none" stroke="#f59e0b" strokeWidth="3.5" />
+                <circle cx="255" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="367" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="495" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="607" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+              </svg>
+            </div>
+          </div>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowAntiSwayGuide(false)} className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ================= MODAL 3: 倾角与计算器弹窗 ================= */}
+  {showPitchGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-base">📐</span>
+            <h3 className="text-sm font-bold text-cyan-400">Hanging Pitch Angle & Drainage Standard (15°–30°)</h3>
+          </div>
+          <button type="button" onClick={() => setShowPitchGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors">✕ Close</button>
+        </div>
+        <div className="space-y-3 text-xs text-slate-300 max-h-[65vh] overflow-y-auto pr-1">
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-3">
+            <div className="flex items-center justify-between border-b border-slate-800 pb-1.5">
+              <div className="font-bold text-cyan-300 text-[11px]">🧮 Wire & Chain Length Calculator</div>
+              <span className="text-[9px] font-mono text-slate-400">L<sub>2</sub> = L<sub>1</sub> + D × sin(θ)</span>
+            </div>
+            <div className="grid grid-cols-3 gap-2 text-[10px]">
+              <div>
+                <label className="block text-slate-400 mb-1">Pick Point D (cm)</label>
+                <input type="number" value={pointDistance} onChange={(e) => setPointDistance(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-100 font-mono text-xs" />
+              </div>
+              <div>
+                <label className="block text-slate-400 mb-1">Front Wire L<sub>1</sub> (cm)</label>
+                <input type="number" value={frontWireLen} onChange={(e) => setFrontWireLen(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-slate-100 font-mono text-xs" />
+              </div>
+              <div>
+                <label className="block text-slate-400 mb-1">Target Angle θ (°)</label>
+                <input type="number" min="15" max="30" value={targetAngle} onChange={(e) => setTargetAngle(e.target.value)} className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1 text-amber-400 font-bold font-mono text-xs" />
+              </div>
+            </div>
+            <div className="bg-slate-900/90 border border-cyan-500/30 rounded p-2.5 flex items-center justify-between">
+              <div>
+                <div className="text-[10px] text-slate-400">Recommended Rear Wire L<sub>2</sub>:</div>
+                <div className={`text-base font-bold font-mono ${rearWireLen > 300 ? 'text-red-400' : 'text-amber-400'}`}>
+                  {rearWireLen} <span className="text-xs font-normal text-slate-400">cm</span>
+                </div>
+              </div>
+              <div className="text-right border-l border-slate-800 pl-3">
+                <div className="text-[9px] text-slate-400">Offset ΔL: <span className="font-mono text-cyan-300">+{deltaL} cm</span></div>
+                <div className="text-[9px] text-slate-400">15°–30° Range: <span className="font-mono text-emerald-400">{minRear} ~ {maxRear} cm</span></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowPitchGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ================= MODAL 4: 大下小上孔位弹窗 ================= */}
+  {showDrainHoleGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 className="text-sm font-bold text-cyan-400">🕳️ Drain & Vent Hole Orientation Guide</h3>
+          <button type="button" onClick={() => setShowDrainHoleGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800">✕ Close</button>
+        </div>
+        <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 320 150" className="w-full h-full">
+            <g transform="rotate(20 160 75)">
+              <rect x="50" y="55" width="220" height="40" rx="4" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              <circle cx="70" cy="75" r="4" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
+              <circle cx="250" cy="75" r="11" fill="#0f172a" stroke="#10b981" strokeWidth="2.5" />
+            </g>
+            <text x="90" y="20" fill="#38bdf8" fontSize="8" fontWeight="bold">Air Vent (Small Hole ↑)</text>
+            <text x="245" y="140" fill="#10b981" fontSize="9" fontWeight="bold" textAnchor="middle">Zinc Run-off (Large Hole ↓)</text>
+          </svg>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowDrainHoleGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ================= MODAL 5: 盲端大倾角弹窗 ================= */}
+  {showBlindEndGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 className="text-sm font-bold text-cyan-400">🪣 Blind-End Pose Standard (35°–45°)</h3>
+          <button type="button" onClick={() => setShowBlindEndGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800">✕ Close</button>
+        </div>
+        <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 320 150" className="w-full h-full">
+            <g transform="rotate(35 160 75)">
+              <path d="M 60 50 L 220 50 L 220 100 L 60 100 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              <rect x="55" y="50" width="10" height="50" fill="#f43f5e" />
+              <line x1="220" y1="50" x2="220" y2="100" stroke="#10b981" strokeWidth="3" strokeDasharray="3 3" />
+            </g>
+            <text x="80" y="30" fill="#f43f5e" fontSize="9" fontWeight="bold">Sealed Blind End (Top High)</text>
+            <text x="230" y="140" fill="#10b981" fontSize="9" fontWeight="bold" textAnchor="middle">Open Mouth (Lowest Point Drainage)</text>
+          </svg>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowBlindEndGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ================= MODAL 6: 最低滴锌角避让弹窗 ================= */}
+  {showDripCornerGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 className="text-sm font-bold text-cyan-400">📍 Drip Corner Clearance Guide</h3>
+          <button type="button" onClick={() => setShowDripCornerGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800">✕ Close</button>
+        </div>
+        <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 320 160" className="w-full h-full">
+            <g transform="rotate(25 160 80)">
+              <rect x="70" y="40" width="180" height="80" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              <circle cx="100" cy="55" r="4" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
+              <circle cx="250" cy="120" r="4" fill="#10b981" />
+            </g>
+            <text x="220" y="155" fill="#10b981" fontSize="8" fontWeight="bold">100% Free Lowest Tip (Clean Single Drip)</text>
+          </svg>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowDripCornerGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* ================= MODAL 7: 角孔穿线与轮廓贴合弹窗 ================= */}
+  {showCornerTieGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 className="text-sm font-bold text-cyan-400">🔗 Corner Tie-In & Contour Alignment Standard</h3>
+          <button type="button" onClick={() => setShowCornerTieGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800">✕ Close</button>
+        </div>
+        <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 320 150" className="w-full h-full">
+            <g transform="rotate(20 160 75)">
+              <rect x="60" y="35" width="200" height="80" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              <circle cx="75" cy="48" r="4" fill="#10b981" />
+              <circle cx="160" cy="75" r="4" fill="#f43f5e" />
+            </g>
+            <text x="50" y="25" fill="#10b981" fontSize="8" fontWeight="bold">✓ Corner/Edge Hole (Tight Contour Wire)</text>
+            <text x="180" y="110" fill="#f43f5e" fontSize="8" fontWeight="bold">❌ Mid-Body Hole (Blocks Flow)</text>
+          </svg>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowCornerTieGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+{/* STEP 4 检验区域 - 结束 */}
 
   {/* STEP 5 */}
   <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
