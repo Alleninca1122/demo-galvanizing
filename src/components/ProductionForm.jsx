@@ -190,6 +190,11 @@ export default function ProductionForm({ currentUser, supabase }) {
 
   const [showAntiSwayGuide, setShowAntiSwayGuide] = useState(false);
 
+  const [showDrainHoleGuide, setShowDrainHoleGuide] = useState(false);
+  const [showBlindEndGuide, setShowBlindEndGuide] = useState(false);
+  const [showDripCornerGuide, setShowDripCornerGuide] = useState(false);
+  const [showCornerTieGuide, setShowCornerTieGuide] = useState(false);
+
   // 控制 ASTM A385 图解弹窗的开关
   const [showGuide, setShowGuide] = useState(false);
 
@@ -1370,7 +1375,75 @@ const [assistantPin, setAssistantPin] = useState('');
         Maintain 15° to 30° tilt angle for rapid, uniform zinc drainage, fast run-off, and zero ash trapping on flat surfaces.
       </div>
     </div>
+
+    {/* ===== 新增：4个质量控制项入口 (来自 Gemini) ===== */}
+
+    {/* Entry 1: 孔位定向 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Vent & Drain Hole Orientation (Large Low / Small High)</div>
+        <button
+          type="button"
+          onClick={() => setShowDrainHoleGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>🕳️</span>
+          <span className="underline decoration-cyan-400/50">Drain/Vent Hole Guide</span>
+        </button>
+      </div>
+      <div>Always orient workpieces so larger holes are at the lowest point (for zinc drainage) and smaller holes are at the highest point (for air venting).</div>
+    </div>
+
+    {/* Entry 2: 盲端大倾角 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Blind-End Workpiece Hanging Pose</div>
+        <button
+          type="button"
+          onClick={() => setShowBlindEndGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>🪣</span>
+          <span className="underline decoration-cyan-400/50">Blind-End Pose Guide</span>
+        </button>
+      </div>
+      <div>For single-opening/blind-end workpieces, enforce a steep 35°–45° tilt with the open mouth facing downwards to serve as the lowest drainage point.</div>
+    </div>
+
+    {/* Entry 3: 最低滴锌角避让 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Lowest Drip-Corner Clearance</div>
+        <button
+          type="button"
+          onClick={() => setShowDripCornerGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>📍</span>
+          <span className="underline decoration-cyan-400/50">Drip Corner Clearance Guide</span>
+        </button>
+      </div>
+      <div>Never tie wire or attach rigging directly over the lowest drip corner. Keep the lowest tip 100% unobstructed.</div>
+    </div>
+
+    {/* Entry 4: 角孔穿线 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Wire Tie-In Location & Contour Line</div>
+        <button
+          type="button"
+          onClick={() => setShowCornerTieGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>🔗</span>
+          <span className="underline decoration-cyan-400/50">Corner Tie-In & Contour Guide</span>
+        </button>
+      </div>
+      <div>Pass tie-wires through corner or edge holes rather than mid-body holes. Keep wires pulled tight against workpiece contours.</div>
+    </div>
   </div>
+
+  {/* ============ 原有 3 个 Modal ============ */}
 
   {/* Rigging Angle & Derating Guide Modal (Safety Modal) */}
   {showRiggingGuide && (
@@ -1400,15 +1473,15 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="text-[10px] text-slate-400 leading-relaxed">
               Rigging Angle (&theta;) is measured between the wire/chain and the <strong>vertical line</strong>. Larger angles increase tension and reduce working load limit (WLL).
             </div>
-            <div className="w-full h-48 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
+            <div className="w-full h-56 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 150" className="w-full h-full">
                 <rect x="30" y="12" width="260" height="12" rx="2" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
-                <text x="160" y="21" fill="#94a3b8" fontSize="8" fontWeight="bold" textAnchor="middle" className="font-mono">
+                <text x="160" y="21" fill="#94a3b8" fontSize="11" fontWeight="bold" textAnchor="middle" className="font-mono">
                   Beam Rack
                 </text>
 
                 <line x1="100" y1="24" x2="100" y2="125" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
-                <text x="105" y="40" fill="#64748b" fontSize="7" className="font-mono">0° Vertical Line</text>
+                <text x="105" y="40" fill="#cbd5e1" fontSize="13" fontWeight="bold" className="font-mono">0° Vertical Line</text>
 
                 <line x1="100" y1="24" x2="60" y2="110" stroke="#f43f5e" strokeWidth="2" />
                 <circle cx="100" cy="24" r="3" fill="#f43f5e" />
@@ -1419,12 +1492,12 @@ const [assistantPin, setAssistantPin] = useState('');
                 <circle cx="260" cy="110" r="3" fill="#f43f5e" />
 
                 <path d="M 100 65 A 41 41 0 0 0 81 60" fill="none" stroke="#f59e0b" strokeWidth="2" />
-                <text x="82" y="76" fill="#f59e0b" fontSize="9" fontWeight="bold" className="font-mono">
+                <text x="82" y="76" fill="#f59e0b" fontSize="13" fontWeight="bold" className="font-mono">
                   θ (Rigging Angle)
                 </text>
 
                 <rect x="40" y="110" width="240" height="18" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
-                <text x="160" y="122" fill="#38bdf8" fontSize="8" fontWeight="bold" textAnchor="middle">
+                <text x="160" y="122" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">
                   Workpiece
                 </text>
               </svg>
@@ -1484,155 +1557,141 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
   )}
 
-{/* Anti-Sway & Waist-Tie Guide Modal */}
-{showAntiSwayGuide && (
-  <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-    <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-2xl w-full p-4 space-y-4 shadow-2xl">
-      {/* Modal Header */}
-      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <div className="flex items-center gap-2">
-          <span className="text-base">🪢</span>
-          <h3 className="text-sm font-bold text-rose-300">
-            Anti-Sway & Waist-Tie Operational Standard
-          </h3>
-        </div>
-        <button
-          type="button"
-          onClick={() => setShowAntiSwayGuide(false)}
-          className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
-        >
-          ✕ Close
-        </button>
-      </div>
-
-      {/* Modal Content */}
-      <div className="space-y-3 text-xs text-slate-300 max-h-[70vh] overflow-y-auto pr-1">
-        {/* Section 1: SVG Diagram */}
-        <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-          <div className="font-bold text-rose-300 text-[11px]">
-            1. Interconnecting Anti-Sway Diagram
+  {/* Anti-Sway & Waist-Tie Guide Modal */}
+  {showAntiSwayGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-2xl w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <div className="flex items-center gap-2">
+            <span className="text-base">🪢</span>
+            <h3 className="text-sm font-bold text-rose-300">
+              Anti-Sway & Waist-Tie Operational Standard
+            </h3>
           </div>
-          <div className="text-[10px] text-slate-400 leading-relaxed">
-            Use dual-point suspension for large plates. Connect adjacent workpieces with tie wire to form a single rigid row and eliminate relative movement.
-          </div>
-
-          <div className="w-full h-72 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
-            <svg viewBox="0 0 850 420" className="w-full h-full">
-              <defs>
-                <pattern id="grid-sway-correct" width="25" height="25" patternUnits="userSpaceOnUse">
-                  <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#1e293b" strokeWidth="0.8" />
-                </pattern>
-              </defs>
-
-              <rect width="850" height="420" fill="url(#grid-sway-correct)" rx="4" />
-
-              {/* Beam Rack */}
-              <rect x="50" y="25" width="750" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
-              <text x="425" y="44" fill="#ffffff" fontSize="16" fontWeight="bold" textAnchor="middle" className="font-mono">
-                BEAM RACK
-              </text>
-
-              {/* Dual-Point Suspension Callout */}
-              <rect x="100" y="70" width="180" height="30" rx="15" fill="#022c22" stroke="#10b981" strokeWidth="2" />
-              <text x="190" y="90" fill="#34d399" fontSize="13" fontWeight="bold" textAnchor="middle">
-                Dual-Point Suspension
-              </text>
-
-              {/* Vertical Suspension Wires (Left-High Tilt Layout) */}
-              <line x1="145" y1="53" x2="140" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
-              <line x1="225" y1="53" x2="228" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
-
-              <line x1="385" y1="53" x2="380" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
-              <line x1="465" y1="53" x2="468" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
-
-              <line x1="625" y1="53" x2="620" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
-              <line x1="705" y1="53" x2="708" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
-
-              {/* Workpiece #1 (Left-High Tilt: rotate -10) */}
-              <g transform="translate(185, 230) rotate(-10)">
-                <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
-                  Plate #1
-                </text>
-              </g>
-
-              {/* Workpiece #2 (Left-High Tilt: rotate -10) */}
-              <g transform="translate(425, 230) rotate(-10)">
-                <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
-                  Plate #2
-                </text>
-              </g>
-
-              {/* Workpiece #3 (Left-High Tilt: rotate -10) */}
-              <g transform="translate(665, 230) rotate(-10)">
-                <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                <text x="0" y="-5" fill="#ffffff" fontSize="14" fontWeight="bold" textAnchor="middle">
-                  Plate #3
-                </text>
-              </g>
-
-              {/* Continuous Interconnecting Tie Line */}
-              <path d="M 127 276 L 255 253 L 367 276 L 495 253 L 607 276 L 735 253" fill="none" stroke="#f59e0b" strokeWidth="3.5" />
-
-              {/* Interconnection Connection Points */}
-              <circle cx="255" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-              <circle cx="367" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-              <circle cx="495" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-              <circle cx="607" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
-
-              {/* Callout Lines & Label */}
-              <line x1="311" y1="264" x2="311" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
-              <line x1="551" y1="264" x2="551" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
-
-              <rect x="170" y="340" width="510" height="42" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
-              <text x="425" y="366" fill="#fbbf24" fontSize="14" fontWeight="bold" textAnchor="middle" className="font-mono">
-                Interconnecting Tie Wire (Connecting Adjacent Workpieces)
-              </text>
-            </svg>
-          </div>
+          <button
+            type="button"
+            onClick={() => setShowAntiSwayGuide(false)}
+            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
+          >
+            ✕ Close
+          </button>
         </div>
 
-        {/* Section 2: Mandatory Controls Rules */}
-        <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
-          <div className="font-bold text-rose-300 text-[11px]">
-            2. Mandatory Safety & Rigging Controls
-          </div>
-          <div className="grid grid-cols-2 gap-2 text-[10px]">
-            <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
-              <div className="font-bold text-emerald-400">
-                ✓ Dual-Point Suspension
-              </div>
-              <div className="text-[9px] text-slate-400">
-                Large or flat plates must use at least two vertical hanging points to limit axial tilting.
-              </div>
+        <div className="space-y-3 text-xs text-slate-300 max-h-[70vh] overflow-y-auto pr-1">
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-rose-300 text-[11px]">
+              1. Interconnecting Anti-Sway Diagram
+            </div>
+            <div className="text-[10px] text-slate-400 leading-relaxed">
+              Use dual-point suspension for large plates. Connect adjacent workpieces with tie wire to form a single rigid row and eliminate relative movement.
             </div>
 
-            <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
-              <div className="font-bold text-emerald-400">
-                ✓ Interconnecting Tie Wire
+            <div className="w-full h-72 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
+              <svg viewBox="0 0 850 420" className="w-full h-full">
+                <defs>
+                  <pattern id="grid-sway-correct" width="25" height="25" patternUnits="userSpaceOnUse">
+                    <path d="M 25 0 L 0 0 0 25" fill="none" stroke="#1e293b" strokeWidth="0.8" />
+                  </pattern>
+                </defs>
+
+                <rect width="850" height="420" fill="url(#grid-sway-correct)" rx="4" />
+
+                <rect x="50" y="25" width="750" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
+                <text x="425" y="44" fill="#ffffff" fontSize="22" fontWeight="bold" textAnchor="middle" className="font-mono">
+                  BEAM RACK
+                </text>
+
+                <rect x="100" y="70" width="180" height="30" rx="15" fill="#022c22" stroke="#10b981" strokeWidth="2" />
+                <text x="190" y="90" fill="#34d399" fontSize="18" fontWeight="bold" textAnchor="middle">
+                  Dual-Point Suspension
+                </text>
+
+                <line x1="145" y1="53" x2="140" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+                <line x1="225" y1="53" x2="228" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+
+                <line x1="385" y1="53" x2="380" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+                <line x1="465" y1="53" x2="468" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+
+                <line x1="625" y1="53" x2="620" y2="155" stroke="#94a3b8" strokeWidth="2.5" />
+                <line x1="705" y1="53" x2="708" y2="170" stroke="#94a3b8" strokeWidth="2.5" />
+
+                <g transform="translate(185, 230) rotate(-10)">
+                  <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                  <text x="0" y="-5" fill="#ffffff" fontSize="20" fontWeight="bold" textAnchor="middle">
+                    Plate #1
+                  </text>
+                </g>
+
+                <g transform="translate(425, 230) rotate(-10)">
+                  <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                  <text x="0" y="-5" fill="#ffffff" fontSize="20" fontWeight="bold" textAnchor="middle">
+                    Plate #2
+                  </text>
+                </g>
+
+                <g transform="translate(665, 230) rotate(-10)">
+                  <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
+                  <text x="0" y="-5" fill="#ffffff" fontSize="20" fontWeight="bold" textAnchor="middle">
+                    Plate #3
+                  </text>
+                </g>
+
+                <path d="M 127 276 L 255 253 L 367 276 L 495 253 L 607 276 L 735 253" fill="none" stroke="#f59e0b" strokeWidth="3.5" />
+
+                <circle cx="255" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="367" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="495" cy="253" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+                <circle cx="607" cy="276" r="6" fill="#10b981" stroke="#ffffff" strokeWidth="2" />
+
+                <line x1="311" y1="264" x2="311" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
+                <line x1="551" y1="264" x2="551" y2="340" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
+
+                <rect x="115" y="336" width="620" height="48" rx="8" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
+                <text x="425" y="366" fill="#fbbf24" fontSize="15" fontWeight="bold" textAnchor="middle" className="font-mono">
+                  Interconnecting Tie Wire (Connecting Adjacent Workpieces)
+                </text>
+              </svg>
+            </div>
+          </div>
+
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-rose-300 text-[11px]">
+              2. Mandatory Safety & Rigging Controls
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[10px]">
+              <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
+                <div className="font-bold text-emerald-400">
+                  ✓ Dual-Point Suspension
+                </div>
+                <div className="text-[9px] text-slate-400">
+                  Large or flat plates must use at least two vertical hanging points to limit axial tilting.
+                </div>
               </div>
-              <div className="text-[9px] text-slate-400">
-                Connect adjacent workpieces using tie wire to form a unified row, eliminating relative sway & collisions.
+
+              <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
+                <div className="font-bold text-emerald-400">
+                  ✓ Interconnecting Tie Wire
+                </div>
+                <div className="text-[9px] text-slate-400">
+                  Connect adjacent workpieces using tie wire to form a unified row, eliminating relative sway & collisions.
+                </div>
               </div>
             </div>
           </div>
         </div>
-      </div>
 
-      {/* Modal Footer */}
-      <div className="pt-2 border-t border-slate-800 flex justify-end">
-        <button
-          type="button"
-          onClick={() => setShowAntiSwayGuide(false)}
-          className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
-        >
-          Got It
-        </button>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowAntiSwayGuide(false)}
+            className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+          >
+            Got It
+          </button>
+        </div>
       </div>
     </div>
-  </div>
-)}
+  )}
 
   {/* Pitch Angle Guide Modal */}
   {showPitchGuide && (
@@ -1662,11 +1721,11 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="text-[10px] text-slate-400 leading-relaxed">
               Hanging at <strong className="text-amber-400">15° to 30°</strong> ensures smooth air purging upon entry and rapid molten zinc run-off upon exit, preventing zinc tears, spikes, and ash trapping.
             </div>
-            
-            <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+
+            <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 140" className="w-full h-full">
                 <line x1="30" y1="95" x2="280" y2="95" stroke="#475569" strokeWidth="1.5" strokeDasharray="4 4" />
-                <text x="282" y="98" fill="#64748b" fontSize="8" className="font-mono">0° Horizontal</text>
+                <text x="282" y="98" fill="#cbd5e1" fontSize="13" fontWeight="bold" className="font-mono">0° Horizontal</text>
 
                 <line x1="80" y1="10" x2="80" y2="35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
                 <line x1="240" y1="10" x2="240" y2="92" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
@@ -1678,18 +1737,18 @@ const [assistantPin, setAssistantPin] = useState('');
                 </g>
 
                 <path d="M 160 95 A 55 55 0 0 1 164 76" fill="none" stroke="#f59e0b" strokeWidth="2" />
-                <text x="148" y="82" fill="#f59e0b" fontSize="10" fontWeight="bold" fontFamily="sans-serif">
+                <text x="148" y="82" fill="#f59e0b" fontSize="14" fontWeight="bold" fontFamily="sans-serif">
                   15°–30°
                 </text>
 
                 <path d="M 80 30 L 80 18" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
-                <text x="80" y="12" fill="#ef4444" fontSize="8" fontWeight="bold" textAnchor="middle">Air Escape ↑ (Highest Vent)</text>
+                <text x="80" y="12" fill="#ef4444" fontSize="11" fontWeight="bold" textAnchor="middle">Air Escape ↑ (Highest Vent)</text>
 
                 <path d="M 260 88 L 260 105" stroke="#38bdf8" strokeWidth="2" strokeDasharray="2 2" />
-                <text x="260" y="115" fill="#38bdf8" fontSize="8" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓ (Lowest Drain)</text>
+                <text x="260" y="115" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓ (Lowest Drain)</text>
 
                 <line x1="20" y1="120" x2="180" y2="120" stroke="#0284c7" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
-                <text x="25" y="115" fill="#0284c7" fontSize="8" opacity="0.7">Zinc Kettle Bath Line</text>
+                <text x="25" y="115" fill="#38bdf8" fontSize="12" fontWeight="bold" opacity="1">Zinc Kettle Bath Line</text>
               </svg>
             </div>
           </div>
@@ -1730,31 +1789,31 @@ const [assistantPin, setAssistantPin] = useState('');
               <span className="text-[9px] font-mono text-slate-400">Formula: L<sub>2</sub> = L<sub>1</sub> + D × sin(θ)</span>
             </div>
 
-            <div className="w-full h-32 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
+            <div className="w-full h-40 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 110" className="w-full h-full">
                 <line x1="20" y1="15" x2="300" y2="15" stroke="#475569" strokeWidth="3" />
-                <text x="25" y="10" fill="#64748b" fontSize="7" className="font-mono">Beam Rack</text>
+                <text x="25" y="10" fill="#cbd5e1" fontSize="12" fontWeight="bold" className="font-mono">Beam Rack</text>
 
                 <line x1="80" y1="15" x2="80" y2="40" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
-                <text x="65" y="30" fill="#38bdf8" fontSize="9" fontWeight="bold" className="font-mono">L₁</text>
+                <text x="65" y="30" fill="#38bdf8" fontSize="13" fontWeight="bold" className="font-mono">L₁</text>
 
                 <line x1="240" y1="15" x2="240" y2="90" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
-                <text x="246" y="55" fill="#f59e0b" fontSize="9" fontWeight="bold" className="font-mono">L₂</text>
+                <text x="246" y="55" fill="#f59e0b" fontSize="13" fontWeight="bold" className="font-mono">L₂</text>
 
                 <g transform="rotate(18 80 40)">
                   <rect x="70" y="32" width="180" height="14" rx="2" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
                   <circle cx="80" cy="32" r="3" fill="#ef4444" />
                   <circle cx="240" cy="32" r="3" fill="#ef4444" />
-                  
+
                   <line x1="80" y1="22" x2="240" y2="22" stroke="#a855f7" strokeWidth="1.5" />
                   <line x1="80" y1="18" x2="80" y2="26" stroke="#a855f7" strokeWidth="1" />
                   <line x1="240" y1="18" x2="240" y2="26" stroke="#a855f7" strokeWidth="1" />
-                  <text x="150" y="18" fill="#c084fc" fontSize="9" fontWeight="bold" textAnchor="middle" className="font-mono">Distance D</text>
+                  <text x="150" y="18" fill="#c084fc" fontSize="13" fontWeight="bold" textAnchor="middle" className="font-mono">Distance D</text>
                 </g>
 
                 <line x1="80" y1="90" x2="280" y2="90" stroke="#475569" strokeWidth="1" strokeDasharray="2 2" />
                 <path d="M 190 90 A 45 45 0 0 1 193 78" fill="none" stroke="#f59e0b" strokeWidth="1.5" />
-                <text x="180" y="85" fill="#f59e0b" fontSize="8" fontWeight="bold">θ</text>
+                <text x="180" y="85" fill="#f59e0b" fontSize="11" fontWeight="bold">θ</text>
               </svg>
             </div>
 
@@ -1834,7 +1893,113 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
   )}
+
+  {/* ============ 新增的 4 个 Modal (来自 Gemini) ============ */}
+
+  {/* MODAL 1: 大下小上 */}
+  {showDrainHoleGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 className="text-sm font-bold text-cyan-400">🕳️ Drain & Vent Hole Orientation Guide</h3>
+          <button type="button" onClick={() => setShowDrainHoleGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800">✕ Close</button>
+        </div>
+        <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 320 150" className="w-full h-full">
+            <g transform="rotate(20 160 75)">
+              <rect x="50" y="55" width="220" height="40" rx="4" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              <circle cx="70" cy="75" r="4" fill="#38bdf8" stroke="#ffffff" strokeWidth="1.5" />
+              <circle cx="250" cy="75" r="11" fill="#0f172a" stroke="#10b981" strokeWidth="2.5" />
+            </g>
+            <text x="90" y="20" fill="#38bdf8" fontSize="11" fontWeight="bold">Air Vent (Small Hole ↑)</text>
+            <text x="245" y="140" fill="#10b981" fontSize="13" fontWeight="bold" textAnchor="middle">Zinc Run-off (Large Hole ↓)</text>
+          </svg>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowDrainHoleGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* MODAL 2: 盲端大倾角 */}
+  {showBlindEndGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 className="text-sm font-bold text-cyan-400">🪣 Blind-End Pose Standard (35°–45°)</h3>
+          <button type="button" onClick={() => setShowBlindEndGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800">✕ Close</button>
+        </div>
+        <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 320 150" className="w-full h-full">
+            <g transform="rotate(35 160 75)">
+              <path d="M 60 50 L 220 50 L 220 100 L 60 100 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              <rect x="55" y="50" width="10" height="50" fill="#f43f5e" />
+              <line x1="220" y1="50" x2="220" y2="100" stroke="#10b981" strokeWidth="3" strokeDasharray="3 3" />
+            </g>
+            <text x="80" y="30" fill="#f43f5e" fontSize="13" fontWeight="bold">Sealed Blind End (Top High)</text>
+            <text x="230" y="140" fill="#10b981" fontSize="13" fontWeight="bold" textAnchor="middle">Open Mouth (Lowest Point Drainage)</text>
+          </svg>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowBlindEndGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* MODAL 3: 最低滴锌角避让 */}
+  {showDripCornerGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 className="text-sm font-bold text-cyan-400">📍 Drip Corner Clearance Guide</h3>
+          <button type="button" onClick={() => setShowDripCornerGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800">✕ Close</button>
+        </div>
+        <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 320 160" className="w-full h-full">
+            <g transform="rotate(25 160 80)">
+              <rect x="70" y="40" width="180" height="80" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              <circle cx="100" cy="55" r="4" fill="#0f172a" stroke="#f59e0b" strokeWidth="2" />
+              <circle cx="250" cy="120" r="4" fill="#10b981" />
+            </g>
+            <text x="220" y="155" fill="#10b981" fontSize="11" fontWeight="bold">100% Free Lowest Tip (Clean Single Drip)</text>
+          </svg>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowDripCornerGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* MODAL 4: 角孔穿线 */}
+  {showCornerTieGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 className="text-sm font-bold text-cyan-400">🔗 Corner Tie-In & Contour Alignment Standard</h3>
+          <button type="button" onClick={() => setShowCornerTieGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800">✕ Close</button>
+        </div>
+        <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+          <svg viewBox="0 0 320 150" className="w-full h-full">
+            <g transform="rotate(20 160 75)">
+              <rect x="60" y="35" width="200" height="80" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+              <circle cx="75" cy="48" r="4" fill="#10b981" />
+              <circle cx="160" cy="75" r="4" fill="#f43f5e" />
+            </g>
+            <text x="50" y="25" fill="#10b981" fontSize="11" fontWeight="bold">✓ Corner/Edge Hole (Tight Contour Wire)</text>
+            <text x="180" y="110" fill="#f43f5e" fontSize="11" fontWeight="bold">❌ Mid-Body Hole (Blocks Flow)</text>
+          </svg>
+        </div>
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button type="button" onClick={() => setShowCornerTieGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
 </div>
+
 
   {/* STEP 5 */}
   <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
