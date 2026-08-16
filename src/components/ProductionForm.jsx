@@ -1355,20 +1355,16 @@ const [assistantPin, setAssistantPin] = useState('');
               Hanging at <strong className="text-amber-400">15° to 30°</strong> ensures smooth air purging upon entry and rapid molten zinc run-off upon exit, preventing zinc tears, spikes, and ash trapping.
             </div>
             
-            {/* SVG Pitch Diagram (Left High, Right Low) */}
-            <div className="w-full h-40 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
-              <svg viewBox="0 0 320 130" className="w-full h-full">
+            {/* SVG Pitch Diagram (Left High, Right Low with Standard Angle Arc) */}
+            <div className="w-full h-44 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+              <svg viewBox="0 0 320 140" className="w-full h-full">
                 {/* Horizontal Reference Line */}
-                <line x1="40" y1="95" x2="280" y2="95" stroke="#475569" strokeWidth="1.5" strokeDasharray="4 4" />
+                <line x1="30" y1="95" x2="280" y2="95" stroke="#475569" strokeWidth="1.5" strokeDasharray="4 4" />
                 <text x="282" y="98" fill="#64748b" fontSize="8" className="font-mono">0° Horizontal</text>
-
-                {/* Angle Arc Label (15°-30°) */}
-                <path d="M 200 95 A 40 40 0 0 1 212 80" fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="2 2" />
-                <text x="185" y="80" fill="#f59e0b" fontSize="10" fontWeight="bold">15°–30°</text>
 
                 {/* Rigging Slings */}
                 <line x1="80" y1="10" x2="80" y2="35" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
-                <line x1="240" y1="10" x2="240" y2="88" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
+                <line x1="240" y1="10" x2="240" y2="92" stroke="#64748b" strokeWidth="2" strokeDasharray="3 3" />
 
                 {/* Tilted Workpiece (Left High, Right Low) */}
                 <g transform="rotate(20 80 35)">
@@ -1377,16 +1373,22 @@ const [assistantPin, setAssistantPin] = useState('');
                   <circle cx="262" cy="45" r="3.5" fill="#38bdf8" />
                 </g>
 
+                {/* Standard Pitch Angle Arc & Text (Workpiece vs Horizontal Baseline) */}
+                <path d="M 215 95 A 35 35 0 0 1 218 83" fill="none" stroke="#f59e0b" strokeWidth="2" />
+                <text x="200" y="78" fill="#f59e0b" fontSize="10" fontWeight="bold" fontFamily="sans-serif">
+                  15°–30°
+                </text>
+
                 {/* Air & Zinc Flow Annotations */}
                 <path d="M 80 30 L 80 18" stroke="#ef4444" strokeWidth="1.5" strokeDasharray="2 2" />
                 <text x="80" y="12" fill="#ef4444" fontSize="8" fontWeight="bold" textAnchor="middle">Air Escape ↑ (Highest Vent)</text>
 
-                <path d="M 260 85 L 260 102" stroke="#38bdf8" strokeWidth="2" strokeDasharray="2 2" />
-                <text x="260" y="112" fill="#38bdf8" fontSize="8" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓ (Lowest Drain)</text>
+                <path d="M 260 88 L 260 105" stroke="#38bdf8" strokeWidth="2" strokeDasharray="2 2" />
+                <text x="260" y="115" fill="#38bdf8" fontSize="8" fontWeight="bold" textAnchor="middle">Rapid Run-off ↓ (Lowest Drain)</text>
 
                 {/* Zinc Kettle Bath Line */}
-                <line x1="20" y1="115" x2="190" y2="115" stroke="#0284c7" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
-                <text x="25" y="110" fill="#0284c7" fontSize="8" opacity="0.7">Zinc Kettle Bath Line</text>
+                <line x1="20" y1="120" x2="180" y2="120" stroke="#0284c7" strokeWidth="1" strokeDasharray="3 3" opacity="0.5" />
+                <text x="25" y="115" fill="#0284c7" fontSize="8" opacity="0.7">Zinc Kettle Bath Line</text>
               </svg>
             </div>
           </div>
@@ -1437,6 +1439,7 @@ const [assistantPin, setAssistantPin] = useState('');
     </div>
   )}
 </div>
+
   {/* STEP 5 */}
   <div className="p-3.5 bg-slate-900/80 border border-slate-800 rounded-lg space-y-2.5">
     <div className="flex items-center justify-between border-b border-slate-800/80 pb-2">
