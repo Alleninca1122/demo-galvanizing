@@ -194,6 +194,7 @@ export default function ProductionForm({ currentUser, supabase }) {
   const [showBlindEndGuide, setShowBlindEndGuide] = useState(false);
   const [showDripCornerGuide, setShowDripCornerGuide] = useState(false);
   const [showCornerTieGuide, setShowCornerTieGuide] = useState(false);
+  const [showUniqueLowPointGuide, setShowUniqueLowPointGuide] = useState(false);
 
   // 控制 ASTM A385 图解弹窗的开关
   const [showGuide, setShowGuide] = useState(false);
@@ -1441,6 +1442,24 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
       <div>Pass tie-wires through corner or edge holes rather than mid-body holes. Keep wires pulled tight against workpiece contours.</div>
     </div>
+
+    {/* Entry 5: 长短线姿态与唯一最低点 */}
+    <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
+      <div className="flex items-center justify-between mb-0.5">
+        <div className="font-bold text-cyan-300">💎 Quality: Long-Short Lines Pose & Unique Lowest Point</div>
+        <button
+          type="button"
+          onClick={() => setShowUniqueLowPointGuide(true)}
+          className="flex items-center gap-1 text-[10px] font-mono text-cyan-400 bg-cyan-900/50 hover:bg-cyan-800 border border-cyan-500/40 px-2 py-0.5 rounded transition-colors"
+        >
+          <span>📐</span>
+          <span className="underline decoration-cyan-400/50">Unique Low-Point Guide</span>
+        </button>
+      </div>
+      <div>
+        During rack operation, adjust the workpiece posture to a 15°–45° tilt using different hanging line lengths (or auxiliary rigging). Ensure that the suspended workpiece has one and only one clear lowest extreme point in space for clean run-off.
+      </div>
+    </div>
   </div>
 
   {/* ============ 原有 3 个 Modal ============ */}
@@ -1476,12 +1495,12 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="w-full h-56 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 150" className="w-full h-full">
                 <rect x="30" y="12" width="260" height="12" rx="2" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
-                <text x="160" y="21" fill="#94a3b8" fontSize="11" fontWeight="bold" textAnchor="middle" className="font-mono">
+                <text x="160" y="21" fill="#cbd5e1" fontSize="11" fontWeight="normal" textAnchor="middle" className="font-mono">
                   Beam Rack
                 </text>
 
                 <line x1="100" y1="24" x2="100" y2="125" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
-                <text x="105" y="40" fill="#cbd5e1" fontSize="13" fontWeight="bold" className="font-mono">0° Vertical Line</text>
+                <text x="105" y="40" fill="#cbd5e1" fontSize="11" fontWeight="normal" className="font-mono">0° Vertical Line</text>
 
                 <line x1="100" y1="24" x2="60" y2="110" stroke="#f43f5e" strokeWidth="2" />
                 <circle cx="100" cy="24" r="3" fill="#f43f5e" />
@@ -1597,7 +1616,7 @@ const [assistantPin, setAssistantPin] = useState('');
                 <rect width="850" height="420" fill="url(#grid-sway-correct)" rx="4" />
 
                 <rect x="50" y="25" width="750" height="28" rx="6" fill="#2563eb" stroke="#3b82f6" strokeWidth="1.5" />
-                <text x="425" y="44" fill="#ffffff" fontSize="22" fontWeight="bold" textAnchor="middle" className="font-mono">
+                <text x="425" y="44" fill="#cbd5e1" fontSize="14" fontWeight="normal" textAnchor="middle" className="font-mono">
                   BEAM RACK
                 </text>
 
@@ -1617,21 +1636,21 @@ const [assistantPin, setAssistantPin] = useState('');
 
                 <g transform="translate(185, 230) rotate(-10)">
                   <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                  <text x="0" y="-5" fill="#ffffff" fontSize="20" fontWeight="bold" textAnchor="middle">
+                  <text x="0" y="-5" fill="#cbd5e1" fontSize="13" fontWeight="normal" textAnchor="middle">
                     Plate #1
                   </text>
                 </g>
 
                 <g transform="translate(425, 230) rotate(-10)">
                   <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                  <text x="0" y="-5" fill="#ffffff" fontSize="20" fontWeight="bold" textAnchor="middle">
+                  <text x="0" y="-5" fill="#cbd5e1" fontSize="13" fontWeight="normal" textAnchor="middle">
                     Plate #2
                   </text>
                 </g>
 
                 <g transform="translate(665, 230) rotate(-10)">
                   <rect x="-65" y="-75" width="130" height="150" rx="6" fill="#0f172a" stroke="#38bdf8" strokeWidth="2.5" />
-                  <text x="0" y="-5" fill="#ffffff" fontSize="20" fontWeight="bold" textAnchor="middle">
+                  <text x="0" y="-5" fill="#cbd5e1" fontSize="13" fontWeight="normal" textAnchor="middle">
                     Plate #3
                   </text>
                 </g>
@@ -1792,7 +1811,7 @@ const [assistantPin, setAssistantPin] = useState('');
             <div className="w-full h-40 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
               <svg viewBox="0 0 320 110" className="w-full h-full">
                 <line x1="20" y1="15" x2="300" y2="15" stroke="#475569" strokeWidth="3" />
-                <text x="25" y="10" fill="#cbd5e1" fontSize="12" fontWeight="bold" className="font-mono">Beam Rack</text>
+                <text x="25" y="10" fill="#cbd5e1" fontSize="11" fontWeight="normal" className="font-mono">Beam Rack</text>
 
                 <line x1="80" y1="15" x2="80" y2="40" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
                 <text x="65" y="30" fill="#38bdf8" fontSize="13" fontWeight="bold" className="font-mono">L₁</text>
@@ -2000,6 +2019,81 @@ const [assistantPin, setAssistantPin] = useState('');
         </div>
         <div className="pt-2 border-t border-slate-800 flex justify-end">
           <button type="button" onClick={() => setShowCornerTieGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
+        </div>
+      </div>
+    </div>
+  )}
+
+  {/* MODAL 5: 长短线姿态与唯一最低点 */}
+  {showUniqueLowPointGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+          <h3 className="text-sm font-bold text-cyan-400">📐 Long-Short Lines Pose & Unique Lowest Point (15°–45°)</h3>
+          <button
+            type="button"
+            onClick={() => setShowUniqueLowPointGuide(false)}
+            className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        <div className="space-y-3 text-xs text-slate-300">
+          <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+            <svg viewBox="0 0 320 150" className="w-full h-full">
+              {/* Beam Rack */}
+              <line x1="30" y1="20" x2="290" y2="20" stroke="#475569" strokeWidth="3" />
+              <text x="160" y="15" fill="#cbd5e1" fontSize="11" fontWeight="normal" textAnchor="middle" className="font-mono">Beam Rack</text>
+
+              {/* Short Line L1 & Long Line L2 */}
+              <line x1="90" y1="20" x2="90" y2="45" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
+              <text x="75" y="35" fill="#38bdf8" fontSize="10" fontWeight="bold" className="font-mono">L₁ (Short)</text>
+
+              <line x1="230" y1="20" x2="230" y2="95" stroke="#f59e0b" strokeWidth="2" strokeDasharray="3 3" />
+              <text x="240" y="60" fill="#f59e0b" fontSize="10" fontWeight="bold" className="font-mono">L₂ (Long)</text>
+
+              {/* Inclined Workpiece Body (Rotated 25 deg) */}
+              <g transform="rotate(25 90 45)">
+                <rect x="80" y="35" width="150" height="25" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+                <circle cx="90" cy="47" r="3.5" fill="#38bdf8" />
+                <circle cx="230" cy="47" r="3.5" fill="#10b981" />
+              </g>
+
+              {/* Unique Lowest Point Highlight */}
+              <circle cx="258" cy="108" r="6" fill="none" stroke="#10b981" strokeWidth="2" />
+              <circle cx="258" cy="108" r="2.5" fill="#10b981" />
+
+              {/* SVG Annotation Texts */}
+              <text x="160" y="128" fill="#10b981" fontSize="10" fontWeight="bold" textAnchor="middle">
+                ✓ Single Lowest Extreme Point
+              </text>
+              <text x="160" y="141" fill="#10b981" fontSize="10" fontWeight="bold" textAnchor="middle">
+                (Prevent Secondary Pooling)
+              </text>
+              <text x="90" y="70" fill="#ef4444" fontSize="10" fontWeight="bold">Vent High Point ↑</text>
+            </svg>
+          </div>
+
+          <div className="bg-slate-950 p-2.5 rounded border border-slate-800 text-[11px] space-y-1 text-slate-300">
+            <div className="font-bold text-cyan-300 flex items-center gap-1">
+              <span>💡</span> Operational Guidelines:
+            </div>
+            <div className="text-[10px] text-slate-400 leading-relaxed">
+              1. <strong>Flexible On-Site Adjustment</strong>: Workers manually adjust line lengths to establish a natural 15°–45° tilt angle.<br/>
+              2. <strong>Unique Lowest Point</strong>: Ensure the suspended workpiece has one and only one distinct lowest contact point/discharge port, completely eliminating flat pooling or runner formation.
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowUniqueLowPointGuide(false)}
+            className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+          >
+            Got It
+          </button>
         </div>
       </div>
     </div>
