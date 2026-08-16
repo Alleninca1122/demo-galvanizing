@@ -1443,7 +1443,7 @@ const [assistantPin, setAssistantPin] = useState('');
       <div>Pass tie-wires through corner or edge holes rather than mid-body holes. Keep wires pulled tight against workpiece contours.</div>
     </div>
 
-{/* Quality Item: Corner-Down Tilt & Single Vertex Lowest Point */}
+ {/* Quality Item: Corner-Down Tilt & Single Vertex Lowest Point */}
 <div className="p-2.5 bg-cyan-950/30 border-l-2 border-l-cyan-500 rounded-r text-[11px] text-slate-300">
   <div className="flex items-center justify-between mb-0.5">
     <div className="font-bold text-cyan-300">💎 Quality: Corner-Down Tilt & Single Vertex Lowest Point</div>
@@ -1466,7 +1466,7 @@ const [assistantPin, setAssistantPin] = useState('');
   <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
     <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-xl w-full p-4 space-y-4 shadow-2xl">
       <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-        <h3 className="text-sm font-bold text-cyan-400">📐 Corner-Down Tilt vs. Flat Bottom Edge Standard</h3>
+        <h3 className="text-sm font-bold text-cyan-400">📐 Corner-Down Tilt vs. Flat Edge Hanging Standard</h3>
         <button
           type="button"
           onClick={() => setShowUniqueLowPointGuide(false)}
@@ -1483,7 +1483,7 @@ const [assistantPin, setAssistantPin] = useState('');
             <line x1="30" y1="20" x2="450" y2="20" stroke="#475569" strokeWidth="3" />
             <text x="240" y="14" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
 
-            {/* --- LEFT: CORRECT (Diamond / Corner-Down Single Vertex) --- */}
+            {/* --- LEFT: CORRECT (Diamond / Corner-Down) --- */}
             <g>
               <line x1="105" y1="20" x2="107" y2="67" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
               <line x1="155" y1="20" x2="153" y2="67" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
@@ -1492,7 +1492,7 @@ const [assistantPin, setAssistantPin] = useState('');
               {/* Single Lowest Corner Vertex Highlight */}
               <circle cx="130" cy="135" r="6" fill="none" stroke="#10b981" strokeWidth="2.5" />
               <circle cx="130" cy="135" r="2.5" fill="#10b981" />
-              <text x="130" y="157" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">✓ Correct (Single Vertex)</text>
+              <text x="130" y="157" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">✓ Correct (Diamond)</text>
               <text x="130" y="38" fill="#ef4444" fontSize="10" fontWeight="bold" textAnchor="middle">Top Vent ↑</text>
             </g>
 
@@ -1504,7 +1504,7 @@ const [assistantPin, setAssistantPin] = useState('');
               <rect x="310" y="55" width="80" height="80" rx="2" fill="#1e293b" stroke="#f43f5e" strokeWidth="2" />
               {/* Bottom Edge Line Highlight (Error) */}
               <line x1="310" y1="135" x2="390" y2="135" stroke="#f43f5e" strokeWidth="4" />
-              <text x="350" y="157" fill="#f43f5e" fontSize="11" fontWeight="bold" textAnchor="middle">❌ Incorrect (Edge Line Drips)</text>
+              <text x="350" y="157" fill="#f43f5e" fontSize="11" fontWeight="bold" textAnchor="middle">❌ Incorrect (Square Edge)</text>
               <text x="350" y="48" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle">Horizontal Top</text>
             </g>
           </svg>
@@ -1532,7 +1532,7 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
   </div>
-)}  
+)} 
 
   {/* Anti-Sway & Waist-Tie Guide Modal */}
   {showAntiSwayGuide && (
