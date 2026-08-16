@@ -2571,8 +2571,118 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     )}
   </div>
+{/* Spec & Strands Inputs */}
+{wp.stringingMethod === 'CHAIN_WIRE' ? (
+  /* ================= 1. CHAIN + WIRE 混合模式：拆分为两块 ================= */
+  <div className="space-y-2.5 pt-1">
+    {/* 1.1 主承重链区 */}
+    <div className="bg-slate-900/90 p-2.5 rounded border border-cyan-900/50 space-y-2">
+      <div className="text-[10px] font-bold text-cyan-400 uppercase tracking-wider flex items-center gap-1">
+        <span>🔗</span> Main Backbone Chain (主承重链)
+      </div>
+      
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div>
+          <label className="block text-[10px] text-slate-400 mb-0.5">
+            {wp.hangingPoints === '2' ? 'Point 1 Chain Spec *' : 'Chain Spec *'}
+          </label>
+          <select
+            value={wp.point1SpecId || ''}
+            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point1SpecId', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
+            required
+          >
+            <option value="">Select Chain...</option>
+            {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'CHAIN').map(r => (
+              <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
+            ))}
+          </select>
+        </div>
 
-  {/* Spec & Strands Inputs (Your original layout logic) */}
+        <div>
+          <label className="block text-[10px] text-slate-400 mb-0.5">Chain Lines / Strands *</label>
+          <input
+            type="number"
+            min="1"
+            value={wp.point1Strands || '1'}
+            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point1Strands', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold"
+            required
+          />
+        </div>
+      </div>
+
+      {/* 双挂点时的 Point 2 Chain */}
+      {wp.hangingPoints === '2' && (
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 pt-1 border-t border-slate-800/80">
+          <div>
+            <label className="block text-[10px] text-slate-400 mb-0.5">Point 2 Chain Spec *</label>
+            <select
+              value={wp.point2SpecId || ''}
+              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point2SpecId', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
+              required
+            >
+              <option value="">Select Chain...</option>
+              {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'CHAIN').map(r => (
+                <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
+              ))}
+            </select>
+          </div>
+          <div>
+            <label className="block text-[10px] text-slate-400 mb-0.5">Chain Lines / Strands *</label>
+            <input
+              type="number"
+              min="1"
+              value={wp.point2Strands || '1'}
+              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point2Strands', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold"
+              required
+            />
+          </div>
+        </div>
+      )}
+    </div>
+
+    {/* 1.2 单件绑定铁丝区 */}
+    <div className="bg-slate-900/90 p-2.5 rounded border border-amber-900/50 space-y-2">
+      <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
+        <span>🪢</span> Piece Tie Wire (单件绑定铁丝)
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <div>
+          <label className="block text-[10px] text-slate-400 mb-0.5">Tie Wire Spec *</label>
+          <select
+            value={wp.tieWireSpecId || ''}
+            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'tieWireSpecId', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
+            required
+          >
+            <option value="">Select Wire...</option>
+            {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'WIRE').map(r => (
+              <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-[10px] text-slate-400 mb-0.5">Wires per Piece (每件根数) *</label>
+          <input
+            type="number"
+            min="1"
+            placeholder="e.g. 2"
+            value={wp.tieWireStrands || ''}
+            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'tieWireStrands', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-amber-300 font-bold"
+            required
+          />
+        </div>
+      </div>
+    </div>
+  </div>
+) : (
+  /* ================= 2. 纯铁链 (FULL_CHAIN) 或 纯铁丝 (PURE_WIRE) 模式 ================= */
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
     <div className="grid grid-cols-2 gap-2 bg-slate-900/80 p-2 rounded border border-slate-800">
       <div>
@@ -2585,11 +2695,15 @@ const [assistantPin, setAssistantPin] = useState('');
           className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
           required
         >
-          {RIGGING_SPECS.map(r => (
+          {RIGGING_SPECS.filter(r => {
+            const type = (r.type || '').toUpperCase();
+            return wp.stringingMethod === 'PURE_WIRE' ? type === 'WIRE' : type === 'CHAIN';
+          }).map(r => (
             <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
           ))}
         </select>
       </div>
+
       <div>
         <label className="block text-[10px] text-slate-400 mb-0.5">Strands / Lines *</label>
         <input
@@ -2598,7 +2712,7 @@ const [assistantPin, setAssistantPin] = useState('');
           placeholder="e.g. 3"
           value={wp.point1Strands || ''}
           onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point1Strands', e.target.value)}
-          className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+          className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold"
           required
         />
       </div>
@@ -2614,11 +2728,15 @@ const [assistantPin, setAssistantPin] = useState('');
             className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
             required
           >
-            {RIGGING_SPECS.map(r => (
+            {RIGGING_SPECS.filter(r => {
+              const type = (r.type || '').toUpperCase();
+              return wp.stringingMethod === 'PURE_WIRE' ? type === 'WIRE' : type === 'CHAIN';
+            }).map(r => (
               <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
             ))}
           </select>
         </div>
+
         <div>
           <label className="block text-[10px] text-slate-400 mb-0.5">Strands / Lines *</label>
           <input
@@ -2627,12 +2745,14 @@ const [assistantPin, setAssistantPin] = useState('');
             placeholder="e.g. 3"
             value={wp.point2Strands || ''}
             onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'point2Strands', e.target.value)}
-            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold"
             required
           />
         </div>
       </div>
     )}
+  </div>
+)}
   </div>
 
   {/* 2. Anchor Shackle & 3/4. Safety Checkboxes */}
