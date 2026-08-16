@@ -2543,7 +2543,7 @@ const [assistantPin, setAssistantPin] = useState('');
     {lineDeficiencies.length > 0 && criticalViolations.length === 0 && (
       <div className="p-3 bg-amber-950/70 border border-amber-800 rounded-lg text-amber-200 text-xs space-y-1">
         <div className="font-bold text-amber-300 flex items-center gap-1.5">
-          ⚠️ NOTICE: Wire strand count below reference value
+          ⚠️ NOTICE: Insufficient Rigging Load Capacity
         </div>
         <p className="text-[11px] text-amber-200/90">
         One or more attachment points do not meet the minimum load safety requirement. Please increase wire strand count or switch to a higher-rated chain.
