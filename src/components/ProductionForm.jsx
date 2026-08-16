@@ -1408,7 +1408,7 @@ const [assistantPin, setAssistantPin] = useState('');
           <span className="underline decoration-cyan-400/50">Blind-End Pose Guide</span>
         </button>
       </div>
-      <div>For single-opening/blind-end workpieces, enforce a steep 35°–45° tilt with the open mouth facing downwards to serve as the lowest drainage point.</div>
+      <div>For single-opening/blind-end workpieces, if blind-end vent drilling is permitted, position the drilled blind end highest and the open end lowest as the main drain; otherwise, rig with differential slings to force a 35°–45° inclination with the open end facing down, orienting the opening so its highest edge vents air during immersion and its lowest corner drains zinc during withdrawal.</div>
     </div>
 
     {/* Entry 3: 最低滴锌角避让 */}
@@ -1916,34 +1916,45 @@ const [assistantPin, setAssistantPin] = useState('');
       </div>
     </div>
   )}
+{/* MODAL 2: 盲端大倾角 */}
+{showBlindEndGuide && (
+  <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+    <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
+      <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
+        <h3 className="text-sm font-bold text-cyan-400">🪣 Blind-End Pose Standard (35°–45°)</h3>
+        <button type="button" onClick={() => setShowBlindEndGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800">✕ Close</button>
+      </div>
+      <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
+        <svg viewBox="0 0 320 150" className="w-full h-full">
+          {/* 1. 水平参考线 (往左大幅延长至 x=30) */}
+          <line x1="30" y1="105" x2="270" y2="105" stroke="#64748b" strokeWidth="1.5" strokeDasharray="4 4" />
+          <text x="215" y="118" fill="#64748b" fontSize="9" fontWeight="500">Horizontal Level</text>
 
-  {/* MODAL 2: 盲端大倾角 */}
-  {showBlindEndGuide && (
-    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
-      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl max-w-lg w-full p-4 space-y-4 shadow-2xl">
-        <div className="flex items-center justify-between border-b border-slate-800 pb-2.5">
-          <h3 className="text-sm font-bold text-cyan-400">🪣 Blind-End Pose Standard (35°–45°)</h3>
-          <button type="button" onClick={() => setShowBlindEndGuide(false)} className="text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800">✕ Close</button>
-        </div>
-        <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800 flex items-center justify-center p-2">
-          <svg viewBox="0 0 320 150" className="w-full h-full">
-            <g transform="rotate(35 160 75)">
-              <path d="M 60 50 L 220 50 L 220 100 L 60 100 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
-              <rect x="55" y="50" width="10" height="50" fill="#f43f5e" />
-              <line x1="220" y1="50" x2="220" y2="100" stroke="#10b981" strokeWidth="3" strokeDasharray="3 3" />
-            </g>
-            <text x="80" y="30" fill="#f43f5e" fontSize="12" fontWeight="bold">Sealed Blind End (Top High)</text>
-            <text x="200" y="126" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">Open Mouth</text>
-            <text x="200" y="140" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">(Lowest Point Drainage)</text>
-          </svg>
-        </div>
-        <div className="pt-2 border-t border-slate-800 flex justify-end">
-          <button type="button" onClick={() => setShowBlindEndGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
-        </div>
+          {/* 2. 管体 (旋转 35°) */}
+          <g transform="rotate(35 160 75)">
+            {/* 管身中心轴线 */}
+            <line x1="50" y1="75" x2="230" y2="75" stroke="#38bdf8" strokeWidth="1" strokeDasharray="2 2" opacity="0.3" />
+            <path d="M 60 50 L 220 50 L 220 100 L 60 100 Z" fill="#1e293b" stroke="#38bdf8" strokeWidth="2" />
+            <rect x="55" y="50" width="10" height="50" fill="#f43f5e" />
+            <line x1="220" y1="50" x2="220" y2="100" stroke="#10b981" strokeWidth="3" strokeDasharray="3 3" />
+          </g>
+
+          {/* 3. 倾角弧线与 35°–45° 角度标注 (整体往左移动) */}
+          <path d="M 129.2 105 A 30 30 0 0 0 134.6 87.8" fill="none" stroke="#facc15" strokeWidth="2" />
+          <text x="82" y="93" fill="#facc15" fontSize="12" fontWeight="bold">35°–45°</text>
+
+          {/* 4. 盲端与开口文字标注 */}
+          <text x="60" y="18" fill="#f43f5e" fontSize="11" fontWeight="bold">Sealed Blind End (Top High)</text>
+          <text x="200" y="130" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">Open Mouth</text>
+          <text x="200" y="144" fill="#10b981" fontSize="11" fontWeight="bold" textAnchor="middle">(Lowest Point Drainage)</text>
+        </svg>
+      </div>
+      <div className="pt-2 border-t border-slate-800 flex justify-end">
+        <button type="button" onClick={() => setShowBlindEndGuide(false)} className="bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs">Got It</button>
       </div>
     </div>
-  )}
-
+  </div>
+)}
   {/* MODAL 3: 最低滴锌角避让 */}
   {showDripCornerGuide && (
     <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
