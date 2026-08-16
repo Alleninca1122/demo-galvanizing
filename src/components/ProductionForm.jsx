@@ -1373,9 +1373,9 @@ const [assistantPin, setAssistantPin] = useState('');
                   <circle cx="262" cy="45" r="3.5" fill="#38bdf8" />
                 </g>
 
-                {/* Standard Pitch Angle Arc & Text (Workpiece vs Horizontal Baseline) */}
-                <path d="M 215 95 A 35 35 0 0 1 218 83" fill="none" stroke="#f59e0b" strokeWidth="2" />
-                <text x="200" y="78" fill="#f59e0b" fontSize="10" fontWeight="bold" fontFamily="sans-serif">
+                {/* Standard Pitch Angle Arc & Text (Shifted forward into the spacious open gap) */}
+                <path d="M 160 95 A 55 55 0 0 1 164 76" fill="none" stroke="#f59e0b" strokeWidth="2" />
+                <text x="148" y="82" fill="#f59e0b" fontSize="10" fontWeight="bold" fontFamily="sans-serif">
                   15°–30°
                 </text>
 
