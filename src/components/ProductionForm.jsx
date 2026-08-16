@@ -1408,7 +1408,7 @@ const [assistantPin, setAssistantPin] = useState('');
           <span className="underline decoration-cyan-400/50">Blind-End Pose Guide</span>
         </button>
       </div>
-      <div>For single-opening/blind-end workpieces, enforce a steep 35°–45° tilt with the open mouth facing downwards to serve as the lowest drainage point.</div>
+      <div>For single-opening/blind-end workpieces, if blind-end vent drilling is permitted, position the drilled blind end highest and the open end lowest as the main drain; otherwise, rig with differential slings to force a 35°–45° inclination with the open end facing down, orienting the opening so its highest edge vents air during immersion and its lowest corner drains zinc during withdrawal.</div>
     </div>
 
     {/* Entry 3: 最低滴锌角避让 */}
