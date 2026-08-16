@@ -461,14 +461,15 @@ const [assistantPin, setAssistantPin] = useState('');
             if (userStrands < wireRec.perPoint) {
               deficiencies.push(`${label}: ${pointLabel} wire count (${userStrands}) is below the Reo-certified recommendation (${wireRec.perPoint}) for ${wireBasisNote}.`);
             }
-          } else if (specObj.type === 'CHAIN') {
-            // Chain always carries the shared structural load (loadPerPt), regardless of stringing
-            // method - a Chain+Wire line's chain point is still the backbone for the whole string.
-            const req = Math.max(1, Math.ceil(loadPerPt / specObj.swl));
-            if (userStrands < req) {
-              deficiencies.push(`${label}: ${pointLabel} chain strand count (${userStrands}) is below the required (${req}) for a ${specObj.label} rated at ${specObj.swl} lb WLL.`);
-            }
-          }
+        } else if (specObj.type === 'CHAIN') {
+  // 铁链逻辑：直接校验铁链 WLL 承重是否满足挂点需求 loadPerPt
+  const reqLoad = Math.round(loadPerPt);
+  if (specObj.swl < loadPerPt) {
+    deficiencies.push(
+      `${label}: ${pointLabel} capacity (${specObj.swl} lb WLL) is below required load (${reqLoad} lb) for ${specObj.label}. Please upgrade chain size.`
+    );
+  }
+}
         };
 
         checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
