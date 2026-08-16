@@ -1489,9 +1489,7 @@ const [assistantPin, setAssistantPin] = useState('');
               <text x="140" y="17" fill="#94a3b8" fontSize="10" fontWeight="bold" textAnchor="middle" className="font-mono">Beam Rack</text>
 
               {/* Hanging Wires */}
-              <line x1="100" y1="25" x2="140" y2="55" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
-              <line x1="180" y1="25" x2="140" y2="55" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
-
+              <line x1="140" y1="25" x2="140" y2="55" stroke="#38bdf8" strokeWidth="2" strokeDasharray="3 3" />
               {/* Diamond Plate */}
               <polygon points="140,55 190,105 140,155 90,105" fill="#1e293b" stroke="#38bdf8" strokeWidth="2.5" />
 
