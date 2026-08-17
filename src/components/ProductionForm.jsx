@@ -220,12 +220,7 @@ const [assistantPin, setAssistantPin] = useState('');
   const [safetyChecklist, setSafetyChecklist] = useState({
     hasEnclosedCavity: false,      // 1. Enclosed cavity/pipe structure
     hasAdequateVenting: true,      // 2. Adequate venting/drainage holes
-    drilledOnsite: true,           // 3. Drilled on site if missing
-    isAngleCompliant: true,        // 4. Tilt angle 15°-30°
-    minTopClearanceValid: true,    // 5. Min top clearance >= 30cm
-    maxHangDepthValid: true,       // 6. Max hang depth <= 300cm
-    hasTightContact: false,        // 7. Tight contact between workpieces
-    hasMaskingAgent: false         // 8. Coated with masking/stop-off agent
+    drilledOnsite: true            // 3. Drilled on site if missing
   });
 
   const handleSafetyFieldChange = (field, value) => {
@@ -424,10 +419,8 @@ const [assistantPin, setAssistantPin] = useState('');
   //    the string's shared total weight, split across however many top points there are.
   //  - Chain + Wire: the CHAIN point(s) still carry the shared total weight as above. Any point
   //    marked WIRE here represents a short wire tie used to lash ONE individual workpiece onto the
-  //    backbone chain - NOT the "Use Wire Extension at Top" top-point extension checkbox further
-  //    down (that is a different, separate piece of hardware). Because a tie only ever holds the
-  //    one workpiece it's tied to, it is checked against a SINGLE workpiece's weight, not the
-  //    string's shared total.
+  //    backbone chain. Because a tie only ever holds the one workpiece it's tied to, it is checked
+  //    against a SINGLE workpiece's weight, not the string's shared total.
   //  - Pure Wire: each workpiece is hung from the one below it using the SAME hanging-point pattern
   //    (e.g. every link is a 2-point wire hang) all the way down to the last piece, then the whole
   //    daisy chain is hung from the rack. Every one of those links carries some or all of the
@@ -581,15 +574,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     if (safetyChecklist.hasEnclosedCavity && (!safetyChecklist.hasAdequateVenting && !safetyChecklist.drilledOnsite)) {
       severeErrors.push(`Enclosed cavity detected without sufficient venting/drainage holes, and not drilled on site! (Explosion Risk in Kettle)`);
     }
-    // Check 2: Minimum Top Clearance violation (< 30cm)
-    if (!safetyChecklist.minTopClearanceValid) {
-      severeErrors.push(`Top clearance is less than 30 cm. Material cannot be fully submerged in acid/zinc bath.`);
-    }
-    // Check 3: Maximum Hang Depth violation (> 300cm)
-    if (!safetyChecklist.maxHangDepthValid) {
-      severeErrors.push(`Total hang depth exceeds 300 cm. Risk of bottom collision or crane overhead snagging.`);
-    }
-    // Check 4: Rack support-frame capacity (8,000 lb net, after beam self-weight & safety factor) - hard limit, no override
+    // Check 2: Rack support-frame capacity (8,000 lb net, after beam self-weight & safety factor) - hard limit, no override
     const rackTotal = getRackTotalWeight();
     if (rackTotal > RACK_LIMIT_LBS) {
       severeErrors.push(`Total rack load (${Math.round(rackTotal).toLocaleString()} lb) exceeds the rack's usable load capacity of ${RACK_LIMIT_LBS.toLocaleString()} lb. Remove workpieces or split onto another rack before submitting.`);
@@ -716,12 +701,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     setSafetyChecklist({
       hasEnclosedCavity: false,
       hasAdequateVenting: true,
-      drilledOnsite: true,
-      isAngleCompliant: true,
-      minTopClearanceValid: true,
-      maxHangDepthValid: true,
-      hasTightContact: false,
-      hasMaskingAgent: false
+      drilledOnsite: true
     });
     setSurfaceAssessment({
       minOilPaintLevel: '',
@@ -2856,7 +2836,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     )}
   </div>
 )}
-  {/* 2. Anchor Shackle & 3/4. Safety Checkboxes */}
+  {/* 2. Anchor Shackle */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-800/80">
     <div>
       <label className="block text-[10px] font-semibold text-slate-300 mb-1">
@@ -2875,50 +2855,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       </select>
     </div>
 
-    <div className="space-y-2 flex flex-col justify-end">
-      {/* 3. Secondary Wire Latch */}
-      <label className="flex items-start gap-2 cursor-pointer group">
-        <input
-          type="checkbox"
-          checked={!!wp.secondaryWireLatch}
-          onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'secondaryWireLatch', e.target.checked)}
-          className="mt-0.5 rounded bg-slate-950 border-slate-700 text-cyan-500 focus:ring-cyan-500/20"
-        />
-        <div className="text-[10px]">
-          <span className="font-medium text-slate-200 group-hover:text-cyan-300">
-            Secondary Wire Latch
-          </span>
-          <p className="text-slate-400">Primary support comes from the chain/shackle; wire is only a secondary backup.</p>
-        </div>
-      </label>
-
-      {/* 4. Use Wire Extension at Top */}
-      <label className="flex items-start gap-2 cursor-pointer group">
-        <input
-          type="checkbox"
-          checked={!!wp.useWireExtensionAtTop}
-          onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'useWireExtensionAtTop', e.target.checked)}
-          className="mt-0.5 rounded bg-slate-950 border-slate-700 text-amber-500 focus:ring-amber-500/20"
-        />
-        <div className="text-[10px]">
-          <span className="font-medium text-slate-200 group-hover:text-amber-300">
-            Use Wire Extension at Top
-          </span>
-          <p className="text-slate-400">Wire is used above the main hanging point to extend its length.</p>
-        </div>
-      </label>
-    </div>
   </div>
-
-  {wp.useWireExtensionAtTop && (
-    <div className="p-2.5 rounded bg-rose-950/40 border border-rose-500/50 text-rose-200 text-[10px] flex items-start gap-2">
-      <span>🚨</span>
-      <div>
-        <strong className="font-bold">Top Wire Extension Warning:</strong>
-        The system has automatically switched the overall load bottleneck to the top wire's rated capacity, to prevent a "strong chain, weak wire" failure!
-      </div>
-    </div>
-  )}
     </>
   )}
 
@@ -3093,148 +3030,6 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                     </div>
                   )}
 
-                  {/* 4. Angle Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">4. Tilt angle compliant (15°-30°)?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleSafetyFieldChange('isAngleCompliant', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          safetyChecklist.isAngleCompliant ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSafetyFieldChange('isAngleCompliant', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !safetyChecklist.isAngleCompliant ? 'bg-amber-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 5. Top Clearance Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">5. Min top clearance &ge; 30 cm?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleSafetyFieldChange('minTopClearanceValid', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          safetyChecklist.minTopClearanceValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES (&ge; 30 cm)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSafetyFieldChange('minTopClearanceValid', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !safetyChecklist.minTopClearanceValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO (&lt; 30 cm)
-                      </button>
-                    </div>
-                  </div>
-
-                  {/* 6. Max Hang Depth Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">6. Max hang depth &le; 300 cm?</span>
-                    <div className="flex gap-2">
-                      <button
-                        type="button"
-                        onClick={() => handleSafetyFieldChange('maxHangDepthValid', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          safetyChecklist.maxHangDepthValid ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        YES (&le; 300 cm)
-                      </button>
-                      <button
-                        type="button"
-                        onClick={() => handleSafetyFieldChange('maxHangDepthValid', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          !safetyChecklist.maxHangDepthValid ? 'bg-rose-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO (&gt; 300 cm)
-                      </button>
-                    </div>
-                  </div>
-
- {/* 7. Workpiece Surface Contact Check */}
-                  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-                    <span className="text-slate-300">7. Tight contact between workpieces?</span>
-                    <div className="flex gap-2">
-                     <button
-                        type="button"
-                        onClick={() => handleSafetyFieldChange('hasTightContact', false)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-                          safetyChecklist.hasTightContact === false ? 'bg-emerald-600 text-white' : 'bg-slate-900 text-slate-400'
-                        }`}
-                      >
-                        NO
-                      </button>
-                     {/* YES button: turns red and shows "Action Required" once selected */}
-                      <button
-                        type="button"
-                        onClick={() => handleSafetyFieldChange('hasTightContact', true)}
-                        className={`px-2.5 py-1 rounded text-[11px] font-bold transition-colors ${
-                          safetyChecklist.hasTightContact === true
-                            ? 'bg-rose-600 text-white' 
-                            : 'bg-slate-900 text-slate-400 hover:bg-slate-800'
-                        }`}
-                      >
-                        {safetyChecklist.hasTightContact === true ? 'YES (Action Required)' : 'YES'}
-                      </button>
-                    </div>
-                  </div>
-
-{/* 8. Anti-Galvanizing Masking Agent Check */}
-<div className="space-y-2 col-span-1 md:col-span-2">
-  <div className="flex items-center justify-between bg-slate-950 p-2.5 rounded border border-slate-800">
-    <span className="text-slate-300">8. Coated with Masking / Stop-off Agent?</span>
-    <div className="flex gap-2">
-      <button
-        type="button"
-        onClick={() => handleSafetyFieldChange('hasMaskingAgent', true)}
-        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-          safetyChecklist.hasMaskingAgent ? 'bg-amber-600 text-slate-950' : 'bg-slate-900 text-slate-400'
-        }`}
-      >
-        YES
-      </button>
-      <button
-        type="button"
-        onClick={() => handleSafetyFieldChange('hasMaskingAgent', false)}
-        className={`px-2.5 py-1 rounded text-[11px] font-bold ${
-          !safetyChecklist.hasMaskingAgent ? 'bg-slate-700 text-slate-200' : 'bg-slate-900 text-slate-400'
-        }`}
-      >
-        NO
-      </button>
-    </div>
-  </div>
-
-  {/* Racking Direction Notice Card */}
-  {safetyChecklist.hasMaskingAgent && (
-    <div className="bg-amber-950/40 border border-amber-600/50 rounded p-2.5 text-xs text-amber-200 flex items-start gap-2">
-      <span className="text-amber-400 font-bold">⚠️ SOP Notice:</span>
-      <div>
-        <p className="font-semibold">Position masked areas at the BOTTOM or SIDES during racking.</p>
-        <p className="text-[11px] text-amber-300/80 mt-0.5">
-          Prevent pre-treatment runoff from dripping onto unmasked steel surfaces.
-        </p>
-      </div>
-    </div>
-  )}
-</div>
 
                 </div>
               </div>
