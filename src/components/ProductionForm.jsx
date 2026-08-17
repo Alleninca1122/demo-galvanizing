@@ -354,7 +354,22 @@ const [assistantPin, setAssistantPin] = useState('');
     updated[jobIndex].workpieces[wpIndex][field] = value;
     setJobs(updated);
   };
+// 切换 stringingMethod 时，联动重置该 workpiece 的规格/绑丝相关字段，
+  // 防止残留上一个模式的 ID/数值导致 <select> 显示异常或复核算错
+  const handleStringingMethodChange = (jobIndex, wpIndex, newMethod) => {
+    const updated = [...jobs];
+    const wp = updated[jobIndex].workpieces[wpIndex];
 
+    wp.stringingMethod = newMethod;
+    wp.point1SpecId = '';
+    wp.point1Strands = '';
+    wp.point2SpecId = '';
+    wp.point2Strands = '';
+    wp.tieWireSpecId = '';
+    wp.tieWireStrands = '';
+
+    setJobs(updated);
+  };
   const addWorkpieceRow = (jobIndex) => {
     const updated = [...jobs];
     updated[jobIndex].workpieces.push({
