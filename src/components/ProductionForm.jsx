@@ -2299,7 +2299,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                     <div key={wp.id} className="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 space-y-3 relative">
                       
                       {/* Top Bar: Basic Workpiece Info */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="md:col-span-1">
                           <label className="block text-[11px] text-slate-400 mb-1">
                             Workpiece Type <span className="text-rose-400">*</span>
@@ -2426,28 +2426,16 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                             </span>
                           )}
                         </div>
-
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1">
-                            <label className="block text-[11px] text-slate-400 mb-1">Operator</label>
-                            <input
-                              type="text"
-                              disabled
-                              value={currentUser?.id || '7222'}
-                              className="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-2 py-1.5 text-xs font-mono text-cyan-400 font-bold cursor-not-allowed"
-                            />
-                          </div>
-                          {job.workpieces.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeWorkpieceRow(jobIndex, wpIndex)}
-                              className="mt-4 text-xs text-rose-400 hover:text-rose-300 font-bold px-1"
-                              title="Delete line"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
+{job.workpieces.length > 1 && (
+  <button
+    type="button"
+    onClick={() => removeWorkpieceRow(jobIndex, wpIndex)}
+    className="absolute top-2 right-2 text-xs text-rose-400 hover:text-rose-300 font-bold px-1"
+    title="Delete line"
+  >
+    ×
+  </button>
+)}
                       </div>
 
 {/* Rigging & Hanging Setup for THIS Workpiece */}
