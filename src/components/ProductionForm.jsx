@@ -213,8 +213,23 @@ export default function ProductionForm({ currentUser, supabase }) {
   // Sign-off State
 const [primaryOperatorId, setPrimaryOperatorId] = useState('');
 const [primaryPin, setPrimaryPin] = useState(''); 
-const [assistantOperatorId, setAssistantOperatorId] = useState('');
-const [assistantPin, setAssistantPin] = useState(''); 
+const MAX_ASSISTANT_OPERATORS = 4;
+const [assistants, setAssistants] = useState([{ uid: Date.now(), employeeId: '', pin: '' }]);
+
+const handleAssistantFieldChange = (uid, field, value) => {
+  setAssistants(prev => prev.map(a => a.uid === uid ? { ...a, [field]: value } : a));
+};
+
+const addAssistantOperator = () => {
+  setAssistants(prev => prev.length >= MAX_ASSISTANT_OPERATORS
+    ? prev
+    : [...prev, { uid: Date.now() + Math.random(), employeeId: '', pin: '' }]
+  );
+};
+
+const removeAssistantOperator = (uid) => {
+  setAssistants(prev => prev.length <= 1 ? prev : prev.filter(a => a.uid !== uid));
+};
 
   // Global Job Safety & Submersion Checklist (SOP Inspection) - shared across ALL jobs on this load
   const [safetyChecklist, setSafetyChecklist] = useState({
@@ -620,7 +635,9 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
         rackNo: `Rack #${rackNo}`,
         operatorId: currentUser?.id || 'UNKNOWN',
         signedOffByEmployeeId: primaryOperatorId.trim(),
-        assistantOperatorId: assistantOperatorId.trim() || null,
+        assistantOperators: assistants
+          .filter(a => a.employeeId.trim())
+          .map(a => ({ employeeId: a.employeeId.trim(), pin: a.pin.trim() || null })),
         shift: getShiftDisplay(),
         entryDate: currentDateFormatted,
         createdAt: new Date().toISOString(),
@@ -696,8 +713,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     setAutoLoadId('');
     setPrimaryOperatorId('');
     setPrimaryPin('');
-    setAssistantOperatorId('');
-    setAssistantPin('');
+    setAssistants([{ uid: Date.now(), employeeId: '', pin: '' }]);
     setSafetyChecklist({
       hasEnclosedCavity: false,
       hasAdequateVenting: true,
@@ -3109,33 +3125,61 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
   </div>
 
   {/* Assistant Operator Section (Optional) */}
-  <div className="bg-slate-900/30 p-3 rounded-lg border border-slate-800/60 space-y-2">
-    <span className="block text-[11px] font-bold text-slate-400 uppercase">
-      ASSISTANT OPERATOR <span className="text-slate-500 font-normal">(OPTIONAL)</span>
-    </span>
-    <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-      <div>
-        <label className="block text-[10px] text-slate-500 mb-1 uppercase">Employee ID</label>
-        <input
-          type="text"
-          placeholder="e.g. 8892"
-          value={assistantOperatorId}
-          onChange={(e) => setAssistantOperatorId(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-slate-300 font-mono focus:outline-none focus:border-slate-600"
-        />
-      </div>
-      <div>
-        <label className="block text-[10px] text-slate-500 mb-1 uppercase">Security PIN</label>
-        <input
-          type="password"
-          maxLength={4}
-          placeholder="••••"
-          value={assistantPin}
-          onChange={(e) => setAssistantPin(e.target.value)}
-          className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-slate-300 font-mono focus:outline-none focus:border-slate-600"
-        />
-      </div>
+  <div className="bg-slate-900/30 p-3 rounded-lg border border-slate-800/60 space-y-3">
+    <div className="flex items-center justify-between">
+      <span className="block text-[11px] font-bold text-slate-400 uppercase">
+        ASSISTANT OPERATOR{assistants.length > 1 ? 'S' : ''} <span className="text-slate-500 font-normal">(OPTIONAL)</span>
+      </span>
+      {assistants.length < MAX_ASSISTANT_OPERATORS && (
+        <button
+          type="button"
+          onClick={addAssistantOperator}
+          className="text-[10px] font-mono text-cyan-400 hover:text-cyan-300 border border-cyan-500/30 hover:border-cyan-400/50 rounded px-2 py-1 transition-colors"
+        >
+          + Add Assistant Operator
+        </button>
+      )}
     </div>
+
+    {assistants.map((assistant, idx) => (
+      <div key={assistant.uid} className="grid grid-cols-1 md:grid-cols-2 gap-3 relative">
+        <div>
+          <label className="block text-[10px] text-slate-500 mb-1 uppercase">
+            Employee ID {assistants.length > 1 ? `#${idx + 1}` : ''}
+          </label>
+          <input
+            type="text"
+            placeholder="e.g. 8892"
+            value={assistant.employeeId}
+            onChange={(e) => handleAssistantFieldChange(assistant.uid, 'employeeId', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-slate-300 font-mono focus:outline-none focus:border-slate-600"
+          />
+        </div>
+        <div className="flex items-end gap-2">
+          <div className="flex-1">
+            <label className="block text-[10px] text-slate-500 mb-1 uppercase">Security PIN</label>
+            <input
+              type="password"
+              maxLength={4}
+              placeholder="••••"
+              value={assistant.pin}
+              onChange={(e) => handleAssistantFieldChange(assistant.uid, 'pin', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-800 rounded-lg px-3 py-1.5 text-sm text-slate-300 font-mono focus:outline-none focus:border-slate-600"
+            />
+          </div>
+          {assistants.length > 1 && (
+            <button
+              type="button"
+              onClick={() => removeAssistantOperator(assistant.uid)}
+              className="mb-0.5 text-slate-500 hover:text-rose-400 border border-slate-800 hover:border-rose-500/40 rounded-lg px-2.5 py-1.5 text-xs transition-colors"
+              title="Remove this assistant operator"
+            >
+              ✕
+            </button>
+          )}
+        </div>
+      </div>
+    ))}
   </div>
 </div>
 
