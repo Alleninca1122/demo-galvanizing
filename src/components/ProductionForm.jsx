@@ -2937,10 +2937,10 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                 )}
               </div>
 
-              {/* Global Job Safety & Submersion Checklist (SOP Inspection) - applies to the whole load, confirmed once at sign-off */}
+              {/* Critical Safety Check (Fatal Risk Items) - applies to the whole load, confirmed once at sign-off */}
               <div className="bg-slate-900/80 p-3.5 rounded-lg border border-slate-800 space-y-3">
                 <span className="text-[11px] font-bold text-cyan-400 uppercase tracking-wider block">
-                  🛡️ Job Safety & Submersion Checklist (SOP Inspection)
+                  🛡️ Critical Safety Check (Fatal Risk Items)
                 </span>
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-xs">
