@@ -388,6 +388,7 @@ const [assistantPin, setAssistantPin] = useState('');
       weightInputMode: 'TOTAL',
       unitWeightInput: '',
       weightBracketId: '',
+      variedTotalWeightInput: '',   // 新增：重量不均模式下，整批实测总重 
       riggingCategory: 'WIRE_CHAIN',
       customFixtureType: '',
       hangingMode: 'INDIVIDUAL',
