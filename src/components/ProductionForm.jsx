@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 
 // Standard Galvanizing Workpiece Types
 const WORKPIECE_TYPES = [
@@ -14,11 +14,16 @@ const QTY_UNITS = [
   { value: 'box', label: 'box' }
 ];
 
-// 30 Fixed Racks
-const RACK_OPTIONS = Array.from({ length: 30 }, (_, i) => {
-  const num = String(i + 1).padStart(2, '0');
-  return { value: num, label: `Rack #${num}` };
-});
+// 30 Fixed Racks, plus a "No Rack" option for single large pieces
+// transported directly by crane (no rack used at all).
+const NO_RACK_VALUE = 'NONE';
+const RACK_OPTIONS = [
+  { value: NO_RACK_VALUE, label: 'No Rack (Crane Direct)' },
+  ...Array.from({ length: 30 }, (_, i) => {
+    const num = String(i + 1).padStart(2, '0');
+    return { value: num, label: `Rack #${num}` };
+  })
+];
 
 // ============================================================
 // RIGGING HARDWARE SPECIFICATIONS - shop-confirmed data only
@@ -210,6 +215,29 @@ export default function ProductionForm({ currentUser, supabase }) {
   const [autoLoadId, setAutoLoadId] = useState(''); 
   const [isGeneratingLoadId, setIsGeneratingLoadId] = useState(false);
 
+  // Racks currently occupied (assigned but not yet released) - queried from
+  // production_rack_current_status so the dropdown can disable them.
+  const [occupiedRacks, setOccupiedRacks] = useState(new Set());
+  const [isSubmitting, setIsSubmitting] = useState(false);
+
+  const refreshOccupiedRacks = async () => {
+    if (!supabase) return;
+    try {
+      const { data, error } = await supabase
+        .from('production_rack_current_status')
+        .select('rack_no, event_type')
+        .eq('event_type', 'assigned');
+      if (error) throw error;
+      setOccupiedRacks(new Set((data || []).map(r => String(r.rack_no).padStart(2, '0'))));
+    } catch (err) {
+      console.warn('Could not fetch rack occupancy status:', err);
+    }
+  };
+
+  useEffect(() => {
+    refreshOccupiedRacks();
+  }, []);
+
   // Sign-off State
 const [primaryOperatorId, setPrimaryOperatorId] = useState('');
 const [primaryPin, setPrimaryPin] = useState(''); 
@@ -332,7 +360,9 @@ const removeAssistantOperator = (uid) => {
 
       const dailySeq = await getNextDailySequence();
 
-      const generated = `R${selectedVal}-${year}${month}${day}-${dailySeq}`;
+      const generated = selectedVal === NO_RACK_VALUE
+        ? `CR-${year}${month}${day}-${dailySeq}`
+        : `R${selectedVal}-${year}${month}${day}-${dailySeq}`;
 
       setAutoLoadId(generated);
       setLoadId(generated);
@@ -603,6 +633,22 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
   const rackTotalWeight = getRackTotalWeight();
   const surfaceAssessmentSummary = getSurfaceAssessmentSummary();
 
+  // Look up an operator by Employee ID + PIN against the operators table.
+  // Used both to verify sign-off credentials and to get the operator's UUID
+  // for operator_id / signature records.
+  const verifyOperator = async (employeeId, pin) => {
+    const { data, error } = await supabase
+      .from('operators')
+      .select('id, name, role, pin')
+      .eq('name', `Employee ${employeeId}`)
+      .maybeSingle();
+
+    if (error) throw error;
+    if (!data) return { ok: false, reason: `Employee ID ${employeeId} not found` };
+    if (String(data.pin) !== String(pin)) return { ok: false, reason: `Incorrect PIN for Employee ${employeeId}` };
+    return { ok: true, operator: data };
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!rackNo || !loadId.trim()) {
@@ -615,8 +661,8 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       return;
     }
 
-    if (!primaryOperatorId.trim()) {
-      alert('Please enter the Primary Operator Employee ID to Confirm & Sign-off before submitting.');
+    if (!primaryOperatorId.trim() || !primaryPin.trim()) {
+      alert('Please enter the Primary Operator Employee ID and PIN to Confirm & Sign-off before submitting.');
       return;
     }
 
@@ -629,83 +675,161 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       if (!isConfirmed) return;
     }
 
-    const payload = {
-      global: {
-        loadId: loadId.trim(),
-        rackNo: `Rack #${rackNo}`,
-        operatorId: currentUser?.id || 'UNKNOWN',
-        signedOffByEmployeeId: primaryOperatorId.trim(),
-        assistantOperators: assistants
-          .filter(a => a.employeeId.trim())
-          .map(a => ({ employeeId: a.employeeId.trim(), pin: a.pin.trim() || null })),
-        shift: getShiftDisplay(),
-        entryDate: currentDateFormatted,
-        createdAt: new Date().toISOString(),
-        // Job Safety & Submersion Checklist (SOP Inspection) - one shared checklist for the whole load
-        safetyChecklist: { ...safetyChecklist },
-        // Rack structural capacity check, recorded for audit trail
-        rackCapacityCheck: {
-          totalLoadLb: Math.round(rackTotalWeight),
-          limitLb: RACK_LIMIT_LBS
-        },
-        // Surface Assessment (Oil, Paint & Rust Level) - global summary across every workpiece on this Load
-        surfaceAssessmentSummary: {
-          oilPaint: {
-            min: surfaceAssessmentSummary.oilPaint.min?.value || null,
-            max: surfaceAssessmentSummary.oilPaint.max?.value || null,
-            mixedBatchWarning: surfaceAssessmentSummary.oilPaint.hasWarning
-          },
-          rust: {
-            min: surfaceAssessmentSummary.rust.min?.value || null,
-            max: surfaceAssessmentSummary.rust.max?.value || null,
-            mixedBatchWarning: surfaceAssessmentSummary.rust.hasWarning
-          }
+    if (!supabase) {
+      alert('Database connection is not available. Cannot submit.');
+      return;
+    }
+
+    setIsSubmitting(true);
+    try {
+      // 1. Verify the primary sign-off operator's PIN
+      const primaryCheck = await verifyOperator(primaryOperatorId.trim(), primaryPin.trim());
+      if (!primaryCheck.ok) {
+        alert(`❌ Sign-off failed: ${primaryCheck.reason}`);
+        setIsSubmitting(false);
+        return;
+      }
+
+      // 2. Verify each assistant operator's PIN (any filled-in assistant must be valid)
+      const filledAssistants = assistants.filter(a => a.employeeId.trim());
+      const assistantOperators = [];
+      for (const a of filledAssistants) {
+        const check = await verifyOperator(a.employeeId.trim(), (a.pin || '').trim());
+        if (!check.ok) {
+          alert(`❌ Assistant sign-off failed: ${check.reason}`);
+          setIsSubmitting(false);
+          return;
         }
-      },
-      jobs: jobs.map(job => ({
-        customerName: job.customerName,
-        customerOrderNo: job.customerOrderNo,
-        customerBatchNo: job.customerBatchNo || '#1',
-        workpieces: job.workpieces.map(wp => {
+        assistantOperators.push(check.operator);
+      }
+
+      const isCraneDirect = rackNo === NO_RACK_VALUE;
+      const rackNoInt = isCraneDirect ? null : parseInt(rackNo, 10);
+
+      // 3. Create the Load record
+      const { data: loadRow, error: loadErr } = await supabase
+        .from('production_loads')
+        .insert({
+          load_id: loadId.trim(),
+          loading_method: isCraneDirect ? 'crane_direct' : 'rack',
+          rack_no: rackNoInt,
+          current_location: isCraneDirect ? 'n_a_crane_direct' : 'on_rack',
+          current_stage_code: 'stage_01',
+          workflow_status: 'in_progress'
+        })
+        .select()
+        .single();
+      if (loadErr) throw loadErr;
+
+      // 4. Log the Rack assignment event (only when an actual rack is used)
+      if (!isCraneDirect) {
+        const { error: rackEventErr } = await supabase
+          .from('production_rack_events')
+          .insert({
+            rack_no: rackNoInt,
+            load_id: loadRow.id,
+            event_type: 'assigned',
+            operator_id: primaryCheck.operator.id
+          });
+        if (rackEventErr) throw rackEventErr;
+      }
+
+      // 5. Create Job + Workpiece records
+      for (const job of jobs) {
+        const { data: jobRow, error: jobErr } = await supabase
+          .from('production_jobs')
+          .insert({
+            load_id: loadRow.id,
+            customer_name: job.customerName,
+            customer_order_no: job.customerOrderNo,
+            customer_batch_no: job.customerBatchNo || '#1'
+          })
+          .select()
+          .single();
+        if (jobErr) throw jobErr;
+
+        const workpieceRows = job.workpieces.map(wp => {
           const { totalW, unitW } = getWorkpieceTotalWeight(wp);
           const qty = parseInt(wp.quantity, 10) || 0;
-          const base = {
-            workpieceType: wp.workpieceType,
-            ...(wp.workpieceType === 'Others' ? { workpieceTypeOther: wp.workpieceTypeOther || '' } : {}),
-            quantity: qty,
-            unit: wp.unit || 'pcs',
-            totalWeightLb: Math.round(totalW),
-            unitWeightLb: Math.round(unitW),
-            weightSource: wp.isUniformWeight === false ? 'WEIGHT_BRACKET' : (wp.weightInputMode === 'PER_UNIT' ? 'PER_UNIT_INPUT' : 'TOTAL_INPUT')
-          };
-
-          if (wp.riggingCategory === 'CUSTOM_FIXTURE') {
-            return {
-              ...base,
-              rigging: {
-                category: 'CUSTOM_FIXTURE',
-                fixtureType: wp.customFixtureType || null
-              }
-            };
-          }
+          const rigging = wp.riggingCategory === 'CUSTOM_FIXTURE'
+            ? { category: 'CUSTOM_FIXTURE', fixtureType: wp.customFixtureType || null }
+            : {
+                category: 'WIRE_CHAIN',
+                hangingMode: wp.hangingMode,
+                hangingPoints: parseInt(wp.hangingPoints, 10),
+                point1: { spec: wp.point1SpecId, strands: parseInt(wp.point1Strands, 10) || 0 },
+                point2: wp.hangingPoints === '2' ? { spec: wp.point2SpecId, strands: parseInt(wp.point2Strands, 10) || 0 } : null,
+                anchorShackle: wp.anchorShackle && wp.anchorShackle !== 'NONE' ? wp.anchorShackle : null
+              };
 
           return {
-            ...base,
-            rigging: {
-              category: 'WIRE_CHAIN',
-              hangingMode: wp.hangingMode,
-              hangingPoints: parseInt(wp.hangingPoints, 10),
-              point1: { spec: wp.point1SpecId, strands: parseInt(wp.point1Strands, 10) || 0 },
-              point2: wp.hangingPoints === '2' ? { spec: wp.point2SpecId, strands: parseInt(wp.point2Strands, 10) || 0 } : null,
-              anchorShackle: wp.anchorShackle && wp.anchorShackle !== 'NONE' ? wp.anchorShackle : null
-            }
+            job_id: jobRow.id,
+            workpiece_type: wp.workpieceType === 'Others' ? (wp.workpieceTypeOther || 'Others') : wp.workpieceType,
+            quantity: qty,
+            unit: wp.unit || 'pcs',
+            total_weight_lb: Math.round(totalW),
+            unit_weight_lb: Math.round(unitW),
+            rigging
           };
-        })
-      }))
-    };
+        });
 
-    console.log('Submitting Production Load Payload:', payload);
-    alert(`Load [${loadId.trim()}] recorded and signed off by ID [${primaryOperatorId.trim()}] successfully!`);
+        const { error: wpErr } = await supabase.from('production_workpieces').insert(workpieceRows);
+        if (wpErr) throw wpErr;
+      }
+
+      // 6. Create the Stage 01 log entry (the actual SOP data captured on this form)
+      const { data: stageLogRow, error: stageLogErr } = await supabase
+        .from('production_stage_logs')
+        .insert({
+          load_id: loadRow.id,
+          stage_code: 'stage_01',
+          operator_id: primaryCheck.operator.id,
+          attempt_no: 1,
+          is_final_for_stage: true,
+          status: 'completed',
+          data: {
+            shift: getShiftDisplay(),
+            entryDate: currentDateFormatted,
+            safetyChecklist: { ...safetyChecklist },
+            rackCapacityCheck: {
+              totalLoadLb: Math.round(rackTotalWeight),
+              limitLb: RACK_LIMIT_LBS
+            },
+            surfaceAssessmentSummary: {
+              oilPaint: {
+                min: surfaceAssessmentSummary.oilPaint.min?.value || null,
+                max: surfaceAssessmentSummary.oilPaint.max?.value || null,
+                mixedBatchWarning: surfaceAssessmentSummary.oilPaint.hasWarning
+              },
+              rust: {
+                min: surfaceAssessmentSummary.rust.min?.value || null,
+                max: surfaceAssessmentSummary.rust.max?.value || null,
+                mixedBatchWarning: surfaceAssessmentSummary.rust.hasWarning
+              }
+            }
+          }
+        })
+        .select()
+        .single();
+      if (stageLogErr) throw stageLogErr;
+
+      // 7. Record signatures: primary operator + any assistants
+      const signatureRows = [
+        { stage_log_id: stageLogRow.id, operator_id: primaryCheck.operator.id },
+        ...assistantOperators.map(op => ({ stage_log_id: stageLogRow.id, operator_id: op.id }))
+      ];
+      const { error: sigErr } = await supabase.from('production_stage_signatures').insert(signatureRows);
+      if (sigErr) throw sigErr;
+
+      alert(`✅ Load [${loadId.trim()}] recorded and signed off by ID [${primaryOperatorId.trim()}] successfully!`);
+      refreshOccupiedRacks();
+    } catch (err) {
+      console.error('Failed to submit production load:', err);
+      alert(`❌ Submission failed: ${err.message || err}`);
+      setIsSubmitting(false);
+      return;
+    }
+    setIsSubmitting(false);
 
     // Reset Form
     setRackNo('');
@@ -2129,11 +2253,14 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                 required
               >
                 <option value="">-- Select Rack # --</option>
-                {RACK_OPTIONS.map((opt) => (
-                  <option key={opt.value} value={opt.value}>
-                    {opt.label}
-                  </option>
-                ))}
+                {RACK_OPTIONS.map((opt) => {
+                  const isOccupied = opt.value !== NO_RACK_VALUE && occupiedRacks.has(opt.value);
+                  return (
+                    <option key={opt.value} value={opt.value} disabled={isOccupied}>
+                      {opt.label}{isOccupied ? ' (In Use)' : ''}
+                    </option>
+                  );
+                })}
               </select>
             </div>
 
@@ -3186,15 +3313,17 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
 {/* Submit Button */}
 <button
   type="submit"
-  disabled={isFormBlocked}
+  disabled={isFormBlocked || isSubmitting}
   className={`w-full py-3.5 font-bold text-sm uppercase tracking-wider rounded-xl shadow-lg transition-all ${
-    isFormBlocked
+    isFormBlocked || isSubmitting
       ? 'bg-slate-800 text-slate-500 cursor-not-allowed border border-slate-700'
       : 'bg-cyan-500 hover:bg-cyan-400 text-slate-950 shadow-cyan-500/20 cursor-pointer'
   }`}
 >
   {isFormBlocked
     ? '🚨 CANNOT SUBMIT: FIX SAFETY HAZARDS ABOVE'
+    : isSubmitting
+    ? 'Submitting...'
     : '🚨 Confirm & Sign-off →'}
 </button>
 </div>
