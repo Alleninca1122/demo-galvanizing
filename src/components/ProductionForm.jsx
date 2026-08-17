@@ -2430,7 +2430,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
   <button
     type="button"
     onClick={() => removeWorkpieceRow(jobIndex, wpIndex)}
-    className="absolute top-2 right-2 text-xs text-rose-400 hover:text-rose-300 font-bold px-1"
+    className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center rounded-full bg-slate-800 border border-slate-600 text-xs text-rose-400 hover:text-rose-300 hover:border-rose-500 font-bold z-10"
     title="Delete line"
   >
     ×
