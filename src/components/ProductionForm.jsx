@@ -2368,19 +2368,37 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                             </button>
                           </div>
 
-                          {wp.isUniformWeight === false ? (
-                            <select
-                              value={wp.weightBracketId || ''}
-                              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'weightBracketId', e.target.value)}
-                              className="w-full bg-slate-900 border border-amber-700/60 rounded-lg px-2 py-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-500"
-                            >
-                              <option value="">-- Select Weight Range --</option>
-                              {(wp.hangingPoints === '2' ? WIRE_BRACKETS_DOUBLE : WIRE_BRACKETS_SINGLE).map(b => (
-                                <option key={b.maxLb} value={b.maxLb}>
-                                  {b.minLb}–{b.maxLb} lb
-                                </option>
-                              ))}
-                            </select>
+{wp.isUniformWeight === false ? (
+  <div className="flex flex-col gap-1.5">
+    <div>
+      <label className="block text-[9px] text-slate-500 mb-0.5">Total Weight (scale, lb) *</label>
+      <input
+        type="number"
+        min="0"
+        placeholder="e.g. 2100"
+        value={wp.variedTotalWeightInput || ''}
+        onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'variedTotalWeightInput', e.target.value)}
+        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-cyan-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        required
+      />
+    </div>
+    <div>
+      <label className="block text-[9px] text-slate-500 mb-0.5">Heaviest Piece Bracket *</label>
+      <select
+        value={wp.weightBracketId || ''}
+        onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'weightBracketId', e.target.value)}
+        className="w-full bg-slate-900 border border-amber-700/60 rounded-lg px-2 py-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-500"
+        required
+      >
+        <option value="">-- Select Weight Range --</option>
+        {(wp.hangingPoints === '2' ? WIRE_BRACKETS_DOUBLE : WIRE_BRACKETS_SINGLE).map(b => (
+          <option key={b.maxLb} value={b.maxLb}>
+            {b.minLb}-{b.maxLb} lb
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
                           ) : (
                             <div className="flex gap-1">
                               <input
