@@ -855,6 +855,38 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
         </button>
       </div>
     </div>
+
+    {/* Incoming Damage Photo Record - separate photo set from packaging record above, so
+        liability-evidence photos never get mixed in with packaging-reference photos */}
+    <div className="p-2.5 bg-amber-950/30 border-l-2 border-l-amber-500 rounded-r text-[11px] text-slate-300 space-y-2">
+      <div>
+        <div className="font-bold text-amber-300 mb-0.5">⚠️ Quality: Incoming Material Damage Record</div>
+        Inspect incoming steel for pre-existing structural damage (dents, bends, deformation, breaks, cracks). Capture photos as evidence, before any handling, to protect against downstream customer disputes.
+      </div>
+
+      {/* 按钮区域 (独立的一套，避免与上面的包装参考照片混在一起) */}
+      <div className="flex items-center gap-2 pt-1">
+        <label className="cursor-pointer bg-amber-950 hover:bg-amber-900 text-amber-300 border border-amber-500/40 px-3 py-1 rounded text-[11px] font-mono flex items-center gap-1.5 transition-colors">
+          <span>📷</span>
+          <span>Snap / Upload Photo</span>
+          <input 
+            type="file" 
+            accept="image/*" 
+            capture="environment" 
+            className="hidden" 
+            onChange={(e) => console.log(e.target.files[0])}
+          />
+        </label>
+
+        <button 
+          type="button"
+          onClick={() => alert("Displays temporary QR code for mobile photo sync")}
+          className="bg-slate-900 hover:bg-slate-800 text-slate-400 border border-slate-700 px-2.5 py-1 rounded text-[11px] font-mono transition-colors"
+        >
+          📱 Scan via Phone
+        </button>
+      </div>
+    </div>
   </div>
 </div>
 
