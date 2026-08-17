@@ -490,7 +490,19 @@ const [assistantPin, setAssistantPin] = useState('');
         if (pts === 2) {
           checkPoint(wp.point2SpecId, wp.point2Strands, 'Point 2');
         }
+checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
+      if (pts === 2) {
+        checkPoint(wp.point2SpecId, wp.point2Strands, 'Point 2');
+      }
 
+      // CHAIN_WIRE 模式下，绑丝要单独复核承载力
+      // wireRec 在 442-444 行已经按 unitW（单件重量）算好，checkPoint 内部
+      // 遇到 specObj.type === 'WIRE' 时会自动用 wireRec.perPoint 做基准，
+      // 不需要改 checkPoint 或 getRequiredWireCount 本身
+      if (stringingMethod === 'CHAIN_WIRE') {
+        checkPoint(wp.tieWireSpecId, wp.tieWireStrands, 'Tie Wire');
+      }
+      // Anchor Shackle WLL check ...
         // Anchor Shackle WLL check - the shackle attaches the chain/wire assembly to the rack at a
         // single point, so it's checked against that point's share of the structural load
         // (loadPerPt), same basis as the CHAIN check above, regardless of stringing method.
