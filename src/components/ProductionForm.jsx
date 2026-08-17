@@ -129,11 +129,17 @@ function getWorkpieceTotalWeight(wp) {
   const qty = parseInt(wp.quantity, 10) || 0;
 
   if (wp.isUniformWeight === false) {
+    // Not uniform: operator weighs the whole batch for the real total
+    // (used for Rack Support Frame Load), and separately picks a certified
+    // weight bracket for the heaviest single piece (used for wire/chain spec choice).
     const pts = wp.hangingPoints === '2' ? 2 : 1;
     const brackets = pts === 2 ? WIRE_BRACKETS_DOUBLE : WIRE_BRACKETS_SINGLE;
     const bracket = brackets.find(b => String(b.maxLb) === String(wp.weightBracketId));
-    const totalW = bracket ? bracket.maxLb : 0;
-    return { totalW, unitW: qty > 0 ? totalW / qty : 0 };
+
+    const totalW = parseFloat(wp.variedTotalWeightInput) || 0;   // 真实过秤总重
+    const unitW = bracket ? bracket.maxLb : 0;                   // 最重单件（档位上限）
+
+    return { totalW, unitW };
   }
 
   if (wp.weightInputMode === 'PER_UNIT') {
@@ -144,7 +150,6 @@ function getWorkpieceTotalWeight(wp) {
   const totalW = parseFloat(wp.weightLb) || 0;
   return { totalW, unitW: qty > 0 ? totalW / qty : 0 };
 }
-
 // Surface Condition Rating Options (Clean & Standardized)
 const SURFACE_CONDITION_OPTIONS = [
   { value: 'NONE', label: 'None (Clean)' },
@@ -383,6 +388,7 @@ const [assistantPin, setAssistantPin] = useState('');
       weightInputMode: 'TOTAL',
       unitWeightInput: '',
       weightBracketId: '',
+      variedTotalWeightInput: '',   // 新增：重量不均模式下，整批实测总重 
       riggingCategory: 'WIRE_CHAIN',
       customFixtureType: '',
       hangingMode: 'INDIVIDUAL',
@@ -444,7 +450,7 @@ const [assistantPin, setAssistantPin] = useState('');
         // rigging): String mode -> whole batch shares one set of points; Individual mode -> one
         // piece's own points. (When isUniformWeight is false, totalW/unitW are already both the
         // same bracket ceiling.)
-        const designW = isString ? totalW : (wp.isUniformWeight === false ? totalW : unitW);
+        const designW = isString ? totalW : unitW;
         const loadPerPt = designW / pts;
         const workpieceTypeLabel = wp.workpieceType === 'Others' && wp.workpieceTypeOther
           ? `Others: ${wp.workpieceTypeOther}`
@@ -2293,7 +2299,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                     <div key={wp.id} className="bg-slate-900/60 p-3.5 rounded-lg border border-slate-800 space-y-3 relative">
                       
                       {/* Top Bar: Basic Workpiece Info */}
-                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3">
+                      <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3">
                         <div className="md:col-span-1">
                           <label className="block text-[11px] text-slate-400 mb-1">
                             Workpiece Type <span className="text-rose-400">*</span>
@@ -2363,19 +2369,37 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                             </button>
                           </div>
 
-                          {wp.isUniformWeight === false ? (
-                            <select
-                              value={wp.weightBracketId || ''}
-                              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'weightBracketId', e.target.value)}
-                              className="w-full bg-slate-900 border border-amber-700/60 rounded-lg px-2 py-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-500"
-                            >
-                              <option value="">-- Select Weight Range --</option>
-                              {(wp.hangingPoints === '2' ? WIRE_BRACKETS_DOUBLE : WIRE_BRACKETS_SINGLE).map(b => (
-                                <option key={b.maxLb} value={b.maxLb}>
-                                  {b.minLb}–{b.maxLb} lb
-                                </option>
-                              ))}
-                            </select>
+{wp.isUniformWeight === false ? (
+  <div className="flex flex-col gap-1.5">
+    <div>
+      <label className="block text-[9px] text-slate-500 mb-0.5">Total Weight (scale, lb) *</label>
+      <input
+        type="number"
+        min="0"
+        placeholder="e.g. 2100"
+        value={wp.variedTotalWeightInput || ''}
+        onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'variedTotalWeightInput', e.target.value)}
+        className="w-full bg-slate-900 border border-slate-700 rounded-lg px-2 py-1.5 text-xs font-mono text-slate-100 focus:outline-none focus:border-cyan-500 [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+        required
+      />
+    </div>
+    <div>
+      <label className="block text-[9px] text-slate-500 mb-0.5">Heaviest Piece Bracket *</label>
+      <select
+        value={wp.weightBracketId || ''}
+        onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'weightBracketId', e.target.value)}
+        className="w-full bg-slate-900 border border-amber-700/60 rounded-lg px-2 py-1.5 text-xs text-amber-200 focus:outline-none focus:border-amber-500"
+        required
+      >
+        <option value="">-- Select Weight Range --</option>
+        {(wp.hangingPoints === '2' ? WIRE_BRACKETS_DOUBLE : WIRE_BRACKETS_SINGLE).map(b => (
+          <option key={b.maxLb} value={b.maxLb}>
+            {b.minLb}-{b.maxLb} lb
+          </option>
+        ))}
+      </select>
+    </div>
+  </div>
                           ) : (
                             <div className="flex gap-1">
                               <input
@@ -2402,28 +2426,16 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                             </span>
                           )}
                         </div>
-
-                        <div className="flex items-center gap-2">
-                          <div className="flex-1">
-                            <label className="block text-[11px] text-slate-400 mb-1">Operator</label>
-                            <input
-                              type="text"
-                              disabled
-                              value={currentUser?.id || '7222'}
-                              className="w-full bg-slate-900/50 border border-slate-800 rounded-lg px-2 py-1.5 text-xs font-mono text-cyan-400 font-bold cursor-not-allowed"
-                            />
-                          </div>
-                          {job.workpieces.length > 1 && (
-                            <button
-                              type="button"
-                              onClick={() => removeWorkpieceRow(jobIndex, wpIndex)}
-                              className="mt-4 text-xs text-rose-400 hover:text-rose-300 font-bold px-1"
-                              title="Delete line"
-                            >
-                              ✕
-                            </button>
-                          )}
-                        </div>
+{job.workpieces.length > 1 && (
+  <button
+    type="button"
+    onClick={() => removeWorkpieceRow(jobIndex, wpIndex)}
+    className="absolute -top-2 -right-2 w-5 h-5 flex items-center justify-center rounded-full bg-slate-800 border border-slate-600 text-xs text-rose-400 hover:text-rose-300 hover:border-rose-500 font-bold z-10"
+    title="Delete line"
+  >
+    ×
+  </button>
+)}
                       </div>
 
 {/* Rigging & Hanging Setup for THIS Workpiece */}
