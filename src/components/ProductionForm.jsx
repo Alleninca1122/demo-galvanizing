@@ -2558,7 +2558,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
           <button
             key={method.id}
             type="button"
-            onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'stringingMethod', method.id)}
+        onClick={() => handleStringingMethodChange(jobIndex, wpIndex, method.id)}
             className={`p-2 rounded border text-left transition-all ${
               isSelected
                 ? 'bg-cyan-950/60 border-cyan-500 text-cyan-200 ring-1 ring-cyan-500/50'
