@@ -354,7 +354,22 @@ const [assistantPin, setAssistantPin] = useState('');
     updated[jobIndex].workpieces[wpIndex][field] = value;
     setJobs(updated);
   };
+// 切换 stringingMethod 时，联动重置该 workpiece 的规格/绑丝相关字段，
+  // 防止残留上一个模式的 ID/数值导致 <select> 显示异常或复核算错
+  const handleStringingMethodChange = (jobIndex, wpIndex, newMethod) => {
+    const updated = [...jobs];
+    const wp = updated[jobIndex].workpieces[wpIndex];
 
+    wp.stringingMethod = newMethod;
+    wp.point1SpecId = '';
+    wp.point1Strands = '';
+    wp.point2SpecId = '';
+    wp.point2Strands = '';
+    wp.tieWireSpecId = '';
+    wp.tieWireStrands = '';
+
+    setJobs(updated);
+  };
   const addWorkpieceRow = (jobIndex) => {
     const updated = [...jobs];
     updated[jobIndex].workpieces.push({
@@ -2543,7 +2558,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
           <button
             key={method.id}
             type="button"
-            onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'stringingMethod', method.id)}
+        onClick={() => handleStringingMethodChange(jobIndex, wpIndex, method.id)}
             className={`p-2 rounded border text-left transition-all ${
               isSelected
                 ? 'bg-cyan-950/60 border-cyan-500 text-cyan-200 ring-1 ring-cyan-500/50'
