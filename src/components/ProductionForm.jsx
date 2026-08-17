@@ -129,11 +129,17 @@ function getWorkpieceTotalWeight(wp) {
   const qty = parseInt(wp.quantity, 10) || 0;
 
   if (wp.isUniformWeight === false) {
+    // Not uniform: operator weighs the whole batch for the real total
+    // (used for Rack Support Frame Load), and separately picks a certified
+    // weight bracket for the heaviest single piece (used for wire/chain spec choice).
     const pts = wp.hangingPoints === '2' ? 2 : 1;
     const brackets = pts === 2 ? WIRE_BRACKETS_DOUBLE : WIRE_BRACKETS_SINGLE;
     const bracket = brackets.find(b => String(b.maxLb) === String(wp.weightBracketId));
-    const totalW = bracket ? bracket.maxLb : 0;
-    return { totalW, unitW: qty > 0 ? totalW / qty : 0 };
+
+    const totalW = parseFloat(wp.variedTotalWeightInput) || 0;   // 真实过秤总重
+    const unitW = bracket ? bracket.maxLb : 0;                   // 最重单件（档位上限）
+
+    return { totalW, unitW };
   }
 
   if (wp.weightInputMode === 'PER_UNIT') {
@@ -144,7 +150,6 @@ function getWorkpieceTotalWeight(wp) {
   const totalW = parseFloat(wp.weightLb) || 0;
   return { totalW, unitW: qty > 0 ? totalW / qty : 0 };
 }
-
 // Surface Condition Rating Options (Clean & Standardized)
 const SURFACE_CONDITION_OPTIONS = [
   { value: 'NONE', label: 'None (Clean)' },
