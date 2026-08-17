@@ -449,7 +449,7 @@ const [assistantPin, setAssistantPin] = useState('');
         // rigging): String mode -> whole batch shares one set of points; Individual mode -> one
         // piece's own points. (When isUniformWeight is false, totalW/unitW are already both the
         // same bracket ceiling.)
-        const designW = isString ? totalW : (wp.isUniformWeight === false ? totalW : unitW);
+        const designW = isString ? totalW : unitW;
         const loadPerPt = designW / pts;
         const workpieceTypeLabel = wp.workpieceType === 'Others' && wp.workpieceTypeOther
           ? `Others: ${wp.workpieceTypeOther}`
