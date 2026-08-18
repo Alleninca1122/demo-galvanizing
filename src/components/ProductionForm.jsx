@@ -25,15 +25,17 @@ const RACK_OPTIONS = [
   })
 ];
 
-// Comb Rack / Hook Rack are custom rigging FIXTURES mounted on top of a
-// numbered Beam Rack (Rack #01-99) — not an alternative to selecting a rack.
-// Only relevant when a numbered rack is selected; irrelevant for "No Rack".
+// Hook Rack is a permanently-mounted rigging FIXTURE on top of a numbered
+// Beam Rack (Rack #01-99) — not an alternative to selecting a rack. Only
+// relevant when a numbered rack is selected; irrelevant for "No Rack".
+// NOTE: Comb Rack used to live here as a third global option, but it isn't a
+// whole-rack attribute — a given Beam Rack can have one Job hung with a
+// Railing Comb Rack while other Jobs on the same rack hang normally. Comb
+// Rack now lives per-workpiece (see "Railing Comb Rack" checkbox below).
 const RACK_FIXTURE_STANDARD = 'STANDARD';
-const RACK_FIXTURE_COMB = 'COMB_RACK';
 const RACK_FIXTURE_HOOK = 'HOOK_RACK';
 const RACK_FIXTURE_OPTIONS = [
   { value: RACK_FIXTURE_STANDARD, label: 'Standard (No Fixture)' },
-  { value: RACK_FIXTURE_COMB, label: 'Comb Rack' },
   { value: RACK_FIXTURE_HOOK, label: 'Hook Rack' },
 ];
 
@@ -128,15 +130,14 @@ const SAFETY_FACTOR = 0.85; // shop-confirmed safety factor
 // rounded down to a conservative round-number shop limit.
 const RACK_LIMIT_LBS = 8000; // hard submission block
 
-// Custom, shop-built hanging fixtures (not wire/chain) - e.g. a Railing Comb Rack or a row of
-// hooks for small workpieces. These bypass wire/chain/shackle spec checks but still count toward the
-// rack's total weight.
-const CUSTOM_FIXTURE_TYPES = [
-  { value: '', label: '-- Select Fixture --' },
-  { value: 'RAILING_COMB_RACK', label: 'Railing Comb Rack' },
-  { value: 'HOOK_ROW', label: 'Hook Row (Small Workpieces)' },
-  { value: 'OTHER', label: 'Other Custom Fixture' },
-];
+// Railing Comb Rack: a certified shop fixture used in PAIRS - unlike a normal
+// 1 or 2-point wire/chain hang, a comb rack pair has multiple hanging points
+// (typically 4, occasionally more for long/heavy railings). It's not exempt
+// from load checks - the operator enters the actual point count used, and the
+// wire/chain spec at those points is still checked against the load each
+// point carries (see the RAILING_COMB_RACK branch in checkSafetyDeficiencies).
+const COMB_MIN_HANGING_POINTS = 2;
+const COMB_DEFAULT_HANGING_POINTS = '4';
 
 // Resolves a workpiece line's weight, accounting for both weight-input modes:
 // - isUniformWeight (default true): operator enters either the TOTAL weight for the line, or a
@@ -326,8 +327,11 @@ const removeAssistantOperator = (uid) => {
         weightInputMode: 'TOTAL',   // 'TOTAL' | 'PER_UNIT'
         unitWeightInput: '',
         weightBracketId: '',
-        riggingCategory: 'WIRE_CHAIN', // 'WIRE_CHAIN' | 'CUSTOM_FIXTURE'
-        customFixtureType: '',
+        useRailingCombRack: false,   // checked = dedicated multi-point comb rack model below
+        combHangingPoints: COMB_DEFAULT_HANGING_POINTS,
+        combMediumType: 'CHAIN',     // 'CHAIN' | 'WIRE'
+        combSpecId: '',
+        combStrands: '',
         hangingMode: 'INDIVIDUAL',
         hangingPoints: '2',
         point1SpecId: '12_WIRE',
@@ -360,11 +364,12 @@ const removeAssistantOperator = (uid) => {
   };
 
   // Load ID letter suffix: R = numbered Rack #01-99 with a standard beam
-  // (no fixture), C = numbered rack fitted with a Comb Rack fixture,
-  // H = numbered rack fitted with a Hook Rack fixture, N = No Rack.
+  // (no fixture), H = numbered rack fitted with a permanently-mounted Hook
+  // Rack fixture, N = No Rack. The 'C' (Comb Rack) letter is retired: Comb
+  // Rack is now a per-workpiece attribute, not a whole-rack fixture, so it
+  // no longer changes what the Rack itself is identified as.
   const getLoadIdLetter = (rackVal, fixtureVal) => {
     if (rackVal === NO_RACK_VALUE) return 'N';
-    if (fixtureVal === RACK_FIXTURE_COMB) return 'C';
     if (fixtureVal === RACK_FIXTURE_HOOK) return 'H';
     return 'R';
   };
@@ -490,8 +495,11 @@ const removeAssistantOperator = (uid) => {
       unitWeightInput: '',
       weightBracketId: '',
       variedTotalWeightInput: '',   // 新增：重量不均模式下，整批实测总重 
-      riggingCategory: 'WIRE_CHAIN',
-      customFixtureType: '',
+      useRailingCombRack: false,
+      combHangingPoints: COMB_DEFAULT_HANGING_POINTS,
+      combMediumType: 'CHAIN',
+      combSpecId: '',
+      combStrands: '',
       hangingMode: 'INDIVIDUAL',
       hangingPoints: '2',
       point1SpecId: '12_WIRE',
@@ -537,10 +545,48 @@ const removeAssistantOperator = (uid) => {
     let deficiencies = [];
     jobs.forEach((job, jIdx) => {
       job.workpieces.forEach((wp, wIdx) => {
-        // Custom fixtures (Comb Rack / Hook Row) aren't rated by strand count - nothing to check here
-        if (wp.riggingCategory === 'CUSTOM_FIXTURE') return;
-
         const { totalW, unitW } = getWorkpieceTotalWeight(wp);
+        const workpieceTypeLabelForComb = wp.workpieceType === 'Others' && wp.workpieceTypeOther
+          ? `Others: ${wp.workpieceTypeOther}`
+          : wp.workpieceType;
+        const combLabel = `Job #${jIdx + 1} Line #${wIdx + 1} (${workpieceTypeLabelForComb || 'Item'})`;
+
+        // Railing Comb Rack: a paired fixture with its own (operator-entered)
+        // hanging point count - typically 4, occasionally more. It is NOT
+        // exempt from load checks. The whole line's total weight is what the
+        // comb rack's points actually carry, split evenly across however
+        // many points the operator says are in use.
+        if (wp.useRailingCombRack) {
+          const points = Math.max(COMB_MIN_HANGING_POINTS, parseInt(wp.combHangingPoints, 10) || 0);
+          const loadPerPt = points > 0 ? totalW / points : totalW;
+          const specObj = RIGGING_SPECS.find(r => r.id === wp.combSpecId);
+          const strands = parseInt(wp.combStrands, 10) || 0;
+
+          if (!specObj) {
+            deficiencies.push(`${combLabel}: Railing Comb Rack is missing a ${wp.combMediumType === 'WIRE' ? 'wire' : 'chain'} spec selection.`);
+          } else if (wp.combMediumType === 'CHAIN') {
+            if (specObj.swl < loadPerPt) {
+              deficiencies.push(
+                `${combLabel}: Comb Rack point capacity (${specObj.swl} lb WLL, ${points} pts) is below required load (${Math.round(loadPerPt)} lb/pt). Please upgrade chain size or add more points.`
+              );
+            }
+          } else {
+            // WIRE medium: the certified Reo Engineering bracket table (WIRE_BRACKETS_SINGLE /
+            // WIRE_BRACKETS_DOUBLE) was only validated for 1 and 2-point rigging schemes, so it
+            // is NOT applied here for a >2-point comb rack. Instead this uses the same generic
+            // SWL-based fallback the app already uses when a design weight falls outside the
+            // certified table range (see getRequiredWireCount) - conservative, but not a
+            // certified bracket, so flag that explicitly in the message.
+            const reqStrands = Math.max(1, Math.ceil(loadPerPt / WIRE_SPEC.swl));
+            if (strands < reqStrands) {
+              deficiencies.push(
+                `${combLabel}: Comb Rack wire count (${strands}) is below the generic-calc recommendation (${reqStrands}, ${points} pts @ ${Math.round(loadPerPt)} lb/pt) - not a certified bracket, since the Reo table only covers 1-2 point rigging.`
+              );
+            }
+          }
+          return; // Railing Comb Rack lines don't go through the WIRE_CHAIN point-based checks below
+        }
+
         const pts = parseInt(wp.hangingPoints, 10) || 1;
         const isString = wp.hangingMode === 'STRING';
         const stringingMethod = wp.stringingMethod || 'FULL_CHAIN';
@@ -638,7 +684,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
   };
 
   // Sums the design weight of every workpiece line on this Load (all Jobs, both WIRE_CHAIN and
-  // CUSTOM_FIXTURE lines) - this is what the Beam Rack's support frames actually have to carry.
+  // Railing Comb Rack lines) - this is what the Beam Rack's support frames actually have to carry.
   const getRackTotalWeight = () => {
     let total = 0;
     jobs.forEach(job => {
@@ -816,8 +862,14 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
         const workpieceRows = job.workpieces.map(wp => {
           const { totalW, unitW } = getWorkpieceTotalWeight(wp);
           const qty = parseInt(wp.quantity, 10) || 0;
-          const rigging = wp.riggingCategory === 'CUSTOM_FIXTURE'
-            ? { category: 'CUSTOM_FIXTURE', fixtureType: wp.customFixtureType || null }
+          const rigging = wp.useRailingCombRack
+            ? {
+                category: 'RAILING_COMB_RACK',
+                hangingPoints: parseInt(wp.combHangingPoints, 10) || 4,
+                medium: wp.combMediumType,
+                spec: wp.combSpecId || null,
+                strandsPerPoint: wp.combMediumType === 'WIRE' ? (parseInt(wp.combStrands, 10) || 0) : null
+              }
             : {
                 category: 'WIRE_CHAIN',
                 hangingMode: wp.hangingMode,
@@ -2483,9 +2535,12 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
             </div>
           </div>
 
-          {/* Rack Fixture Type - Comb Rack / Hook Rack are fixtures mounted on
-              top of a numbered Beam Rack, not a substitute for selecting one.
-              Not applicable to "No Rack" (crane direct, no rack occupied). */}
+          {/* Rack Fixture Type - Hook Rack is a permanently-mounted fixture on top
+              of a numbered Beam Rack, not a substitute for selecting one. Not
+              applicable to "No Rack" (crane direct, no rack occupied). Comb Rack
+              is NOT here - it's a per-workpiece attribute now (see the "Railing
+              Comb Rack" checkbox on each workpiece line below), since a single
+              rack can have one Job on a comb rack and other Jobs hung normally. */}
           {rackNo && rackNo !== NO_RACK_VALUE && (
             <div className="mt-4 pt-4 border-t border-slate-800/80">
               <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
@@ -2511,7 +2566,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                 })}
               </div>
               <span className="text-[10px] text-slate-500 block mt-1">
-                Select if this rack has a Comb Rack or Hook Rack fixture mounted on it.
+                Select if this rack has a permanently-mounted Hook Rack fixture on it.
               </span>
             </div>
           )}
@@ -2813,49 +2868,118 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
 {/* Rigging & Hanging Setup for THIS Workpiece */}
 <div className="pt-2.5 border-t border-slate-800/80 bg-slate-950/40 p-3 rounded-lg space-y-3">
 
-  {/* Rigging Category Toggle: how is this workpiece actually hung? */}
-  <div className="inline-flex bg-slate-900 p-0.5 rounded border border-slate-800">
-    <button
-      type="button"
-      onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'riggingCategory', 'WIRE_CHAIN')}
-      className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
-        wp.riggingCategory !== 'CUSTOM_FIXTURE'
-          ? 'bg-cyan-600 text-slate-950 shadow'
-          : 'text-slate-400 hover:text-slate-200'
-      }`}
-    >
-      🔗 Wire / Chain (Beam Rack)
-    </button>
-    <button
-      type="button"
-      onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'riggingCategory', 'CUSTOM_FIXTURE')}
-      className={`px-2.5 py-1 rounded text-[10px] font-bold transition-all ${
-        wp.riggingCategory === 'CUSTOM_FIXTURE'
-          ? 'bg-cyan-600 text-slate-950 shadow'
-          : 'text-slate-400 hover:text-slate-200'
-      }`}
-    >
-      🧱 Custom Fixture
-    </button>
-  </div>
+  {/* Railing Comb Rack: only one custom-fixture type remains, so it's a
+      checkbox rather than a dropdown. Checking it swaps the whole line into
+      a dedicated multi-point hanging model instead of the normal 1/2-point
+      Wire/Chain flow - so the Wire/Chain toggle button is gone too. */}
+  <label className="flex items-center gap-2 cursor-pointer select-none">
+    <input
+      type="checkbox"
+      checked={!!wp.useRailingCombRack}
+      onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'useRailingCombRack', e.target.checked)}
+      className="w-3.5 h-3.5 accent-cyan-500"
+    />
+    <span className="text-[10px] font-bold text-slate-200 uppercase tracking-wide">
+      🧱 Railing Comb Rack
+    </span>
+  </label>
 
-  {wp.riggingCategory === 'CUSTOM_FIXTURE' ? (
-    <div className="space-y-2 pt-1">
-      <label className="block text-[10px] font-semibold text-slate-300 uppercase tracking-wide">
-        Fixture Type <span className="text-rose-400">*</span>
-      </label>
-      <select
-        value={wp.customFixtureType || ''}
-        onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'customFixtureType', e.target.value)}
-        className="w-full sm:w-64 bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-xs text-slate-100 focus:outline-none focus:border-cyan-500"
-      >
-        {CUSTOM_FIXTURE_TYPES.map(f => (
-          <option key={f.value} value={f.value}>{f.label}</option>
-        ))}
-      </select>
+  {wp.useRailingCombRack ? (
+    <div className="space-y-2.5 pt-1">
       <p className="text-[10px] text-slate-500">
-        Certified shop fixture - no wire/chain/shackle spec needed. Its weight still counts toward the Rack's total load below.
+        Used in pairs - enter the actual hanging point count (usually 4, occasionally more for long/heavy railings). Load splits evenly across every point and is still checked against wire/chain capacity below.
       </p>
+
+      <div className="grid grid-cols-2 gap-2">
+        <div>
+          <label className="block text-[10px] text-slate-400 mb-0.5">Hanging Points *</label>
+          <input
+            type="number"
+            min={COMB_MIN_HANGING_POINTS}
+            step="1"
+            placeholder={COMB_DEFAULT_HANGING_POINTS}
+            value={wp.combHangingPoints || ''}
+            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'combHangingPoints', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            required
+          />
+        </div>
+        <div>
+          <label className="block text-[10px] text-slate-400 mb-0.5">Rigging Medium *</label>
+          <div className="inline-flex bg-slate-900 p-0.5 rounded border border-slate-800 w-full">
+            <button
+              type="button"
+              onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'combMediumType', 'CHAIN')}
+              className={`flex-1 px-2 py-1 rounded text-[10px] font-bold transition-all ${
+                wp.combMediumType !== 'WIRE' ? 'bg-cyan-600 text-slate-950 shadow' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Chain
+            </button>
+            <button
+              type="button"
+              onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'combMediumType', 'WIRE')}
+              className={`flex-1 px-2 py-1 rounded text-[10px] font-bold transition-all ${
+                wp.combMediumType === 'WIRE' ? 'bg-cyan-600 text-slate-950 shadow' : 'text-slate-400 hover:text-slate-200'
+              }`}
+            >
+              Wire
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <div className={`grid ${wp.combMediumType === 'WIRE' ? 'grid-cols-2' : 'grid-cols-1'} gap-2 bg-slate-900/80 p-2 rounded border border-slate-800`}>
+        <div>
+          <label className="block text-[10px] text-slate-400 mb-0.5">
+            {wp.combMediumType === 'WIRE' ? 'Wire Spec *' : 'Chain Spec *'}
+          </label>
+          <select
+            value={wp.combSpecId || ''}
+            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'combSpecId', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
+            required
+          >
+            <option value="">{wp.combMediumType === 'WIRE' ? 'Select Wire...' : 'Select Chain...'}</option>
+            {RIGGING_SPECS.filter(r => r.type === wp.combMediumType).map(r => (
+              <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
+            ))}
+          </select>
+        </div>
+        {wp.combMediumType === 'WIRE' && (
+          <div>
+            <label className="block text-[10px] text-slate-400 mb-0.5">Strands per Point *</label>
+            <input
+              type="number"
+              min="1"
+              placeholder="e.g. 2"
+              value={wp.combStrands || ''}
+              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'combStrands', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              required
+            />
+          </div>
+        )}
+      </div>
+
+      {wp.combMediumType === 'WIRE' && (
+        <p className="text-[10px] text-slate-600">
+          Note: strand count here uses a generic SWL calc (75 lb/strand), not the certified Reo Engineering bracket table - that table was only validated for 1 and 2-point rigging.
+        </p>
+      )}
+
+      {lineDeficiencies.length > 0 && criticalViolations.length === 0 && (
+        <div className="p-3 bg-amber-950/70 border border-amber-800 rounded-lg text-amber-200 text-xs space-y-1">
+          <div className="font-bold text-amber-300 flex items-center gap-1.5">
+            ⚠️ NOTICE: Insufficient Rigging Load Capacity
+          </div>
+          <ul className="list-disc list-inside text-[10px] space-y-0.5 text-amber-200/80 mt-1">
+            {lineDeficiencies.map((detail, idx) => (
+              <li key={idx}>{detail.replace(`${linePrefix}: `, '')}</li>
+            ))}
+          </ul>
+        </div>
+      )}
     </div>
   ) : (
     <>
