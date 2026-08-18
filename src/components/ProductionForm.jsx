@@ -14,16 +14,29 @@ const QTY_UNITS = [
   { value: 'box', label: 'box' }
 ];
 
-// 30 Fixed Racks, plus a "No Rack" option for single large pieces
-// transported directly by crane (no rack used at all).
+// 30 Fixed (Beam) Racks, plus a "No Rack" option for single large pieces
+// transported directly by crane (no rack used at all, no rack occupancy event).
 const NO_RACK_VALUE = 'NONE';
 const RACK_OPTIONS = [
-  { value: NO_RACK_VALUE, label: 'No Rack (Crane Direct)' },
+  { value: NO_RACK_VALUE, label: 'No Rack' },
   ...Array.from({ length: 30 }, (_, i) => {
     const num = String(i + 1).padStart(2, '0');
     return { value: num, label: `Rack #${num}` };
   })
 ];
+
+// Comb Rack / Hook Rack are custom rigging FIXTURES mounted on top of a
+// numbered Beam Rack (Rack #01-30) — not an alternative to selecting a rack.
+// Only relevant when a numbered rack is selected; irrelevant for "No Rack".
+const RACK_FIXTURE_STANDARD = 'STANDARD';
+const RACK_FIXTURE_COMB = 'COMB_RACK';
+const RACK_FIXTURE_HOOK = 'HOOK_RACK';
+const RACK_FIXTURE_OPTIONS = [
+  { value: RACK_FIXTURE_STANDARD, label: 'Standard (No Fixture)' },
+  { value: RACK_FIXTURE_COMB, label: 'Comb Rack' },
+  { value: RACK_FIXTURE_HOOK, label: 'Hook Rack' },
+];
+
 
 // ============================================================
 // RIGGING HARDWARE SPECIFICATIONS - shop-confirmed data only
@@ -211,6 +224,7 @@ export default function ProductionForm({ currentUser, supabase }) {
 
   // Global Rack & Load Session
   const [rackNo, setRackNo] = useState('');
+  const [rackFixtureType, setRackFixtureType] = useState(RACK_FIXTURE_STANDARD);
   const [loadId, setLoadId] = useState('');
   const [autoLoadId, setAutoLoadId] = useState(''); 
   const [isGeneratingLoadId, setIsGeneratingLoadId] = useState(false);
@@ -334,43 +348,90 @@ const removeAssistantOperator = (uid) => {
       return Math.floor(Math.random() * 5) + 1;
     }
 
-    try {
-      const { count, error } = await supabase
-        .from('production_loads')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', `${todayStr}T00:00:00`);
-
-      if (error) throw error;
-      return (count || 0) + 1;
-    } catch (err) {
-      console.warn('Could not fetch daily load count from Supabase, falling back to 1:', err);
-      return 1;
+    // Atomic, row-locked UPSERT on the server — guarantees no two concurrent
+    // callers can ever get the same sequence number for the same date.
+    // Do NOT silently fall back to a fixed number on error: that would
+    // reintroduce duplicate Load IDs (e.g. if the day's 99-load cap is hit).
+    const { data, error } = await supabase.rpc('get_next_daily_seq', { p_date: todayStr });
+    if (error) {
+      throw error;
     }
+    return data;
   };
 
-  const handleRackSelect = async (selectedVal) => {
-    setRackNo(selectedVal);
+  // Load ID letter suffix: R = numbered Rack #01-30 with a standard beam
+  // (no fixture), C = numbered rack fitted with a Comb Rack fixture,
+  // H = numbered rack fitted with a Hook Rack fixture, N = No Rack.
+  const getLoadIdLetter = (rackVal, fixtureVal) => {
+    if (rackVal === NO_RACK_VALUE) return 'N';
+    if (fixtureVal === RACK_FIXTURE_COMB) return 'C';
+    if (fixtureVal === RACK_FIXTURE_HOOK) return 'H';
+    return 'R';
+  };
 
-    if (selectedVal) {
-      setIsGeneratingLoadId(true);
+  const regenerateLoadId = async (rackVal, fixtureVal, preserveManualEdit) => {
+    if (!rackVal) {
+      setLoadId('');
+      setAutoLoadId('');
+      return;
+    }
+    setIsGeneratingLoadId(true);
+    try {
       const now = new Date();
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
+      const dateStr = `${year}${month}${day}`; // 8-digit, zero-padded
 
       const dailySeq = await getNextDailySequence();
+      const seqStr = String(dailySeq).padStart(2, '0'); // 2-digit, zero-padded
 
-      const generated = selectedVal === NO_RACK_VALUE
-        ? `CR-${year}${month}${day}-${dailySeq}`
-        : `R${selectedVal}-${year}${month}${day}-${dailySeq}`;
+      const letter = getLoadIdLetter(rackVal, fixtureVal);
+      const generated = `${dateStr}-${seqStr}-${letter}`;
 
+      // Always refresh the "auto" value (so Reset Auto ID offers the latest
+      // one), but don't stomp on a Load ID the operator already typed by
+      // hand — e.g. matching a paper record's number during the transition
+      // period before this system fully replaces the paper log.
       setAutoLoadId(generated);
-      setLoadId(generated);
-      setIsGeneratingLoadId(false);
-    } else {
-      setLoadId('');
+      if (!preserveManualEdit) {
+        setLoadId(generated);
+      }
+    } catch (err) {
+      console.error('Load ID sequence generation failed:', err);
+      alert(`❌ Could not generate Load ID: ${err.message || err}\n\nYou may need to enter a Load ID manually.`);
       setAutoLoadId('');
+      if (!preserveManualEdit) {
+        setLoadId('');
+      }
+    } finally {
+      setIsGeneratingLoadId(false);
     }
+  };
+
+  const handleRackSelect = async (selectedVal) => {
+    // Was the current Load ID typed/edited by hand rather than left as the
+    // last auto-generated value? If so, preserve it through this change.
+    const hadManualEdit = loadId.trim() !== '' && loadId !== autoLoadId;
+
+    setRackNo(selectedVal);
+
+    // Fixture type only applies to a numbered rack; reset it for No Rack
+    // (and whenever the rack changes away from a fixture-bearing selection
+    // isn't required — the fixture just stays until the user changes it,
+    // except No Rack where it's forced back to Standard).
+    const nextFixture = selectedVal === NO_RACK_VALUE ? RACK_FIXTURE_STANDARD : rackFixtureType;
+    if (selectedVal === NO_RACK_VALUE) {
+      setRackFixtureType(RACK_FIXTURE_STANDARD);
+    }
+
+    await regenerateLoadId(selectedVal, nextFixture, hadManualEdit);
+  };
+
+  const handleFixtureTypeSelect = async (selectedFixture) => {
+    const hadManualEdit = loadId.trim() !== '' && loadId !== autoLoadId;
+    setRackFixtureType(selectedFixture);
+    await regenerateLoadId(rackNo, selectedFixture, hadManualEdit);
   };
 
   const handleResetLoadId = () => {
@@ -704,7 +765,10 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       }
 
       const isCraneDirect = rackNo === NO_RACK_VALUE;
-      const rackNoInt = isCraneDirect ? null : parseInt(rackNo, 10);
+      const isNumberedRack = /^\d+$/.test(rackNo);
+      const rackNoInt = isNumberedRack ? parseInt(rackNo, 10) : null;
+      // Fixture only applies when an actual numbered rack is in use.
+      const fixtureForSubmit = isCraneDirect ? null : rackFixtureType;
 
       // 3. Create the Load record
       const { data: loadRow, error: loadErr } = await supabase
@@ -713,6 +777,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
           load_id: loadId.trim(),
           loading_method: isCraneDirect ? 'crane_direct' : 'rack',
           rack_no: rackNoInt,
+          rack_fixture_type: fixtureForSubmit,
           current_location: isCraneDirect ? 'n_a_crane_direct' : 'on_rack',
           current_stage_code: 'stage_01',
           workflow_status: 'in_progress'
@@ -2298,6 +2363,39 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
               </span>
             </div>
           </div>
+
+          {/* Rack Fixture Type - Comb Rack / Hook Rack are fixtures mounted on
+              top of a numbered Beam Rack, not a substitute for selecting one.
+              Not applicable to "No Rack" (crane direct, no rack occupied). */}
+          {rackNo && rackNo !== NO_RACK_VALUE && (
+            <div className="mt-4 pt-4 border-t border-slate-800/80">
+              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+                Rack Fixture
+              </label>
+              <div className="flex flex-wrap gap-2">
+                {RACK_FIXTURE_OPTIONS.map((opt) => {
+                  const isActive = rackFixtureType === opt.value;
+                  return (
+                    <button
+                      key={opt.value}
+                      type="button"
+                      onClick={() => handleFixtureTypeSelect(opt.value)}
+                      className={`px-3 py-2 rounded-lg text-xs font-bold uppercase border transition-colors ${
+                        isActive
+                          ? 'bg-cyan-500/20 border-cyan-400 text-cyan-300'
+                          : 'bg-slate-900 border-slate-700 text-slate-400 hover:border-slate-500'
+                      }`}
+                    >
+                      {opt.label}
+                    </button>
+                  );
+                })}
+              </div>
+              <span className="text-[10px] text-slate-500 block mt-1">
+                Select if this rack has a Comb Rack or Hook Rack fixture mounted on it.
+              </span>
+            </div>
+          )}
 
           {/* Rack Support Frame Capacity Gauge - live total across every Job/Workpiece on this Load */}
           {(() => {
