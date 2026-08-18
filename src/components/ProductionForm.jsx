@@ -1478,9 +1478,9 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
   {/* Modal 2: Clearance Looping vs. Rigid Binding Standards */}
   {showClearanceLoopingModal && (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-      <div className="bg-slate-900 border border-cyan-500/30 rounded-xl shadow-2xl max-w-2xl w-full p-5 space-y-4">
+      <div className="transform-gpu bg-slate-900 border border-cyan-500/30 rounded-xl shadow-2xl max-w-2xl w-full p-5 space-y-4">
         {/* Modal Header */}
-        <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-3">
+        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
           <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm min-w-0">
             <span className="text-amber-400 shrink-0">📐</span>
             <span className="break-words">Rigging Standards: Clearance Looping vs. Rigid Binding</span>
@@ -1488,7 +1488,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
           <button 
             type="button"
             onClick={() => setShowClearanceLoopingModal(false)}
-            className="shrink-0 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors cursor-pointer"
+            className="transform-gpu shrink-0 relative z-10 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors cursor-pointer"
           >
             ✕ Close
           </button>
