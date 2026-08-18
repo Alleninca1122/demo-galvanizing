@@ -543,6 +543,9 @@ const removeAssistantOperator = (uid) => {
   //    the whole string, still split across however many points that link actually uses (1 or 2).
   const checkSafetyDeficiencies = () => {
     let deficiencies = [];
+    // 单点绑丝安全根数上限（超出此上限提示改用铁链）— shared by both the normal
+    // WIRE_CHAIN point check and the Railing Comb Rack check below.
+    const MAX_SAFE_WIRE_STRANDS = 8;
     jobs.forEach((job, jIdx) => {
       job.workpieces.forEach((wp, wIdx) => {
         const { totalW, unitW } = getWorkpieceTotalWeight(wp);
@@ -579,9 +582,16 @@ const removeAssistantOperator = (uid) => {
             // certified bracket, so flag that explicitly in the message.
             const reqStrands = Math.max(1, Math.ceil(loadPerPt / WIRE_SPEC.swl));
             if (strands < reqStrands) {
-              deficiencies.push(
-                `${combLabel}: Comb Rack wire count (${strands}) is below the generic-calc recommendation (${reqStrands}, ${points} pts @ ${Math.round(loadPerPt)} lb/pt) - not a certified bracket, since the Reo table only covers 1-2 point rigging.`
-              );
+              if (reqStrands > MAX_SAFE_WIRE_STRANDS) {
+                // 计算根数超出安全上限，提示不宜继续增加铁丝，强制建议切铁链（与普通挂架逻辑一致）
+                deficiencies.push(
+                  `${combLabel}: Comb Rack point load (${Math.round(loadPerPt)} lb/pt, ${points} pts) requires ${reqStrands} wires, exceeding safe wire limit (${MAX_SAFE_WIRE_STRANDS}). Strongly recommend switching to CHAIN. (Generic calc, not a certified bracket - Reo table only covers 1-2 point rigging.)`
+                );
+              } else {
+                deficiencies.push(
+                  `${combLabel}: Comb Rack wire count (${strands}) is below the generic-calc recommendation (${reqStrands}, ${points} pts @ ${Math.round(loadPerPt)} lb/pt) - not a certified bracket, since the Reo table only covers 1-2 point rigging.`
+                );
+              }
             }
           }
           return; // Railing Comb Rack lines don't go through the WIRE_CHAIN point-based checks below
@@ -622,9 +632,6 @@ const removeAssistantOperator = (uid) => {
           const specObj = RIGGING_SPECS.find(r => r.id === specId) || RIGGING_SPECS[0];
           const userStrands = parseInt(userStrandsRaw, 10) || 0;
           if (userStrands <= 0) return;
-
-      // 设定单点绑丝安全根数上限（超出此上限提示改用铁链）
-      const MAX_SAFE_WIRE_STRANDS = 8;
 
       if (specObj.type === 'WIRE') {
         const reqStrands = wireRec.perPoint;
@@ -2973,6 +2980,9 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
           <div className="font-bold text-amber-300 flex items-center gap-1.5">
             ⚠️ NOTICE: Insufficient Rigging Load Capacity
           </div>
+          <p className="text-[11px] text-amber-200/90">
+          One or more attachment points do not meet the minimum load safety requirement. Please increase wire strand count or switch to a higher-rated chain.
+          </p>
           <ul className="list-disc list-inside text-[10px] space-y-0.5 text-amber-200/80 mt-1">
             {lineDeficiencies.map((detail, idx) => (
               <li key={idx}>{detail.replace(`${linePrefix}: `, '')}</li>
