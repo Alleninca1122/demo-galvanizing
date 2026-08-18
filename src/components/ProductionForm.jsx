@@ -369,7 +369,7 @@ const removeAssistantOperator = (uid) => {
     return 'R';
   };
 
-  const regenerateLoadId = async (rackVal, fixtureVal) => {
+  const regenerateLoadId = async (rackVal, fixtureVal, preserveManualEdit) => {
     if (!rackVal) {
       setLoadId('');
       setAutoLoadId('');
@@ -389,19 +389,31 @@ const removeAssistantOperator = (uid) => {
       const letter = getLoadIdLetter(rackVal, fixtureVal);
       const generated = `${dateStr}-${seqStr}-${letter}`;
 
+      // Always refresh the "auto" value (so Reset Auto ID offers the latest
+      // one), but don't stomp on a Load ID the operator already typed by
+      // hand — e.g. matching a paper record's number during the transition
+      // period before this system fully replaces the paper log.
       setAutoLoadId(generated);
-      setLoadId(generated);
+      if (!preserveManualEdit) {
+        setLoadId(generated);
+      }
     } catch (err) {
       console.error('Load ID sequence generation failed:', err);
       alert(`❌ Could not generate Load ID: ${err.message || err}\n\nYou may need to enter a Load ID manually.`);
       setAutoLoadId('');
-      setLoadId('');
+      if (!preserveManualEdit) {
+        setLoadId('');
+      }
     } finally {
       setIsGeneratingLoadId(false);
     }
   };
 
   const handleRackSelect = async (selectedVal) => {
+    // Was the current Load ID typed/edited by hand rather than left as the
+    // last auto-generated value? If so, preserve it through this change.
+    const hadManualEdit = loadId.trim() !== '' && loadId !== autoLoadId;
+
     setRackNo(selectedVal);
 
     // Fixture type only applies to a numbered rack; reset it for No Rack
@@ -413,12 +425,13 @@ const removeAssistantOperator = (uid) => {
       setRackFixtureType(RACK_FIXTURE_STANDARD);
     }
 
-    await regenerateLoadId(selectedVal, nextFixture);
+    await regenerateLoadId(selectedVal, nextFixture, hadManualEdit);
   };
 
   const handleFixtureTypeSelect = async (selectedFixture) => {
+    const hadManualEdit = loadId.trim() !== '' && loadId !== autoLoadId;
     setRackFixtureType(selectedFixture);
-    await regenerateLoadId(rackNo, selectedFixture);
+    await regenerateLoadId(rackNo, selectedFixture, hadManualEdit);
   };
 
   const handleResetLoadId = () => {
