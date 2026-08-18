@@ -573,6 +573,8 @@ const removeAssistantOperator = (uid) => {
                 `${combLabel}: Comb Rack point capacity (${specObj.swl} lb WLL, ${points} pts) is below required load (${Math.round(loadPerPt)} lb/pt). Please upgrade chain size or add more points.`
               );
             }
+          } else if (wp.combMediumType === 'WIRE' && strands <= 0) {
+            // 操作员还没填根数，先不报警（与普通挂架 checkPoint 的守卫逻辑一致）
           } else {
             // WIRE medium: the certified Reo Engineering bracket table (WIRE_BRACKETS_SINGLE /
             // WIRE_BRACKETS_DOUBLE) was only validated for 1 and 2-point rigging schemes, so it
@@ -581,17 +583,17 @@ const removeAssistantOperator = (uid) => {
             // certified table range (see getRequiredWireCount) - conservative, but not a
             // certified bracket, so flag that explicitly in the message.
             const reqStrands = Math.max(1, Math.ceil(loadPerPt / WIRE_SPEC.swl));
-            if (strands < reqStrands) {
-              if (reqStrands > MAX_SAFE_WIRE_STRANDS) {
-                // 计算根数超出安全上限，提示不宜继续增加铁丝，强制建议切铁链（与普通挂架逻辑一致）
-                deficiencies.push(
-                  `${combLabel}: Comb Rack point load (${Math.round(loadPerPt)} lb/pt, ${points} pts) requires ${reqStrands} wires, exceeding safe wire limit (${MAX_SAFE_WIRE_STRANDS}). Strongly recommend switching to CHAIN. (Generic calc, not a certified bracket.)`
-                );
-              } else {
-                deficiencies.push(
-                  `${combLabel}: Comb Rack wire count (${strands}) is below the generic-calc recommendation (${reqStrands}, ${points} pts @ ${Math.round(loadPerPt)} lb/pt) - not a certified bracket.`
-                );
-              }
+            if (reqStrands > MAX_SAFE_WIRE_STRANDS) {
+              // 只要这个载荷本身需要超过安全上限的根数，就该换铁链——跟操作员实际
+              // 打了几根铁丝无关，即使已经填够甚至填超要求根数，铁丝本身也不适合
+              // 承担这个载荷
+              deficiencies.push(
+                `${combLabel}: Comb Rack point load (${Math.round(loadPerPt)} lb/pt, ${points} pts) requires ${reqStrands} wires, exceeding safe wire limit (${MAX_SAFE_WIRE_STRANDS}). Strongly recommend switching to CHAIN. (Generic calc, not a certified bracket.)`
+              );
+            } else if (strands < reqStrands) {
+              deficiencies.push(
+                `${combLabel}: Comb Rack wire count (${strands}) is below the generic-calc recommendation (${reqStrands}, ${points} pts @ ${Math.round(loadPerPt)} lb/pt) - not a certified bracket.`
+              );
             }
           }
           return; // Railing Comb Rack lines don't go through the WIRE_CHAIN point-based checks below
@@ -635,18 +637,18 @@ const removeAssistantOperator = (uid) => {
 
       if (specObj.type === 'WIRE') {
         const reqStrands = wireRec.perPoint;
-        if (userStrands < reqStrands) {
-          if (reqStrands > MAX_SAFE_WIRE_STRANDS) {
-            // 计算根数超出安全上限（如 14 根），提示不宜继续增加铁丝，强制建议切铁链
-            deficiencies.push(
-              `${label}: ${pointLabel} load (${Math.round(loadPerPt)} lb) requires ${reqStrands} wires, exceeding safe wire limit (${MAX_SAFE_WIRE_STRANDS}). Strongly recommend switching to CHAIN.`
-            );
-          } else {
-            // 安全范围内，提示增加铁丝根数
-            deficiencies.push(
-              `${label}: ${pointLabel} wire count (${userStrands}) is below recommendation (${reqStrands}) for ${wireBasisNote}.`
-            );
-          }
+        if (reqStrands > MAX_SAFE_WIRE_STRANDS) {
+          // 只要这个载荷本身需要超过安全上限的根数，就该换铁链——跟操作员实际打了
+          // 几根铁丝无关，哪怕操作员已经打够甚至打超了要求根数，铁丝本身也不适合
+          // 承担这个载荷，必须提醒切换铁链
+          deficiencies.push(
+            `${label}: ${pointLabel} load (${Math.round(loadPerPt)} lb) requires ${reqStrands} wires, exceeding safe wire limit (${MAX_SAFE_WIRE_STRANDS}). Strongly recommend switching to CHAIN.`
+          );
+        } else if (userStrands < reqStrands) {
+          // 安全范围内，但操作员填的根数不够，提示增加铁丝根数
+          deficiencies.push(
+            `${label}: ${pointLabel} wire count (${userStrands}) is below recommendation (${reqStrands}) for ${wireBasisNote}.`
+          );
         }
       } else if (specObj.type === 'CHAIN') {
         // 铁链逻辑：直接对比 WLL 与挂点载荷
