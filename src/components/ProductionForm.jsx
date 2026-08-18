@@ -585,11 +585,11 @@ const removeAssistantOperator = (uid) => {
               if (reqStrands > MAX_SAFE_WIRE_STRANDS) {
                 // 计算根数超出安全上限，提示不宜继续增加铁丝，强制建议切铁链（与普通挂架逻辑一致）
                 deficiencies.push(
-                  `${combLabel}: Comb Rack point load (${Math.round(loadPerPt)} lb/pt, ${points} pts) requires ${reqStrands} wires, exceeding safe wire limit (${MAX_SAFE_WIRE_STRANDS}). Strongly recommend switching to CHAIN. (Generic calc, not a certified bracket - Reo table only covers 1-2 point rigging.)`
+                  `${combLabel}: Comb Rack point load (${Math.round(loadPerPt)} lb/pt, ${points} pts) requires ${reqStrands} wires, exceeding safe wire limit (${MAX_SAFE_WIRE_STRANDS}). Strongly recommend switching to CHAIN. (Generic calc, not a certified bracket.)`
                 );
               } else {
                 deficiencies.push(
-                  `${combLabel}: Comb Rack wire count (${strands}) is below the generic-calc recommendation (${reqStrands}, ${points} pts @ ${Math.round(loadPerPt)} lb/pt) - not a certified bracket, since the Reo table only covers 1-2 point rigging.`
+                  `${combLabel}: Comb Rack wire count (${strands}) is below the generic-calc recommendation (${reqStrands}, ${points} pts @ ${Math.round(loadPerPt)} lb/pt) - not a certified bracket.`
                 );
               }
             }
@@ -2971,7 +2971,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
 
       {wp.combMediumType === 'WIRE' && (
         <p className="text-[10px] text-slate-600">
-          Note: strand count here uses a generic SWL calc (75 lb/strand), not the certified Reo Engineering bracket table - that table was only validated for 1 and 2-point rigging.
+          Note: strand count here uses a generic SWL calc (75 lb/strand), not certified data.
         </p>
       )}
 
