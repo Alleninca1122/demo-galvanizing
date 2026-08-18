@@ -1847,39 +1847,38 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
           </div>
           <div className="w-full h-56 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
             <svg viewBox="0 0 320 150" className="w-full h-full">
-              {/* Beam Rack - unchanged */}
+              {/* Beam Rack */}
               <rect x="30" y="12" width="260" height="12" rx="2" fill="#334155" stroke="#64748b" strokeWidth="1.5" />
               <text x="160" y="21" fill="#94a3b8" fontSize="11" fontWeight="bold" textAnchor="middle" className="font-mono">
                 Beam Rack
               </text>
 
-              {/* Dotted Vertical Line - unchanged */}
+              {/* Dotted Vertical Line (Without text) */}
               <line x1="100" y1="24" x2="100" y2="125" stroke="#64748b" strokeWidth="1.5" strokeDasharray="3 3" />
 
-              {/* Left Rigging Line (shorter as workpiece left is higher) - Adjusted */}
-              <line x1="100" y1="24" x2="60" y2="110" stroke="#f43f5e" strokeWidth="2" />
+              {/* Left Rigging Line */}
+              <line x1="100" y1="24" x2="60" y2="105" stroke="#f43f5e" strokeWidth="2" />
               <circle cx="100" cy="24" r="3" fill="#f43f5e" />
-              <circle cx="60" cy="110" r="3" fill="#f43f5e" />
+              <circle cx="60" cy="105" r="3" fill="#f43f5e" />
 
-              {/* Angle marker and text - Adjusted position slightly */}
+              {/* Right Rigging Line (Extended to contact tilted workpiece) */}
+              <line x1="220" y1="24" x2="260" y2="122" stroke="#f43f5e" strokeWidth="2" />
+              <circle cx="220" cy="24" r="3" fill="#f43f5e" />
+              <circle cx="260" cy="122" r="3" fill="#f43f5e" />
+
+              {/* Rigging Angle Arc & Text */}
               <path d="M 100 65 A 41 41 0 0 0 81 60" fill="none" stroke="#f59e0b" strokeWidth="2" />
               <text x="82" y="76" fill="#f59e0b" fontSize="13" fontWeight="bold" className="font-mono">
                 θ (Rigging Angle)
               </text>
 
-              {/* WORKPIECE (Tilted downwards to the right) - Key Fix */}
-              {/* Higher y position for left, lower y position for right, increased transform rotation */}
-              <rect x="40" y="110" width="240" height="18" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" transform="rotate(-7, 40, 110)" />
-              <text x="160" y="123" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">
-                Workpiece
-              </text>
-              
-              {/* Right Rigging Line (prolonged to contact the lowered workpiece) - Key Fix */}
-              {/* Changed endpoints to align with the new, lowered right side of the workpiece */}
-              <line x1="220" y1="24" x2="260" y2="136" stroke="#f43f5e" strokeWidth="2" />
-              <circle cx="220" cy="24" r="3" fill="#f43f5e" />
-              <circle cx="260" cy="136" r="3" fill="#f43f5e" />
-
+              {/* Workpiece (Group rotated clockwise around center to tilt right side down) */}
+              <g transform="rotate(5, 160, 114)">
+                <rect x="40" y="105" width="240" height="18" rx="3" fill="#1e293b" stroke="#38bdf8" strokeWidth="1.5" />
+                <text x="160" y="118" fill="#38bdf8" fontSize="11" fontWeight="bold" textAnchor="middle">
+                  Workpiece
+                </text>
+              </g>
             </svg>
           </div>
         </div>
