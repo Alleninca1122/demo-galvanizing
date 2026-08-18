@@ -1475,108 +1475,108 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     </div>
   )}
 
-  {/* Modal 2: Clearance Looping vs. Rigid Binding Standards */}
-  {showClearanceLoopingModal && (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
-      <div className="transform-gpu bg-slate-900 border border-cyan-500/30 rounded-xl shadow-2xl max-w-2xl w-full p-5 space-y-4">
-        {/* Modal Header */}
-        <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm min-w-0">
-            <span className="text-amber-400 shrink-0">📐</span>
-            <span className="break-words">Rigging Standards: Clearance Looping vs. Rigid Binding</span>
-          </div>
-          <button 
-            type="button"
-            onClick={() => setShowClearanceLoopingModal(false)}
-            className="transform-gpu shrink-0 relative z-10 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors cursor-pointer"
-          >
-            ✕ Close
-          </button>
+{/* Modal 2: Clearance Looping vs. Rigid Binding Standards */}
+{showClearanceLoopingModal && (
+  <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4 overflow-y-auto">
+    <div className="transform-gpu bg-slate-900 border border-cyan-500/30 rounded-xl shadow-2xl max-w-2xl w-full p-5 space-y-4 max-h-[90vh] flex flex-col my-auto">
+      {/* Modal Header */}
+      <div className="flex flex-wrap items-center justify-between gap-2 border-b border-slate-800 pb-3 shrink-0">
+        <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm min-w-0">
+          <span className="text-amber-400 shrink-0">📐</span>
+          <span className="break-words">Rigging Standards: Clearance Looping vs. Rigid Binding</span>
         </div>
+        <button 
+          type="button"
+          onClick={() => setShowClearanceLoopingModal(false)}
+          className="transform-gpu shrink-0 relative z-10 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors cursor-pointer"
+        >
+          ✕ Close
+        </button>
+      </div>
 
-        {/* Modal Content */}
-        <div className="space-y-3 text-xs text-slate-300">
-          {/* Top Comparison: Same Constrained Workpiece */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
-            {/* Incorrect: Tight Rigid Binding on Constrained Workpiece */}
-            <div className="p-3 bg-rose-950/20 border border-rose-800/60 rounded-lg space-y-2">
-              <div className="font-bold text-rose-400 flex items-center gap-1.5">
-                <span>✕</span> INCORRECT: Tight Rigid Binding on Constrained Workpieces
-              </div>
-              <div className="bg-slate-950/80 p-3 rounded border border-rose-950 flex justify-center">
-                <svg className="w-full h-24" viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Constrained Workpiece Body */}
-                  <path d="M30 20 H65 C73 20 80 27 80 35 V45 C80 53 73 60 65 60 H30 C24 60 20 56 20 50 V30 C20 24 24 20 30 20 Z" fill="#0f172a" stroke="#f43f5e" strokeWidth="1.5"/>
-                  {/* Bolt Hole Constraint */}
-                  <circle cx="62" cy="40" r="10" fill="#020617" stroke="#f43f5e" strokeWidth="1.5"/>
-                  {/* Red Heat/Touch-Mark Damage Glow */}
-                  <circle cx="62" cy="40" r="14" fill="#f43f5e" fillOpacity="0.25"/>
-                  {/* Tight Wire Wrapping (Incorrect) */}
-                  <path d="M 140 36 H 72 C 67 36 62 33 62 30 C 62 27 67 24 72 24 L 140 24" stroke="#f43f5e" strokeWidth="2"/>
-                  <path d="M 80 20 V 44 M 86 20 V 44 M 92 20 V 44 M 98 20 V 44" stroke="#f43f5e" strokeWidth="2"/>
-                </svg>
-              </div>
-              <div className="text-[10px] text-rose-300/80 leading-tight">
-                Tight wrapping on workpieces with existing holes/constraints causes deep touch-marks, impedes zinc drainage, and risks wire snapping due to thermal expansion.
-              </div>
+      {/* Modal Content */}
+      <div className="space-y-3 text-xs text-slate-300 overflow-y-auto pr-1 grow">
+        {/* Top Comparison: Same Constrained Workpiece */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {/* Incorrect: Tight Rigid Binding on Constrained Workpiece */}
+          <div className="p-3 bg-rose-950/20 border border-rose-800/60 rounded-lg space-y-2">
+            <div className="font-bold text-rose-400 flex items-center gap-1.5">
+              <span>✕</span> INCORRECT: Tight Rigid Binding on Constrained Workpieces
             </div>
-
-            {/* Correct: Clearance Looping on Constrained Workpiece */}
-            <div className="p-3 bg-cyan-950/20 border border-cyan-800/60 rounded-lg space-y-2">
-              <div className="font-bold text-cyan-400 flex items-center gap-1.5">
-                <span>✓</span> CORRECT: Clearance Looping on Constrained Workpieces
-              </div>
-              <div className="bg-slate-950/80 p-3 rounded border border-cyan-950 flex justify-center">
-                <svg className="w-full h-24" viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg">
-                  {/* Constrained Workpiece Body */}
-                  <path d="M30 20 H65 C73 20 80 27 80 35 V45 C80 53 73 60 65 60 H30 C24 60 20 56 20 50 V30 C20 24 24 20 30 20 Z" fill="#0f172a" stroke="#22d3ee" strokeWidth="1.5"/>
-                  {/* Bolt Hole Constraint */}
-                  <circle cx="62" cy="40" r="10" fill="#020617" stroke="#22d3ee" strokeWidth="1.5"/>
-                  {/* Oversized Loose Loop (Clearance Looping) */}
-                  <path d="M 62 30 C 62 10 145 10 145 40 C 145 70 62 70 62 50" stroke="#22d3ee" strokeWidth="2" fill="none"/>
-                  {/* Single Minimal Contact Point */}
-                  <circle cx="62" cy="30" r="2.5" fill="#38bdf8"/>
-                </svg>
-              </div>
-              <div className="text-[10px] text-cyan-300/80 leading-tight">
-                Utilize Clearance Looping for workpieces with natural mechanical constraints. Large, loose loop minimizes contact area, ensures free drainage, and accommodates thermal movement.
-              </div>
-            </div>
-          </div>
-
-          {/* Bottom Warning: Mandatory Rigid Binding for Smooth Workpieces */}
-          <div className="p-3 bg-amber-950/20 border border-amber-800/60 rounded-lg space-y-2">
-            <div className="font-bold text-amber-400 flex items-center gap-1.5">
-              <span>⚠️</span> CRITICAL SAFETY: Rigid Binding Requirement
-            </div>
-            <div className="bg-slate-950/80 p-2.5 rounded border border-amber-950 flex justify-center">
-              <svg className="w-full h-14" viewBox="0 0 320 50" fill="none" xmlns="http://www.w3.org/2000/svg">
-                {/* Smooth Shaft Workpiece (No Natural Constraints) */}
-                <rect x="20" y="18" width="280" height="14" rx="3" fill="#0f172a" stroke="#94a3b8" strokeWidth="1.5"/>
-                {/* Tight Wrapping (Mandatory Rigid Binding) */}
-                <path d="M 130 14 V 36 M 136 14 V 36 M 142 14 V 36 M 148 14 V 36 M 154 14 V 36 M 160 14 V 36" stroke="#fbbf24" strokeWidth="2"/>
-                <path d="M 20 25 H 130 M 160 25 H 300" stroke="#fbbf24" strokeWidth="1.5" strokeDasharray="3 2"/>
+            <div className="bg-slate-950/80 p-3 rounded border border-rose-950 flex justify-center">
+              <svg className="w-full h-24" viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Constrained Workpiece Body */}
+                <path d="M30 20 H65 C73 20 80 27 80 35 V45 C80 53 73 60 65 60 H30 C24 60 20 56 20 50 V30 C20 24 24 20 30 20 Z" fill="#0f172a" stroke="#f43f5e" strokeWidth="1.5"/>
+                {/* Bolt Hole Constraint */}
+                <circle cx="62" cy="40" r="10" fill="#020617" stroke="#f43f5e" strokeWidth="1.5"/>
+                {/* Red Heat/Touch-Mark Damage Glow */}
+                <circle cx="62" cy="40" r="14" fill="#f43f5e" fillOpacity="0.25"/>
+                {/* Tight Wire Wrapping (Incorrect) */}
+                <path d="M 140 36 H 72 C 67 36 62 33 62 30 C 62 27 67 24 72 24 L 140 24" stroke="#f43f5e" strokeWidth="2"/>
+                <path d="M 80 20 V 44 M 86 20 V 44 M 92 20 V 44 M 98 20 V 44" stroke="#f43f5e" strokeWidth="2"/>
               </svg>
             </div>
-            <div className="text-[10px] text-amber-300/80 leading-tight">
-              NEVER use loose loops on smooth surfaces or workpieces without geometric constraints. Tight Rigid Binding is MANDATORY here to prevent hazardous shifting during dipping and draining.
+            <div className="text-[10px] text-rose-300/80 leading-tight">
+              Tight wrapping on workpieces with existing holes/constraints causes deep touch-marks, impedes zinc drainage, and risks wire snapping due to thermal expansion.
+            </div>
+          </div>
+
+          {/* Correct: Clearance Looping on Constrained Workpiece */}
+          <div className="p-3 bg-cyan-950/20 border border-cyan-800/60 rounded-lg space-y-2">
+            <div className="font-bold text-cyan-400 flex items-center gap-1.5">
+              <span>✓</span> CORRECT: Clearance Looping on Constrained Workpieces
+            </div>
+            <div className="bg-slate-950/80 p-3 rounded border border-cyan-950 flex justify-center">
+              <svg className="w-full h-24" viewBox="0 0 160 80" fill="none" xmlns="http://www.w3.org/2000/svg">
+                {/* Constrained Workpiece Body */}
+                <path d="M30 20 H65 C73 20 80 27 80 35 V45 C80 53 73 60 65 60 H30 C24 60 20 56 20 50 V30 C20 24 24 20 30 20 Z" fill="#0f172a" stroke="#22d3ee" strokeWidth="1.5"/>
+                {/* Bolt Hole Constraint */}
+                <circle cx="62" cy="40" r="10" fill="#020617" stroke="#22d3ee" strokeWidth="1.5"/>
+                {/* Oversized Loose Loop (Clearance Looping) */}
+                <path d="M 62 30 C 62 10 145 10 145 40 C 145 70 62 70 62 50" stroke="#22d3ee" strokeWidth="2" fill="none"/>
+                {/* Single Minimal Contact Point */}
+                <circle cx="62" cy="30" r="2.5" fill="#38bdf8"/>
+              </svg>
+            </div>
+            <div className="text-[10px] text-cyan-300/80 leading-tight">
+              Utilize Clearance Looping for workpieces with natural mechanical constraints. Large, loose loop minimizes contact area, ensures free drainage, and accommodates thermal movement.
             </div>
           </div>
         </div>
 
-        {/* Modal Footer */}
-        <div className="flex justify-end pt-2 border-t border-slate-800">
-          <button 
-            type="button"
-            onClick={() => setShowClearanceLoopingModal(false)}
-            className="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold rounded text-xs transition-colors cursor-pointer"
-          >
-            Got It
-          </button>
+        {/* Bottom Warning: Mandatory Rigid Binding for Smooth Workpieces */}
+        <div className="p-3 bg-amber-950/20 border border-amber-800/60 rounded-lg space-y-2">
+          <div className="font-bold text-amber-400 flex items-center gap-1.5">
+            <span>⚠️</span> CRITICAL SAFETY: Rigid Binding Requirement
+          </div>
+          <div className="bg-slate-950/80 p-2.5 rounded border border-amber-950 flex justify-center">
+            <svg className="w-full h-14" viewBox="0 0 320 50" fill="none" xmlns="http://www.w3.org/2000/svg">
+              {/* Smooth Shaft Workpiece (No Natural Constraints) */}
+              <rect x="20" y="18" width="280" height="14" rx="3" fill="#0f172a" stroke="#94a3b8" strokeWidth="1.5"/>
+              {/* Tight Wrapping (Mandatory Rigid Binding) */}
+              <path d="M 130 14 V 36 M 136 14 V 36 M 142 14 V 36 M 148 14 V 36 M 154 14 V 36 M 160 14 V 36" stroke="#fbbf24" strokeWidth="2"/>
+              <path d="M 20 25 H 130 M 160 25 H 300" stroke="#fbbf24" strokeWidth="1.5" strokeDasharray="3 2"/>
+            </svg>
+          </div>
+          <div className="text-[10px] text-amber-300/80 leading-tight">
+            NEVER use loose loops on smooth surfaces or workpieces without geometric constraints. Tight Rigid Binding is MANDATORY here to prevent hazardous shifting during dipping and draining.
+          </div>
         </div>
       </div>
+
+      {/* Modal Footer */}
+      <div className="flex justify-end pt-2 border-t border-slate-800 shrink-0">
+        <button 
+          type="button"
+          onClick={() => setShowClearanceLoopingModal(false)}
+          className="px-4 py-1.5 bg-cyan-600 hover:bg-cyan-500 text-slate-950 font-bold rounded text-xs transition-colors cursor-pointer"
+        >
+          Got It
+        </button>
+      </div>
     </div>
-  )}
+  </div>
+)}
 </div>
 
 {/* STEP 4 */}
