@@ -14,19 +14,19 @@ const QTY_UNITS = [
   { value: 'box', label: 'box' }
 ];
 
-// 30 Fixed (Beam) Racks, plus a "No Rack" option for single large pieces
+// 99 Fixed (Beam) Racks, plus a "No Rack" option for single large pieces
 // transported directly by crane (no rack used at all, no rack occupancy event).
 const NO_RACK_VALUE = 'NONE';
 const RACK_OPTIONS = [
   { value: NO_RACK_VALUE, label: 'No Rack' },
-  ...Array.from({ length: 30 }, (_, i) => {
+  ...Array.from({ length: 99 }, (_, i) => {
     const num = String(i + 1).padStart(2, '0');
     return { value: num, label: `Rack #${num}` };
   })
 ];
 
 // Comb Rack / Hook Rack are custom rigging FIXTURES mounted on top of a
-// numbered Beam Rack (Rack #01-30) — not an alternative to selecting a rack.
+// numbered Beam Rack (Rack #01-99) — not an alternative to selecting a rack.
 // Only relevant when a numbered rack is selected; irrelevant for "No Rack".
 const RACK_FIXTURE_STANDARD = 'STANDARD';
 const RACK_FIXTURE_COMB = 'COMB_RACK';
@@ -359,7 +359,7 @@ const removeAssistantOperator = (uid) => {
     return data;
   };
 
-  // Load ID letter suffix: R = numbered Rack #01-30 with a standard beam
+  // Load ID letter suffix: R = numbered Rack #01-99 with a standard beam
   // (no fixture), C = numbered rack fitted with a Comb Rack fixture,
   // H = numbered rack fitted with a Hook Rack fixture, N = No Rack.
   const getLoadIdLetter = (rackVal, fixtureVal) => {
