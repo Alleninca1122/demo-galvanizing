@@ -348,18 +348,15 @@ const removeAssistantOperator = (uid) => {
       return Math.floor(Math.random() * 5) + 1;
     }
 
-    try {
-      const { count, error } = await supabase
-        .from('production_loads')
-        .select('*', { count: 'exact', head: true })
-        .gte('created_at', `${todayStr}T00:00:00`);
-
-      if (error) throw error;
-      return (count || 0) + 1;
-    } catch (err) {
-      console.warn('Could not fetch daily load count from Supabase, falling back to 1:', err);
-      return 1;
+    // Atomic, row-locked UPSERT on the server — guarantees no two concurrent
+    // callers can ever get the same sequence number for the same date.
+    // Do NOT silently fall back to a fixed number on error: that would
+    // reintroduce duplicate Load IDs (e.g. if the day's 99-load cap is hit).
+    const { data, error } = await supabase.rpc('get_next_daily_seq', { p_date: todayStr });
+    if (error) {
+      throw error;
     }
+    return data;
   };
 
   // Load ID letter suffix: R = numbered Rack #01-30 with a standard beam
@@ -379,21 +376,29 @@ const removeAssistantOperator = (uid) => {
       return;
     }
     setIsGeneratingLoadId(true);
-    const now = new Date();
-    const year = now.getFullYear();
-    const month = String(now.getMonth() + 1).padStart(2, '0');
-    const day = String(now.getDate()).padStart(2, '0');
-    const dateStr = `${year}${month}${day}`; // 8-digit, zero-padded
+    try {
+      const now = new Date();
+      const year = now.getFullYear();
+      const month = String(now.getMonth() + 1).padStart(2, '0');
+      const day = String(now.getDate()).padStart(2, '0');
+      const dateStr = `${year}${month}${day}`; // 8-digit, zero-padded
 
-    const dailySeq = await getNextDailySequence();
-    const seqStr = String(dailySeq).padStart(2, '0'); // 2-digit, zero-padded
+      const dailySeq = await getNextDailySequence();
+      const seqStr = String(dailySeq).padStart(2, '0'); // 2-digit, zero-padded
 
-    const letter = getLoadIdLetter(rackVal, fixtureVal);
-    const generated = `${dateStr}-${seqStr}-${letter}`;
+      const letter = getLoadIdLetter(rackVal, fixtureVal);
+      const generated = `${dateStr}-${seqStr}-${letter}`;
 
-    setAutoLoadId(generated);
-    setLoadId(generated);
-    setIsGeneratingLoadId(false);
+      setAutoLoadId(generated);
+      setLoadId(generated);
+    } catch (err) {
+      console.error('Load ID sequence generation failed:', err);
+      alert(`❌ Could not generate Load ID: ${err.message || err}\n\nYou may need to enter a Load ID manually.`);
+      setAutoLoadId('');
+      setLoadId('');
+    } finally {
+      setIsGeneratingLoadId(false);
+    }
   };
 
   const handleRackSelect = async (selectedVal) => {
