@@ -1387,14 +1387,15 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
       <div className="bg-slate-900 border border-cyan-500/30 rounded-xl shadow-2xl max-w-2xl w-full p-5 space-y-4">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm">
-            <span className="text-amber-400">📐</span> Socket & Spigot Galvanizing Racking Standards
+        <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm min-w-0">
+            <span className="text-amber-400 shrink-0">📐</span>
+            <span className="break-words">Socket & Spigot Galvanizing Racking Standards</span>
           </div>
           <button 
             type="button"
             onClick={() => setShowSocketSpigotModal(false)}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors cursor-pointer"
+            className="shrink-0 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors cursor-pointer"
           >
             ✕ Close
           </button>
@@ -1479,14 +1480,15 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/80 backdrop-blur-sm p-4">
       <div className="bg-slate-900 border border-cyan-500/30 rounded-xl shadow-2xl max-w-2xl w-full p-5 space-y-4">
         {/* Modal Header */}
-        <div className="flex items-center justify-between border-b border-slate-800 pb-3">
-          <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm">
-            <span className="text-amber-400">📐</span> Rigging Standards: Clearance Looping vs. Rigid Binding
+        <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-3">
+          <div className="flex items-center gap-2 text-cyan-400 font-bold text-sm min-w-0">
+            <span className="text-amber-400 shrink-0">📐</span>
+            <span className="break-words">Rigging Standards: Clearance Looping vs. Rigid Binding</span>
           </div>
           <button 
             type="button"
             onClick={() => setShowClearanceLoopingModal(false)}
-            className="px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors cursor-pointer"
+            className="shrink-0 px-2.5 py-1 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded text-xs transition-colors cursor-pointer"
           >
             ✕ Close
           </button>
@@ -1815,6 +1817,104 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     </div>
   </div>
 )}  
+
+  {/* Rigging Angle & Load Guide Modal */}
+  {showRiggingGuide && (
+    <div className="fixed inset-0 z-50 bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+      <div className="bg-slate-900 border border-rose-500/30 rounded-xl max-w-2xl w-full p-4 space-y-4 shadow-2xl">
+        <div className="flex items-center justify-between gap-2 border-b border-slate-800 pb-2.5">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-base shrink-0">⚖️</span>
+            <h3 className="text-sm font-bold text-rose-300 break-words">
+              Rack, Hanging Depth & Rigging Angle Limits
+            </h3>
+          </div>
+          <button
+            type="button"
+            onClick={() => setShowRiggingGuide(false)}
+            className="shrink-0 text-slate-400 hover:text-white text-xs px-2 py-1 rounded bg-slate-800 transition-colors"
+          >
+            ✕ Close
+          </button>
+        </div>
+
+        <div className="space-y-3 text-xs text-slate-300 max-h-[70vh] overflow-y-auto pr-1">
+          {/* Diagram: vertical vs angled rigging zones */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-rose-300 text-[11px]">
+              1. Rigging Angle Derating Zones
+            </div>
+            <div className="w-full h-52 bg-slate-900/90 rounded border border-slate-800/80 flex items-center justify-center p-2">
+              <svg viewBox="0 0 420 220" className="w-full h-full">
+                {/* Beam */}
+                <rect x="60" y="10" width="300" height="14" rx="3" fill="#1e293b" stroke="#64748b" strokeWidth="1.5" />
+                {/* Vertical (0-15deg) - full capacity */}
+                <line x1="210" y1="24" x2="210" y2="150" stroke="#34d399" strokeWidth="3" />
+                {/* 15-30deg - 85% */}
+                <line x1="210" y1="24" x2="255" y2="145" stroke="#fbbf24" strokeWidth="3" />
+                {/* 30-45deg - 70% */}
+                <line x1="210" y1="24" x2="290" y2="128" stroke="#fb923c" strokeWidth="3" />
+                {/* >45deg - prohibited */}
+                <line x1="210" y1="24" x2="320" y2="100" stroke="#f43f5e" strokeWidth="3" strokeDasharray="5 4" />
+                {/* Workpiece */}
+                <rect x="180" y="150" width="60" height="26" rx="4" fill="#0f172a" stroke="#38bdf8" strokeWidth="1.5" />
+                {/* Angle labels */}
+                <text x="216" y="70" fill="#34d399" fontSize="10" fontWeight="bold">≤15° · 100%</text>
+                <text x="255" y="95" fill="#fbbf24" fontSize="10" fontWeight="bold">15–30° · 85%</text>
+                <text x="280" y="65" fill="#fb923c" fontSize="10" fontWeight="bold">30–45° · 70%</text>
+                <text x="300" y="45" fill="#f43f5e" fontSize="10" fontWeight="bold">&gt;45° · Prohibited</text>
+                {/* Depth clearance markers */}
+                <line x1="60" y1="24" x2="60" y2="185" stroke="#64748b" strokeWidth="1" strokeDasharray="3 3" />
+                <text x="10" y="105" fill="#94a3b8" fontSize="9">Hanging</text>
+                <text x="10" y="116" fill="#94a3b8" fontSize="9">Depth</text>
+                <text x="10" y="127" fill="#94a3b8" fontSize="9">≤300cm</text>
+                <line x1="60" y1="190" x2="360" y2="190" stroke="#475569" strokeWidth="1" strokeDasharray="2 3" />
+                <text x="150" y="205" fill="#94a3b8" fontSize="9">Top clearance ≥ 30cm above tank/kettle surface</text>
+              </svg>
+            </div>
+          </div>
+
+          {/* Table: derating rules */}
+          <div className="bg-slate-950 p-3 rounded-lg border border-slate-800 space-y-2">
+            <div className="font-bold text-rose-300 text-[11px]">
+              2. Mandatory Angle, Depth & Load Rules
+            </div>
+            <div className="grid grid-cols-2 gap-2 text-[10px]">
+              <div className="bg-emerald-950/20 p-2 rounded border border-emerald-500/30 space-y-0.5">
+                <div className="font-bold text-emerald-400">✓ ≤ 15° from vertical</div>
+                <div className="text-[9px] text-slate-400">Full rated working load capacity (100%).</div>
+              </div>
+              <div className="bg-amber-950/20 p-2 rounded border border-amber-500/30 space-y-0.5">
+                <div className="font-bold text-amber-400">⚠ 15°–30° from vertical</div>
+                <div className="text-[9px] text-slate-400">Derate working load capacity to 85%.</div>
+              </div>
+              <div className="bg-orange-950/20 p-2 rounded border border-orange-500/30 space-y-0.5">
+                <div className="font-bold text-orange-400">⚠ 30°–45° from vertical</div>
+                <div className="text-[9px] text-slate-400">Derate working load capacity to 70%.</div>
+              </div>
+              <div className="bg-rose-950/20 p-2 rounded border border-rose-500/30 space-y-0.5">
+                <div className="font-bold text-rose-400">✕ &gt; 45° from vertical</div>
+                <div className="text-[9px] text-slate-400">Strictly prohibited — not permitted at any load.</div>
+              </div>
+            </div>
+            <div className="text-[10px] text-slate-400 leading-relaxed pt-1">
+              Maintain top clearance ≥ 30cm so the workpiece fully immerses in the acid tanks/zinc kettle. Control hanging depth ≤ 300cm so the rack clears other racks during transfer. Keep wires/chains as vertical as possible.
+            </div>
+          </div>
+        </div>
+
+        <div className="pt-2 border-t border-slate-800 flex justify-end">
+          <button
+            type="button"
+            onClick={() => setShowRiggingGuide(false)}
+            className="bg-rose-600 hover:bg-rose-500 text-slate-950 font-bold px-4 py-1.5 rounded text-xs transition-colors"
+          >
+            Got It
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
 
   {/* Anti-Sway & Waist-Tie Guide Modal */}
   {showAntiSwayGuide && (
