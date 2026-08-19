@@ -267,6 +267,12 @@ export default function ProductionForm({ currentUser, supabase }) {
   const [showRackLoadHelp, setShowRackLoadHelp] = useState(false);
   // Load ID Contextual Help Tooltip (separate toggle, own field)
   const [showLoadIdHelp, setShowLoadIdHelp] = useState(false);
+  // Inline help bubbles inside the repeating Job/Workpiece rows (Identical↔Varied,
+  // Total↔Unit, etc). One shared toggle keyed by a per-row+field id, so only ONE
+  // bubble is ever open at a time - these buttons live inside a .map() over every
+  // workpiece line, so a plain per-field boolean would open/close every row's
+  // bubble together instead of just the one the operator clicked.
+  const [activeInlineHelp, setActiveInlineHelp] = useState(null);
   const [showReleaseModal, setShowReleaseModal] = useState(false);
   const [releaseRackNo, setReleaseRackNo] = useState('');
   const [releaseReason, setReleaseReason] = useState('FORGOT_RELEASE');
@@ -2985,20 +2991,49 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                           </select>
                         </div>
 
-                        <div>
+                        <div className="relative">
                           <div className="flex justify-between items-center mb-1">
                             <label className="block text-[11px] text-slate-400">
                               {wp.isUniformWeight === false ? 'Weight Bracket' : (wp.weightInputMode === 'PER_UNIT' ? 'Unit Weight (lb)' : 'Total Weight (lb)')}
                             </label>
-                            <button
-                              type="button"
-                              onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'isUniformWeight', wp.isUniformWeight === false)}
-                              className="text-[9px] font-bold text-slate-500 hover:text-cyan-300 underline decoration-dotted"
-                              title="Are all pieces on this line the same weight?"
-                            >
-                              {wp.isUniformWeight === false ? 'Varied → Identical' : 'Identical → Varied'}
-                            </button>
+                            <span className="flex items-center gap-1">
+                              <button
+                                type="button"
+                                onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'isUniformWeight', wp.isUniformWeight === false)}
+                                className="text-[9px] font-bold text-slate-500 hover:text-cyan-300 underline decoration-dotted"
+                                title="Are all pieces on this line the same weight?"
+                              >
+                                {wp.isUniformWeight === false ? 'Varied → Identical' : 'Identical → Varied'}
+                              </button>
+                              <button
+                                type="button"
+                                onClick={() => setActiveInlineHelp(v => v === `uniform-${jobIndex}-${wpIndex}` ? null : `uniform-${jobIndex}-${wpIndex}`)}
+                                className="w-3.5 h-3.5 shrink-0 rounded-full bg-slate-800 border border-slate-600 text-cyan-300 text-[9px] font-bold flex items-center justify-center hover:bg-slate-700"
+                                aria-label="Identical vs Varied weight help"
+                              >
+                                ?
+                              </button>
+                            </span>
                           </div>
+
+                          {activeInlineHelp === `uniform-${jobIndex}-${wpIndex}` && (
+                            <div className="absolute z-20 top-full right-0 mt-1 w-64 bg-slate-950 border border-cyan-800 rounded-lg shadow-2xl p-3 text-[11px] text-slate-300 normal-case font-normal">
+                              <button
+                                type="button"
+                                onClick={() => setActiveInlineHelp(null)}
+                                className="absolute top-1.5 right-2 text-slate-500 hover:text-slate-300 text-xs"
+                                aria-label="Close"
+                              >
+                                ✕
+                              </button>
+                              <p>
+                                <strong className="text-slate-200">Identical</strong>: all pieces on this line weigh the same — enter one weight (total or per-piece) and the app converts using Qty.
+                              </p>
+                              <p className="mt-1.5">
+                                <strong className="text-slate-200">Varied</strong>: pieces differ in weight but are still similar overall — enter the real scale total (for the Rack Support Frame Load check), and pick the heaviest single piece's weight bracket separately (rigging must be sized for the heaviest piece, not the average). This only works for a modest spread — e.g. one piece needing 5 wires, another needing 3 is fine. If the spread is wide — e.g. 5 wires vs. 1 — split them into separate workpiece lines instead.
+                              </p>
+                            </div>
+                          )}
 
 {wp.isUniformWeight === false ? (
   <div className="flex flex-col gap-1.5">
@@ -3032,7 +3067,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     </div>
   </div>
                           ) : (
-                            <div className="flex gap-1">
+                            <div className="relative flex gap-1">
                               <input
                                 type="number"
                                 placeholder={wp.weightInputMode === 'PER_UNIT' ? 'Unit lbs' : 'Total lbs'}
@@ -3048,6 +3083,30 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                               >
                                 {wp.weightInputMode === 'PER_UNIT' ? 'Unit \u2192 Total' : 'Total \u2192 Unit'}
                               </button>
+                              <button
+                                type="button"
+                                onClick={() => setActiveInlineHelp(v => v === `weightmode-${jobIndex}-${wpIndex}` ? null : `weightmode-${jobIndex}-${wpIndex}`)}
+                                className="w-3.5 h-3.5 shrink-0 self-center rounded-full bg-slate-800 border border-slate-600 text-cyan-300 text-[9px] font-bold flex items-center justify-center hover:bg-slate-700"
+                                aria-label="Total vs Unit weight help"
+                              >
+                                ?
+                              </button>
+
+                              {activeInlineHelp === `weightmode-${jobIndex}-${wpIndex}` && (
+                                <div className="absolute z-20 top-full right-0 mt-1 w-64 bg-slate-950 border border-cyan-800 rounded-lg shadow-2xl p-3 text-[11px] text-slate-300 normal-case font-normal">
+                                  <button
+                                    type="button"
+                                    onClick={() => setActiveInlineHelp(null)}
+                                    className="absolute top-1.5 right-2 text-slate-500 hover:text-slate-300 text-xs"
+                                    aria-label="Close"
+                                  >
+                                    ✕
+                                  </button>
+                                  <p>
+                                    Switches whether you type the <strong className="text-slate-200">combined weight</strong> of all {wp.quantity || 'N'} pieces on this line, or the weight of <strong className="text-slate-200">one piece</strong>. The app converts between them automatically using Qty.
+                                  </p>
+                                </div>
+                              )}
                             </div>
                           )}
 
