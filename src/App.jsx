@@ -205,7 +205,7 @@ export default function App() {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Stage 01: Loading Station
+            Stage 01: Loading
           </button>
           <button
             onClick={() => setActiveTab('pickling')}
@@ -215,7 +215,7 @@ export default function App() {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Stage 02: Pickling Station
+            Stage 02: Pickling
           </button>
           <button
             onClick={() => setActiveTab('dipping')}
@@ -225,7 +225,7 @@ export default function App() {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Stage 03: Dipping Station
+            Stage 03: Dipping
           </button>
           <button
             onClick={() => setActiveTab('unloading')}
@@ -235,7 +235,7 @@ export default function App() {
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Stage 04: Unloading Station
+            Stage 04: Unloading
           </button>
         </div>
 
