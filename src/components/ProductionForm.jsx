@@ -263,6 +263,8 @@ export default function ProductionForm({ currentUser, supabase }) {
 
   // Rack # Contextual Help Tooltip + "force release a stuck rack" flow
   const [showRackHelp, setShowRackHelp] = useState(false);
+  // Rack Support Frame Load Contextual Help Tooltip (separate toggle, own field)
+  const [showRackLoadHelp, setShowRackLoadHelp] = useState(false);
   const [showReleaseModal, setShowReleaseModal] = useState(false);
   const [releaseRackNo, setReleaseRackNo] = useState('');
   const [releaseReason, setReleaseReason] = useState('FORGOT_RELEASE');
@@ -2730,9 +2732,35 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
             return (
               <div className="mt-4 pt-3 border-t border-slate-800/80">
                 <div className="flex justify-between items-center mb-1">
-                  <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
-                    ⚖️ Rack Support Frame Load
-                  </span>
+              <div className="relative inline-flex items-center gap-1.5">
+                <span className="text-[10px] font-bold text-slate-400 uppercase tracking-wider">
+                  ⚖️ Rack Support Frame Load
+                </span>
+                <button
+                  type="button"
+                  onClick={() => setShowRackLoadHelp(v => !v)}
+                  className="w-3.5 h-3.5 rounded-full bg-slate-800 border border-slate-600 text-cyan-300 text-[9px] font-bold flex items-center justify-center hover:bg-slate-700 normal-case"
+                  aria-label="Rack Support Frame Load help"
+                >
+                  ?
+                </button>
+
+                {showRackLoadHelp && (
+                  <div className="absolute z-20 top-full left-0 mt-1 w-64 bg-slate-950 border border-cyan-800 rounded-lg shadow-2xl p-3 text-[11px] text-slate-300 normal-case font-normal">
+                    <button
+                      type="button"
+                      onClick={() => setShowRackLoadHelp(false)}
+                      className="absolute top-1.5 right-2 text-slate-500 hover:text-slate-300 text-xs"
+                      aria-label="Close"
+                    >
+                      ✕
+                    </button>
+                    <p>
+                      The 8,000 lb usable limit is derived from the dual-side support frame (6,750 lb/side rating) minus Beam Rack tare weight (3,990 lb) and applying an 85% safety factor.
+                    </p>
+                  </div>
+                )}
+              </div>
                   <span className={`text-xs font-mono font-bold ${textColor}`}>
                     {Math.round(rackTotalWeight).toLocaleString()} / {RACK_LIMIT_LBS.toLocaleString()} lb
                   </span>
