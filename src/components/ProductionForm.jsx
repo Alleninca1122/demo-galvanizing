@@ -60,6 +60,14 @@ const RIGGING_SPECS = [
 
 const WIRE_SPEC = RIGGING_SPECS[0]; // 12 Gauge Wire, 75 lb/strand
 
+// Preset reasons for a manual "force release" of a Rack # that still shows
+// as occupied - kept short/preset so this stays fast, not a typing exercise.
+const RELEASE_REASON_PRESETS = [
+  { value: 'FORGOT_RELEASE', label: 'Unloading finished, forgot to release' },
+  { value: 'RACK_SHORTAGE', label: 'Rack shortage - workpieces set aside' },
+  { value: 'OTHER', label: 'Other (specify below)' },
+];
+
 // Anchor Shackle w/ Oversize Screw Pin, 316-NM Stainless (WLL after 20% reduction)
 const ANCHOR_SHACKLE_SPECS = [
   { id: 'NONE',          label: '-- None (Direct Chain / Slot Hooking) --', wll: null },
@@ -252,6 +260,98 @@ export default function ProductionForm({ currentUser, supabase }) {
   useEffect(() => {
     refreshOccupiedRacks();
   }, []);
+
+  // Rack # Contextual Help Tooltip + "force release a stuck rack" flow
+  const [showRackHelp, setShowRackHelp] = useState(false);
+  const [showReleaseModal, setShowReleaseModal] = useState(false);
+  const [releaseRackNo, setReleaseRackNo] = useState('');
+  const [releaseReason, setReleaseReason] = useState('FORGOT_RELEASE');
+  const [releaseReasonOther, setReleaseReasonOther] = useState('');
+  const [releaseOperatorId, setReleaseOperatorId] = useState('');
+  const [releasePin, setReleasePin] = useState('');
+  const [isReleasing, setIsReleasing] = useState(false);
+
+  const openReleaseModal = () => {
+    setShowRackHelp(false);
+    setReleaseRackNo('');
+    setReleaseReason('FORGOT_RELEASE');
+    setReleaseReasonOther('');
+    setReleaseOperatorId('');
+    setReleasePin('');
+    setShowReleaseModal(true);
+  };
+
+  // Force-release a Rack # that still shows occupied (event_type = 'assigned')
+  // even though it's actually free - e.g. Unloading was done physically but
+  // never submitted in the system. This is a deliberate manual override
+  // (event_type = 'released_forced'), so it's exempt from the load_id-match
+  // race described in UnloadingStation.jsx's TODO - that race only applies to
+  // an *automatic* release-on-Unloading-submit path, which doesn't exist yet.
+  const handleForceRelease = async () => {
+    if (!supabase) return;
+    if (!releaseRackNo) {
+      alert('⚠️ Please select which Rack # to release.');
+      return;
+    }
+    const reasonText = releaseReason === 'OTHER'
+      ? releaseReasonOther.trim()
+      : (RELEASE_REASON_PRESETS.find(r => r.value === releaseReason)?.label || '');
+    if (releaseReason === 'OTHER' && !reasonText) {
+      alert('⚠️ Please describe the reason for releasing this rack.');
+      return;
+    }
+    if (!releaseOperatorId.trim() || !releasePin.trim()) {
+      alert('⚠️ Please enter your Employee ID and PIN to confirm.');
+      return;
+    }
+
+    setIsReleasing(true);
+    try {
+      const check = await verifyOperator(releaseOperatorId.trim(), releasePin.trim());
+      if (!check.ok) {
+        alert(`❌ Release failed: ${check.reason}`);
+        return;
+      }
+
+      // production_rack_events.load_id is NOT NULL - the release event has to
+      // reference the load that's currently (per the DB) occupying this rack.
+      const { data: statusRow, error: statusErr } = await supabase
+        .from('production_rack_current_status')
+        .select('rack_no, event_type, load_id')
+        .eq('rack_no', parseInt(releaseRackNo, 10))
+        .maybeSingle();
+      if (statusErr) throw statusErr;
+
+      if (!statusRow || statusRow.event_type !== 'assigned' || !statusRow.load_id) {
+        alert(`⚠️ Rack #${releaseRackNo} doesn't currently show as occupied — nothing to release.`);
+        await refreshOccupiedRacks();
+        setShowReleaseModal(false);
+        return;
+      }
+
+      const { error: insertErr } = await supabase
+        .from('production_rack_events')
+        .insert([{
+          rack_no: parseInt(releaseRackNo, 10),
+          event_type: 'released_forced',
+          load_id: statusRow.load_id,
+          operator_id: check.operator.id,
+          reason: reasonText
+        }]);
+      if (insertErr) throw insertErr;
+
+      await refreshOccupiedRacks();
+      setShowReleaseModal(false);
+
+      // Convenience: since the whole point of releasing it right now is
+      // almost always "I want to use it immediately", auto-select it.
+      await handleRackSelect(releaseRackNo);
+    } catch (err) {
+      alert('⚠️ Error releasing rack: ' + err.message);
+    } finally {
+      setIsReleasing(false);
+    }
+  };
 
   // Sign-off State
 const [primaryOperatorId, setPrimaryOperatorId] = useState('');
@@ -565,8 +665,11 @@ const removeAssistantOperator = (uid) => {
           const specObj = RIGGING_SPECS.find(r => r.id === wp.combSpecId);
           const strands = parseInt(wp.combStrands, 10) || 0;
 
-          if (!specObj) {
-            deficiencies.push(`${combLabel}: Railing Comb Rack is missing a ${wp.combMediumType === 'WIRE' ? 'wire' : 'chain'} spec selection.`);
+          if (!wp.combSpecId) {
+            // 操作员还没选规格，先不报警——跟strands为空时的守卫逻辑一致，
+            // 刚勾上Use Comb Rack、字段还是空的那一刻不该立刻弹警告
+          } else if (!specObj) {
+            deficiencies.push(`${combLabel}: Railing Comb Rack has an invalid ${wp.combMediumType === 'WIRE' ? 'wire' : 'chain'} spec selection.`);
           } else if (wp.combMediumType === 'CHAIN') {
             if (specObj.swl < loadPerPt) {
               deficiencies.push(
@@ -2487,10 +2590,47 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
           <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500"></div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-            <div>
-              <label className="block text-xs font-bold text-slate-300 uppercase mb-1">
+            <div className="relative">
+              <label className="flex items-center gap-1.5 text-xs font-bold text-slate-300 uppercase mb-1">
                 Rack # <span className="text-rose-400">*</span>
+                <button
+                  type="button"
+                  onClick={() => setShowRackHelp(v => !v)}
+                  className="w-4 h-4 rounded-full bg-slate-800 border border-slate-600 text-cyan-300 text-[10px] font-bold flex items-center justify-center hover:bg-slate-700 normal-case"
+                  aria-label="Rack # help"
+                >
+                  ?
+                </button>
               </label>
+
+              {showRackHelp && (
+                <div className="absolute z-20 top-full left-0 mt-1 w-72 bg-slate-950 border border-cyan-800 rounded-lg shadow-2xl p-3 text-[11px] text-slate-300 normal-case">
+                  <button
+                    type="button"
+                    onClick={() => setShowRackHelp(false)}
+                    className="absolute top-1.5 right-2 text-slate-500 hover:text-slate-300 text-xs"
+                    aria-label="Close"
+                  >
+                    ✕
+                  </button>
+                  <p>
+                    Select the assigned beam rack number (#01-99), or choose "No Rack" if handling directly by crane.
+                  </p>
+                  <div className="mt-2 pt-2 border-t border-slate-800">
+                    <p className="text-amber-300/90">
+                      Rack you need shown as unavailable (greyed out)? That means someone forgot to release it after Unloading.
+                    </p>
+                    <button
+                      type="button"
+                      onClick={openReleaseModal}
+                      className="mt-1.5 text-cyan-400 hover:text-cyan-300 font-bold underline underline-offset-2"
+                    >
+                      🔓 Release a stuck Rack # now
+                    </button>
+                  </div>
+                </div>
+              )}
+
               <select
                 value={rackNo}
                 onChange={(e) => handleRackSelect(e.target.value)}
@@ -3682,6 +3822,99 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
 </div>
 </div>
 </form>
+
+{/* Force Release Rack # Modal - triggered from the Rack # help tooltip */}
+{showReleaseModal && (
+  <div className="fixed inset-0 z-50 bg-black/70 flex items-center justify-center p-4">
+    <div className="w-full max-w-sm bg-slate-950 border border-cyan-800 rounded-xl shadow-2xl p-5">
+      <div className="flex justify-between items-start mb-3">
+        <h3 className="text-sm font-bold text-white">🔓 Force Release a Rack #</h3>
+        <button
+          type="button"
+          onClick={() => setShowReleaseModal(false)}
+          className="text-slate-500 hover:text-slate-300 text-sm"
+        >
+          ✕
+        </button>
+      </div>
+
+      <p className="text-[11px] text-slate-400 mb-3">
+        Use this only if the rack is physically empty right now (e.g. it was already unloaded but nobody released it in the system). This is logged with your ID and reason.
+      </p>
+
+      <div className="space-y-3 text-xs">
+        <div>
+          <label className="block text-slate-400 mb-1">Rack # to release *</label>
+          <select
+            value={releaseRackNo}
+            onChange={(e) => setReleaseRackNo(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-cyan-300 font-mono font-bold"
+          >
+            <option value="">-- Select occupied Rack # --</option>
+            {[...occupiedRacks].sort().map((rn) => (
+              <option key={rn} value={rn}>Rack #{rn}</option>
+            ))}
+          </select>
+        </div>
+
+        <div>
+          <label className="block text-slate-400 mb-1">Reason *</label>
+          <select
+            value={releaseReason}
+            onChange={(e) => setReleaseReason(e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100"
+          >
+            {RELEASE_REASON_PRESETS.map((r) => (
+              <option key={r.value} value={r.value}>{r.label}</option>
+            ))}
+          </select>
+          {releaseReason === 'OTHER' && (
+            <input
+              type="text"
+              placeholder="Describe the reason..."
+              value={releaseReasonOther}
+              onChange={(e) => setReleaseReasonOther(e.target.value)}
+              className="w-full mt-1.5 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100"
+            />
+          )}
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 pt-1 border-t border-slate-800">
+          <div>
+            <label className="block text-slate-400 mb-1">Your Employee ID *</label>
+            <input
+              type="text"
+              placeholder="e.g. 8892"
+              value={releaseOperatorId}
+              onChange={(e) => setReleaseOperatorId(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 font-mono"
+            />
+          </div>
+          <div>
+            <label className="block text-slate-400 mb-1">Your PIN *</label>
+            <input
+              type="password"
+              maxLength={4}
+              placeholder="••••"
+              value={releasePin}
+              onChange={(e) => setReleasePin(e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 font-mono"
+            />
+          </div>
+        </div>
+      </div>
+
+      <button
+        type="button"
+        onClick={handleForceRelease}
+        disabled={isReleasing}
+        className="w-full mt-4 py-2.5 bg-amber-500 hover:bg-amber-400 disabled:opacity-50 text-slate-950 font-bold text-xs uppercase tracking-wider rounded-lg shadow-lg transition-all"
+      >
+        {isReleasing ? 'Releasing...' : 'Confirm Release'}
+      </button>
+    </div>
+  </div>
+)}
 </div>
 );
 }
