@@ -1,7 +1,53 @@
 import React, { useState, useEffect } from 'react';
 import ProductionForm from './components/ProductionForm';
-import NextStepProcessPortal from './components/NextStepProcessPortal';
+import PicklingStation from './components/PicklingStation';
+import DippingStation from './components/DippingStation';
+import UnloadingStation from './components/UnloadingStation';
 import { BRAND } from './config/brand';
+
+// Mock rack registry shared by the three process stations (Pickling/Dipping/
+// Unloading) - each station reads/writes the same record so a rack's history
+// carries forward correctly from one station to the next. Still mock data;
+// real Supabase wiring (production_stage_logs etc.) is deferred to the
+// edit-record work.
+const INITIAL_ACTIVE_RACKS = {
+  '01': {
+    rackNo: '01',
+    status: 'IN_PROGRESS',
+    loadingData: {
+      timestamp: '2026-07-26 08:30',
+      operator: 'EMP-101',
+      totalWeight: '3.20',
+      items: [
+        { customer: 'ABC Steel', batch: 'B-2026-01', material: 'Tube', qty: 15, isRush: true },
+        { customer: 'XYZ Metal', batch: 'PO-8821', material: 'Angle', qty: 20, isRush: false }
+      ]
+    },
+    picklingData: null,
+    dippingData: null,
+    unloadingData: null
+  },
+  '05': {
+    rackNo: '05',
+    status: 'IN_PROGRESS',
+    loadingData: {
+      timestamp: '2026-07-26 09:00',
+      operator: 'EMP-105',
+      totalWeight: '4.10',
+      items: [
+        { customer: 'Apex Fab', batch: 'BATCH-99', material: 'Pipe', qty: 50, isRush: false }
+      ]
+    },
+    picklingData: {
+      timestamp: '2026-07-26 09:40',
+      operator: 'EMP-202',
+      acidTank: 'Acid Tank #2',
+      durationMins: '45'
+    },
+    dippingData: null,
+    unloadingData: null
+  }
+};
 
 export default function App() {
   useEffect(() => {
@@ -10,6 +56,7 @@ export default function App() {
 
   const [currentUser, setCurrentUser] = useState(null);
   const [activeTab, setActiveTab] = useState('loading');
+  const [activeRacks, setActiveRacks] = useState(INITIAL_ACTIVE_RACKS);
 
   const [shift, setShift] = useState('Morning');
   const [employeeId, setEmployeeId] = useState('');
@@ -41,7 +88,7 @@ export default function App() {
     setCurrentUser(userData);
 
     if (role === 'OPERATOR_PROCESS') {
-      setActiveTab('process');
+      setActiveTab('pickling');
     } else {
       setActiveTab('loading');
     }
@@ -149,26 +196,46 @@ export default function App() {
           <p className="text-xs text-slate-400">Integrated Shop-Floor Tracking Solution</p>
         </div>
 
-        <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800">
+        <div className="flex bg-slate-950 p-1 rounded-lg border border-slate-800 flex-wrap justify-center">
           <button
             onClick={() => setActiveTab('loading')}
-            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${
+            className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-all ${
               activeTab === 'loading'
                 ? 'bg-cyan-500 text-slate-950 shadow'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Stage 01: Loading Station
+            Stage 01: Loading
           </button>
           <button
-            onClick={() => setActiveTab('process')}
-            className={`px-4 py-1.5 rounded-md text-xs font-bold transition-all ${
-              activeTab === 'process'
+            onClick={() => setActiveTab('pickling')}
+            className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-all ${
+              activeTab === 'pickling'
                 ? 'bg-cyan-500 text-slate-950 shadow'
                 : 'text-slate-400 hover:text-slate-200'
             }`}
           >
-            Stages 02-04: Process Portal
+            Stage 02: Pickling
+          </button>
+          <button
+            onClick={() => setActiveTab('dipping')}
+            className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-all ${
+              activeTab === 'dipping'
+                ? 'bg-cyan-500 text-slate-950 shadow'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Stage 03: Dipping
+          </button>
+          <button
+            onClick={() => setActiveTab('unloading')}
+            className={`px-3.5 py-1.5 rounded-md text-xs font-bold transition-all ${
+              activeTab === 'unloading'
+                ? 'bg-cyan-500 text-slate-950 shadow'
+                : 'text-slate-400 hover:text-slate-200'
+            }`}
+          >
+            Stage 04: Unloading
           </button>
         </div>
 
@@ -187,10 +254,15 @@ export default function App() {
       </header>
 
       <main className="max-w-6xl mx-auto">
-        {activeTab === 'loading' ? (
-          <ProductionForm currentUser={currentUser} />
-        ) : (
-          <NextStepProcessPortal currentUser={currentUser} />
+        {activeTab === 'loading' && <ProductionForm currentUser={currentUser} />}
+        {activeTab === 'pickling' && (
+          <PicklingStation currentUser={currentUser} activeRacks={activeRacks} setActiveRacks={setActiveRacks} />
+        )}
+        {activeTab === 'dipping' && (
+          <DippingStation currentUser={currentUser} activeRacks={activeRacks} setActiveRacks={setActiveRacks} />
+        )}
+        {activeTab === 'unloading' && (
+          <UnloadingStation currentUser={currentUser} activeRacks={activeRacks} setActiveRacks={setActiveRacks} />
         )}
       </main>
     </div>
