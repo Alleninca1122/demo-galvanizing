@@ -2889,7 +2889,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       className="w-3.5 h-3.5 accent-cyan-500"
     />
     <span className="text-[10px] font-bold text-slate-200 uppercase tracking-wide">
-      🧱 Railing Comb Rack
+      🧱 Use Comb Rack
     </span>
   </label>
 
