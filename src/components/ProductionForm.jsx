@@ -265,6 +265,8 @@ export default function ProductionForm({ currentUser, supabase }) {
   const [showRackHelp, setShowRackHelp] = useState(false);
   // Rack Support Frame Load Contextual Help Tooltip (separate toggle, own field)
   const [showRackLoadHelp, setShowRackLoadHelp] = useState(false);
+  // Load ID Contextual Help Tooltip (separate toggle, own field)
+  const [showLoadIdHelp, setShowLoadIdHelp] = useState(false);
   const [showReleaseModal, setShowReleaseModal] = useState(false);
   const [releaseRackNo, setReleaseRackNo] = useState('');
   const [releaseReason, setReleaseReason] = useState('FORGOT_RELEASE');
@@ -2651,10 +2653,18 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
               </select>
             </div>
 
-            <div>
+            <div className="relative">
               <div className="flex justify-between items-center mb-1">
-                <label className="block text-xs font-bold text-slate-300 uppercase">
+                <label className="flex items-center gap-1.5 text-xs font-bold text-slate-300 uppercase">
                   Load ID <span className="text-rose-400">*</span>
+                  <button
+                    type="button"
+                    onClick={() => setShowLoadIdHelp(v => !v)}
+                    className="w-4 h-4 rounded-full bg-slate-800 border border-slate-600 text-cyan-300 text-[10px] font-bold flex items-center justify-center hover:bg-slate-700 normal-case"
+                    aria-label="Load ID help"
+                  >
+                    ?
+                  </button>
                 </label>
                 {autoLoadId && loadId !== autoLoadId && (
                   <button
@@ -2666,6 +2676,23 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                   </button>
                 )}
               </div>
+
+              {showLoadIdHelp && (
+                <div className="absolute z-20 top-full left-0 mt-1 w-72 bg-slate-950 border border-cyan-800 rounded-lg shadow-2xl p-3 text-[11px] text-slate-300 normal-case font-normal">
+                  <button
+                    type="button"
+                    onClick={() => setShowLoadIdHelp(false)}
+                    className="absolute top-1.5 right-2 text-slate-500 hover:text-slate-300 text-xs"
+                    aria-label="Close"
+                  >
+                    ✕
+                  </button>
+                  <p>
+                    Unique identifier for this load, auto-generated based on date, sequence, and rack fixture.
+                  </p>
+                </div>
+              )}
+
               <input
                 type="text"
                 placeholder={
