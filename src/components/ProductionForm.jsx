@@ -2586,8 +2586,8 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
 
 </div>
         {/* 1. RACK & LOAD ID BOX */}
-        <div className="bg-slate-950 p-5 rounded-xl border border-cyan-800/60 relative overflow-hidden">
-          <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500"></div>
+        <div className="bg-slate-950 p-5 rounded-xl border border-cyan-800/60 relative">
+          <div className="absolute top-0 left-0 w-1 h-full bg-cyan-500 rounded-l-xl"></div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
             <div className="relative">
@@ -2618,7 +2618,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                   </p>
                   <div className="mt-2 pt-2 border-t border-slate-800">
                     <p className="text-amber-300/90">
-                      Rack you need shown as unavailable (greyed out)? That means someone forgot to release it after Unloading.
+                      Physically empty, but its number won't select above? That means someone forgot to release it after Unloading.
                     </p>
                     <button
                       type="button"
