@@ -3000,10 +3000,12 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                               <button
                                 type="button"
                                 onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'isUniformWeight', wp.isUniformWeight === false)}
-                                className="text-[9px] font-bold text-slate-500 hover:text-cyan-300 underline decoration-dotted"
+                                className="text-[9px] font-bold flex items-center gap-0.5"
                                 title="Are all pieces on this line the same weight?"
                               >
-                                {wp.isUniformWeight === false ? 'Varied → Identical' : 'Identical → Varied'}
+                                <span className={wp.isUniformWeight === false ? 'text-slate-500' : 'text-amber-300'}>Identical</span>
+                                <span className="text-slate-600 px-0.5 normal-case">or</span>
+                                <span className={wp.isUniformWeight === false ? 'text-amber-300' : 'text-slate-500'}>Varied</span>
                               </button>
                               <button
                                 type="button"
@@ -3078,10 +3080,12 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                               <button
                                 type="button"
                                 onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'weightInputMode', wp.weightInputMode === 'PER_UNIT' ? 'TOTAL' : 'PER_UNIT')}
-                                className="shrink-0 px-1.5 rounded border border-slate-700 text-[9px] text-slate-400 hover:text-cyan-300 font-bold"
+                                className="shrink-0 px-1.5 rounded border border-slate-700 text-[9px] font-bold flex items-center gap-0.5"
                                 title="Switch between total weight and per-unit weight entry"
                               >
-                                {wp.weightInputMode === 'PER_UNIT' ? 'Unit \u2192 Total' : 'Total \u2192 Unit'}
+                                <span className={wp.weightInputMode === 'PER_UNIT' ? 'text-slate-500' : 'text-amber-300'}>Total</span>
+                                <span className="text-slate-600 px-0.5 normal-case">or</span>
+                                <span className={wp.weightInputMode === 'PER_UNIT' ? 'text-amber-300' : 'text-slate-500'}>Unit</span>
                               </button>
                               <button
                                 type="button"
