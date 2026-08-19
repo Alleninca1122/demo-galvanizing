@@ -144,8 +144,14 @@ const RACK_LIMIT_LBS = 8000; // hard submission block
 // from load checks - the operator enters the actual point count used, and the
 // wire/chain spec at those points is still checked against the load each
 // point carries (see the RAILING_COMB_RACK branch in checkSafetyDeficiencies).
-const COMB_MIN_HANGING_POINTS = 2;
-const COMB_DEFAULT_HANGING_POINTS = '4';
+// Railing Comb Rack fields are split into two dimensions: how many comb rack
+// fixtures are used (default 2, since they're normally used in pairs), and
+// how many hanging points EACH one has (default 2) - total points = the
+// product of the two (default 2 x 2 = 4).
+const COMB_MIN_RACK_COUNT = 1;
+const COMB_DEFAULT_RACK_COUNT = '2';
+const COMB_MIN_POINTS_PER_RACK = 2;
+const COMB_DEFAULT_POINTS_PER_RACK = '2';
 
 // Resolves a workpiece line's weight, accounting for both weight-input modes:
 // - isUniformWeight (default true): operator enters either the TOTAL weight for the line, or a
@@ -438,7 +444,8 @@ const removeAssistantOperator = (uid) => {
         unitWeightInput: '',
         weightBracketId: '',
         useRailingCombRack: false,   // checked = dedicated multi-point comb rack model below
-        combHangingPoints: COMB_DEFAULT_HANGING_POINTS,
+        combRackCount: COMB_DEFAULT_RACK_COUNT,
+        combPointsPerRack: COMB_DEFAULT_POINTS_PER_RACK,
         combMediumType: 'CHAIN',     // 'CHAIN' | 'WIRE'
         combSpecId: '',
         combStrands: '',
@@ -606,7 +613,8 @@ const removeAssistantOperator = (uid) => {
       weightBracketId: '',
       variedTotalWeightInput: '',   // 新增：重量不均模式下，整批实测总重 
       useRailingCombRack: false,
-      combHangingPoints: COMB_DEFAULT_HANGING_POINTS,
+      combRackCount: COMB_DEFAULT_RACK_COUNT,
+      combPointsPerRack: COMB_DEFAULT_POINTS_PER_RACK,
       combMediumType: 'CHAIN',
       combSpecId: '',
       combStrands: '',
@@ -664,13 +672,15 @@ const removeAssistantOperator = (uid) => {
           : wp.workpieceType;
         const combLabel = `Job #${jIdx + 1} Line #${wIdx + 1} (${workpieceTypeLabelForComb || 'Item'})`;
 
-        // Railing Comb Rack: a paired fixture with its own (operator-entered)
-        // hanging point count - typically 4, occasionally more. It is NOT
-        // exempt from load checks. The whole line's total weight is what the
-        // comb rack's points actually carry, split evenly across however
-        // many points the operator says are in use.
+        // Railing Comb Rack: a paired fixture. Total hanging points = number
+        // of comb racks used x hanging points on each one (both operator-
+        // entered; default 2 x 2 = 4). It is NOT exempt from load checks -
+        // the whole line's total weight is what the comb racks' points
+        // actually carry, split evenly across all of them combined.
         if (wp.useRailingCombRack) {
-          const points = Math.max(COMB_MIN_HANGING_POINTS, parseInt(wp.combHangingPoints, 10) || 0);
+          const rackCount = Math.max(COMB_MIN_RACK_COUNT, parseInt(wp.combRackCount, 10) || 0);
+          const pointsPerRack = Math.max(COMB_MIN_POINTS_PER_RACK, parseInt(wp.combPointsPerRack, 10) || 0);
+          const points = rackCount * pointsPerRack;
           const loadPerPt = points > 0 ? totalW / points : totalW;
           const specObj = RIGGING_SPECS.find(r => r.id === wp.combSpecId);
           const strands = parseInt(wp.combStrands, 10) || 0;
@@ -683,7 +693,7 @@ const removeAssistantOperator = (uid) => {
           } else if (wp.combMediumType === 'CHAIN') {
             if (specObj.swl < loadPerPt) {
               deficiencies.push(
-                `${combLabel}: Comb Rack point capacity (${specObj.swl} lb WLL, ${points} pts) is below required load (${Math.round(loadPerPt)} lb/pt). Please upgrade chain size or add more points.`
+                `${combLabel}: Comb Rack point capacity (${specObj.swl} lb WLL, ${points} pts total = ${rackCount} rack(s) x ${pointsPerRack} pts) is below required load (${Math.round(loadPerPt)} lb/pt). Please upgrade chain size or add more points.`
               );
             }
           } else if (wp.combMediumType === 'WIRE' && strands <= 0) {
@@ -987,7 +997,9 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
           const rigging = wp.useRailingCombRack
             ? {
                 category: 'RAILING_COMB_RACK',
-                hangingPoints: parseInt(wp.combHangingPoints, 10) || 4,
+                combRackCount: parseInt(wp.combRackCount, 10) || 2,
+                pointsPerRack: parseInt(wp.combPointsPerRack, 10) || 2,
+                totalHangingPoints: (parseInt(wp.combRackCount, 10) || 2) * (parseInt(wp.combPointsPerRack, 10) || 2),
                 medium: wp.combMediumType,
                 spec: wp.combSpecId || null,
                 strandsPerPoint: wp.combMediumType === 'WIRE' ? (parseInt(wp.combStrands, 10) || 0) : null
@@ -3000,10 +3012,12 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                               <button
                                 type="button"
                                 onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'isUniformWeight', wp.isUniformWeight === false)}
-                                className="text-[9px] font-bold text-slate-500 hover:text-cyan-300 underline decoration-dotted"
+                                className="text-[9px] font-bold flex items-center gap-0.5"
                                 title="Are all pieces on this line the same weight?"
                               >
-                                {wp.isUniformWeight === false ? 'Varied → Identical' : 'Identical → Varied'}
+                                <span className={wp.isUniformWeight === false ? 'text-slate-500' : 'text-amber-300'}>Identical</span>
+                                <span className="text-slate-600 px-0.5 normal-case">or</span>
+                                <span className={wp.isUniformWeight === false ? 'text-amber-300' : 'text-slate-500'}>Varied</span>
                               </button>
                               <button
                                 type="button"
@@ -3078,10 +3092,12 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                               <button
                                 type="button"
                                 onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'weightInputMode', wp.weightInputMode === 'PER_UNIT' ? 'TOTAL' : 'PER_UNIT')}
-                                className="shrink-0 px-1.5 rounded border border-slate-700 text-[9px] text-slate-400 hover:text-cyan-300 font-bold"
+                                className="shrink-0 px-1.5 rounded border border-slate-700 text-[9px] font-bold flex items-center gap-0.5"
                                 title="Switch between total weight and per-unit weight entry"
                               >
-                                {wp.weightInputMode === 'PER_UNIT' ? 'Unit \u2192 Total' : 'Total \u2192 Unit'}
+                                <span className={wp.weightInputMode === 'PER_UNIT' ? 'text-slate-500' : 'text-amber-300'}>Total</span>
+                                <span className="text-slate-600 px-0.5 normal-case">or</span>
+                                <span className={wp.weightInputMode === 'PER_UNIT' ? 'text-amber-300' : 'text-slate-500'}>Unit</span>
                               </button>
                               <button
                                 type="button"
@@ -3150,23 +3166,45 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
   {wp.useRailingCombRack ? (
     <div className="space-y-2.5 pt-1">
       <p className="text-[10px] text-slate-500">
-        Used in pairs - enter the actual hanging point count (usually 4, occasionally more for long/heavy railings). Load splits evenly across every point and is still checked against wire/chain capacity below.
+        Used in pairs by default - enter how many comb racks are in use and how many hanging points each one has.
       </p>
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-[10px] text-slate-400 mb-0.5">Hanging Points *</label>
+          <label className="block text-[10px] text-slate-400 mb-0.5"># of Comb Racks *</label>
           <input
             type="number"
-            min={COMB_MIN_HANGING_POINTS}
+            min={COMB_MIN_RACK_COUNT}
             step="1"
-            placeholder={COMB_DEFAULT_HANGING_POINTS}
-            value={wp.combHangingPoints || ''}
-            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'combHangingPoints', e.target.value)}
+            placeholder={COMB_DEFAULT_RACK_COUNT}
+            value={wp.combRackCount || ''}
+            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'combRackCount', e.target.value)}
             className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
             required
           />
         </div>
+        <div>
+          <label className="block text-[10px] text-slate-400 mb-0.5">Hanging Points per Rack *</label>
+          <input
+            type="number"
+            min={COMB_MIN_POINTS_PER_RACK}
+            step="1"
+            placeholder={COMB_DEFAULT_POINTS_PER_RACK}
+            value={wp.combPointsPerRack || ''}
+            onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'combPointsPerRack', e.target.value)}
+            className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-cyan-300 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+            required
+          />
+        </div>
+      </div>
+
+      <p className="text-[10px] text-slate-500">
+        Total hanging points: <span className="text-cyan-300 font-mono font-bold">
+          {(Math.max(COMB_MIN_RACK_COUNT, parseInt(wp.combRackCount, 10) || 0)) * (Math.max(COMB_MIN_POINTS_PER_RACK, parseInt(wp.combPointsPerRack, 10) || 0))}
+        </span>
+      </p>
+
+      <div className="grid grid-cols-1 gap-2">
         <div>
           <label className="block text-[10px] text-slate-400 mb-0.5">Rigging Medium *</label>
           <div className="inline-flex bg-slate-900 p-0.5 rounded border border-slate-800 w-full">
