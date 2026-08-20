@@ -97,7 +97,7 @@ export default function DippingStation({ currentUser, activeRacks, setActiveRack
           <span className="text-xs font-mono text-cyan-400 uppercase tracking-widest">
             Galvanizing Tracking Protocol
           </span>
-          <h2 className="text-xl font-bold text-white">Stage 03: Dipping Station</h2>
+          <h2 className="text-xl font-bold text-white">Stage 03: Dipping Station - Under Construction Coming Soon</h2>
         </div>
 
         <div className="text-right">
