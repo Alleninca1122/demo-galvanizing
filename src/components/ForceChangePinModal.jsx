@@ -1,11 +1,28 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { supabase } from '../supabaseClient';
+
+// 暂停"首次登录强制改密码"功能的开关：改成 false 关闭，改回 true 恢复。
+// 关闭后，这个弹窗一挂载就立刻当作"密码已改完"处理，不显示任何界面、
+// 不写数据库——调用方（登录代码）该怎么判断 must_change_pin、该怎么渲染
+// 都不用动，效果等同于这一步被跳过了。
+const FORCE_PIN_CHANGE_ENABLED = false;
 
 export function ForceChangePinModal({ currentUser, onPinUpdated }) {
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+
+  useEffect(() => {
+    if (!FORCE_PIN_CHANGE_ENABLED) {
+      onPinUpdated();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (!FORCE_PIN_CHANGE_ENABLED) {
+    return null;
+  }
 
   const handlePinUpdate = async (e) => {
     e.preventDefault();
