@@ -1091,6 +1091,30 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
 
       alert(`✅ Load [${loadId.trim()}] recorded and signed off by ID [${primaryOperatorId.trim()}] successfully!`);
       refreshOccupiedRacks();
+
+      // Reset the form back to a clean state for the next Load, instead of
+      // leaving this one's data sitting on screen (which invites accidentally
+      // re-submitting the same Load, or an operator having to manually clear
+      // every field before starting the next one).
+      setRackNo('');
+      setRackFixtureType(RACK_FIXTURE_STANDARD);
+      setLoadId('');
+      setAutoLoadId('');
+      setPrimaryOperatorId('');
+      setPrimaryPin('');
+      setAssistants([{ uid: Date.now(), employeeId: '', pin: '' }]);
+      setSafetyChecklist({
+        hasEnclosedCavity: false,
+        hasAdequateVenting: true,
+        drilledOnsite: true
+      });
+      setSurfaceAssessment({
+        minOilPaintLevel: '',
+        maxOilPaintLevel: '',
+        minRustLevel: '',
+        maxRustLevel: ''
+      });
+      setJobs([createNewJob()]);
     } catch (err) {
       console.error('Failed to submit production load:', err);
       alert(`❌ Submission failed: ${err.message || err}`);
