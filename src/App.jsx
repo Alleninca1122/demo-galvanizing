@@ -4,6 +4,7 @@ import PicklingStation from './components/PicklingStation';
 import DippingStation from './components/DippingStation';
 import UnloadingStation from './components/UnloadingStation';
 import { BRAND } from './config/brand';
+import { supabase } from './supabaseClient';
 
 // Mock rack registry shared by the three process stations (Pickling/Dipping/
 // Unloading) - each station reads/writes the same record so a rack's history
@@ -254,7 +255,7 @@ export default function App() {
       </header>
 
       <main className="max-w-6xl mx-auto">
-        {activeTab === 'loading' && <ProductionForm currentUser={currentUser} />}
+        {activeTab === 'loading' && <ProductionForm currentUser={currentUser} supabase={supabase} />}
         {activeTab === 'pickling' && (
           <PicklingStation currentUser={currentUser} activeRacks={activeRacks} setActiveRacks={setActiveRacks} />
         )}

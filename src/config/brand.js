@@ -7,9 +7,9 @@ export const BRAND = {
   shortName: "DEMO",
   
   // 系统标题与界面文案
-  systemTitle: "DEMO Galvanizing System",
+  systemTitle: "DEMO GALVANIZING DWI",
   portalTitle: "DEMO Shop-Floor Portal",
-  headerTitle: "DEMO GALVANIZING OPERATIONS",
+  headerTitle: "DEMO GALVANIZING DWI",
   
   // 版权信息/页脚
   footerText: "DEMO Galvanizing Ltd.",
