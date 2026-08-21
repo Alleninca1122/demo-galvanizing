@@ -965,6 +965,12 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       if (loadErr) throw loadErr;
 
       // 4. Log the Rack assignment event (only when an actual rack is used)
+      // A DB trigger (enforce_rack_exclusive_assignment) rejects this insert if
+      // someone else's submission already claimed this rack_no in the meantime
+      // (two people opening the form around the same time, both seeing the
+      // rack as free). If that happens, the Load row from step 3 above is now
+      // an orphan — it was never actually assigned this rack — so it must be
+      // deleted rather than left behind with a rack_no it doesn't really hold.
       if (!isCraneDirect) {
         const { error: rackEventErr } = await supabase
           .from('production_rack_events')
@@ -974,7 +980,18 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
             event_type: 'assigned',
             operator_id: primaryCheck.operator.id
           });
-        if (rackEventErr) throw rackEventErr;
+        if (rackEventErr) {
+          await supabase.from('production_loads').delete().eq('id', loadRow.id);
+          await refreshOccupiedRacks();
+          const takenByOther = (rackEventErr.message || '').includes('already assigned');
+          alert(
+            takenByOther
+              ? `⚠️ Rack #${rackNo} was just taken by someone else. Please pick a different rack and try again.`
+              : `⚠️ Could not assign Rack #${rackNo}: ${rackEventErr.message}`
+          );
+          setIsSubmitting(false);
+          return;
+        }
       }
 
       // 5. Create Job + Workpiece records
