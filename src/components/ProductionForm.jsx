@@ -3452,7 +3452,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     )}
   </div>
 {/* Spec & Strands Inputs */}
-{wp.stringingMethod === 'CHAIN_WIRE' ? (
+{(wp.stringingMethod || 'FULL_CHAIN') === 'CHAIN_WIRE' ? (
   <div className="space-y-2.5 pt-1">
     {/* Main Backbone Chain — 主链，字段名 point1SpecId/point1Strands 不变，走原有复核逻辑 */}
     <div className="bg-slate-900/90 p-2.5 rounded border border-cyan-900/50 space-y-2">
@@ -3563,7 +3563,7 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     </div>
   </div>
 
-) : wp.stringingMethod === 'FULL_CHAIN' ? (
+) : (wp.stringingMethod || 'FULL_CHAIN') === 'FULL_CHAIN' ? (
   /* FULL_CHAIN 模式：只显示 Chain，字段名不变，原有复核不受影响 */
   <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 pt-1">
     <div className="grid grid-cols-2 gap-2 bg-slate-900/80 p-2 rounded border border-slate-800">
