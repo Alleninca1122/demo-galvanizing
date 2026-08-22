@@ -35,8 +35,26 @@ export default function AdminEmployeeManager() {
     };
 
     try {
-      const { error } = await supabase.from('employees').insert([newEmployee]);
-      if (error) throw error;
+      const { error: empError } = await supabase.from('employees').insert([newEmployee]);
+      if (empError) throw empError;
+
+      // Provision the matching operators row in the same step, so this one
+      // form is the single source of truth for both login (employees) and
+      // sign-off / permission checks (operators). role is stored verbatim -
+      // same four HR titles used everywhere now, no separate admin/supervisor
+      // wording.
+      const { error: opError } = await supabase.from('operators').insert([{
+        name: `Employee ${employeeId}`,
+        role: role,
+        pin: defaultPin,
+      }]);
+
+      if (opError) {
+        // Roll back the employees row so we don't leave a half-provisioned
+        // account that can log in but can never sign off.
+        await supabase.from('employees').delete().eq('employee_id', employeeId);
+        throw opError;
+      }
 
       setMessage(`✅ Employee ${preferredName || fullName} (ID: ${employeeId}) created successfully!`);
       setEmployeeId('');
@@ -114,9 +132,9 @@ export default function AdminEmployeeManager() {
             className="w-full px-3 py-2 border rounded-xl text-xs bg-white focus:ring-2 focus:ring-cyan-500"
           >
             <option value="Operator">Operator</option>
-            <option value="Shift Supervisor">Shift Supervisor</option>
-            <option value="QA Inspector">QA Inspector</option>
-            <option value="Plant Manager">Plant Manager</option>
+            <option value="Supervisor">Supervisor</option>
+            <option value="Inspector">Inspector</option>
+            <option value="Manager">Manager</option>
           </select>
         </div>
 
