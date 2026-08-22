@@ -146,7 +146,7 @@ export default function App() {
 
   if (pendingPinChangeUser) {
     return (
-      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 font-sans text-slate-100">
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 font-sans">
         <ForceChangePinModal currentUser={pendingPinChangeUser} onPinUpdated={handlePinUpdated} />
       </div>
     );
