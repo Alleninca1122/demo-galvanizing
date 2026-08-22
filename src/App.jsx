@@ -3,6 +3,7 @@ import ProductionForm from './components/ProductionForm';
 import PicklingStation from './components/PicklingStation';
 import DippingStation from './components/DippingStation';
 import UnloadingStation from './components/UnloadingStation';
+import { ForceChangePinModal } from './components/ForceChangePinModal';
 import { BRAND } from './config/brand';
 import { supabase } from './supabaseClient';
 
@@ -63,8 +64,13 @@ export default function App() {
   const [employeeId, setEmployeeId] = useState('');
   const [pin, setPin] = useState('');
   const [loginError, setLoginError] = useState('');
+  const [loggingIn, setLoggingIn] = useState(false);
+  // Employee record from Supabase for a user who's authenticated but still has
+  // must_change_pin = true - held separately from currentUser so the app main
+  // screen doesn't render until ForceChangePinModal reports the PIN is updated.
+  const [pendingPinChangeUser, setPendingPinChangeUser] = useState(null);
 
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     setLoginError('');
 
@@ -74,32 +80,77 @@ export default function App() {
       return;
     }
 
-    let role = 'OPERATOR_LOADING';
-    if (trimmedId.toLowerCase().includes('proc') || pin === '8888') {
-      role = 'OPERATOR_PROCESS';
+    setLoggingIn(true);
+    try {
+      const { data, error } = await supabase
+        .from('employees')
+        .select('employee_id, name, preferred_name, pin, must_change_pin')
+        .eq('employee_id', trimmedId)
+        .maybeSingle();
+
+      if (error) throw error;
+
+      if (!data) {
+        setLoginError(`Employee ID ${trimmedId} not found.`);
+        return;
+      }
+      if (String(data.pin) !== String(pin)) {
+        setLoginError('Incorrect Security PIN.');
+        return;
+      }
+
+      let role = 'OPERATOR_LOADING';
+      if (trimmedId.toLowerCase().includes('proc') || pin === '8888') {
+        role = 'OPERATOR_PROCESS';
+      }
+
+      const userData = {
+        id: data.employee_id,
+        employee_id: data.employee_id,
+        name: data.preferred_name || data.name,
+        preferred_name: data.preferred_name,
+        role: role,
+        shift: shift
+      };
+
+      // Still on default/never-changed PIN - hold off on entering the app
+      // until they've set a personal PIN via ForceChangePinModal.
+      if (data.must_change_pin) {
+        setPendingPinChangeUser(userData);
+        return;
+      }
+
+      setCurrentUser(userData);
+      setActiveTab(role === 'OPERATOR_PROCESS' ? 'pickling' : 'loading');
+    } catch (err) {
+      setLoginError('Login failed: ' + err.message);
+    } finally {
+      setLoggingIn(false);
     }
+  };
 
-    const userData = {
-      id: trimmedId.toUpperCase(),
-      name: trimmedId.toUpperCase(),
-      role: role,
-      shift: shift
-    };
-
+  const handlePinUpdated = () => {
+    const userData = pendingPinChangeUser;
+    setPendingPinChangeUser(null);
+    if (!userData) return;
     setCurrentUser(userData);
-
-    if (role === 'OPERATOR_PROCESS') {
-      setActiveTab('pickling');
-    } else {
-      setActiveTab('loading');
-    }
+    setActiveTab(userData.role === 'OPERATOR_PROCESS' ? 'pickling' : 'loading');
   };
 
   const handleLogout = () => {
     setCurrentUser(null);
+    setPendingPinChangeUser(null);
     setEmployeeId('');
     setPin('');
   };
+
+  if (pendingPinChangeUser) {
+    return (
+      <div className="min-h-screen bg-slate-950 flex items-center justify-center p-4 font-sans text-slate-100">
+        <ForceChangePinModal currentUser={pendingPinChangeUser} onPinUpdated={handlePinUpdated} />
+      </div>
+    );
+  }
 
   if (!currentUser) {
     return (
@@ -179,9 +230,10 @@ export default function App() {
 
             <button
               type="submit"
-              className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 text-slate-950 font-bold text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-cyan-500/20 cursor-pointer transition-all mt-2"
+              disabled={loggingIn}
+              className="w-full py-3 bg-cyan-500 hover:bg-cyan-400 disabled:opacity-50 disabled:cursor-not-allowed text-slate-950 font-bold text-sm uppercase tracking-wider rounded-xl shadow-lg shadow-cyan-500/20 cursor-pointer transition-all mt-2"
             >
-              Access System →
+              {loggingIn ? 'Checking...' : 'Access System →'}
             </button>
           </form>
         </div>
