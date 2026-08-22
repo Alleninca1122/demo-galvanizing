@@ -3,14 +3,14 @@
 
 export const BRAND = {
   // 公司全称与简称
-  companyName: "DEMO GALVANIZING",
-  shortName: "DEMO",
+  companyName: "Demo Galvanizing",
+  shortName: "Demo",
   
   // 系统标题与界面文案
-  systemTitle: "DEMO GALVANIZING DWI",
-  portalTitle: "DEMO Shop-Floor Portal",
-  headerTitle: "DEMO GALVANIZING DWI",
+  systemTitle: "Demo Galvanizing DWI",
+  portalTitle: "Demo Shop-Floor Portal",
+  headerTitle: "Demo Galvanizing DWI",
   
   // 版权信息/页脚
-  footerText: "DEMO Galvanizing Ltd.",
+  footerText: "Demo Galvanizing Ltd.",
 };
