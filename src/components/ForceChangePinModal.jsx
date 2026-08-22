@@ -1,11 +1,33 @@
 import React, { useState } from 'react';
 import { supabase } from '../supabaseClient';
 
+// Small inline eye / eye-off icon so this component has no extra icon-library
+// dependency. Toggled purely by className, not by swapping SVGs.
+function EyeIcon({ visible }) {
+  return (
+    <svg
+      viewBox="0 0 24 24"
+      fill="none"
+      stroke="currentColor"
+      strokeWidth="2"
+      strokeLinecap="round"
+      strokeLinejoin="round"
+      className="w-4 h-4"
+    >
+      <path d="M1 12s4-7 11-7 11 7 11 7-4 7-11 7-11-7-11-7z" />
+      <circle cx="12" cy="12" r="3" />
+      {!visible && <line x1="2" y1="2" x2="22" y2="22" />}
+    </svg>
+  );
+}
+
 export function ForceChangePinModal({ currentUser, onPinUpdated }) {
   const [newPin, setNewPin] = useState('');
   const [confirmPin, setConfirmPin] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
+  const [showNewPin, setShowNewPin] = useState(false);
+  const [showConfirmPin, setShowConfirmPin] = useState(false);
 
   const handlePinUpdate = async (e) => {
     e.preventDefault();
@@ -59,28 +81,50 @@ export function ForceChangePinModal({ currentUser, onPinUpdated }) {
             <label className="block text-xs font-semibold text-slate-700 mb-1">
               Enter New 4-Digit PIN
             </label>
-            <input
-              type="password"
-              maxLength="4"
-              required
-              value={newPin}
-              onChange={(e) => setNewPin(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono text-center text-xl text-slate-900 focus:ring-2 focus:ring-cyan-500"
-            />
+            <div className="relative">
+              <input
+                type={showNewPin ? 'text' : 'password'}
+                maxLength="4"
+                required
+                value={newPin}
+                onChange={(e) => setNewPin(e.target.value)}
+                className="w-full px-4 py-2.5 pr-11 bg-slate-50 border border-slate-300 rounded-xl font-mono text-center text-xl text-slate-900 focus:ring-2 focus:ring-cyan-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowNewPin((v) => !v)}
+                tabIndex={-1}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
+                aria-label={showNewPin ? 'Hide PIN' : 'Show PIN'}
+              >
+                <EyeIcon visible={showNewPin} />
+              </button>
+            </div>
           </div>
 
           <div>
             <label className="block text-xs font-semibold text-slate-700 mb-1">
               Confirm New PIN
             </label>
-            <input
-              type="password"
-              maxLength="4"
-              required
-              value={confirmPin}
-              onChange={(e) => setConfirmPin(e.target.value)}
-              className="w-full px-4 py-2.5 bg-slate-50 border border-slate-300 rounded-xl font-mono text-center text-xl text-slate-900 focus:ring-2 focus:ring-cyan-500"
-            />
+            <div className="relative">
+              <input
+                type={showConfirmPin ? 'text' : 'password'}
+                maxLength="4"
+                required
+                value={confirmPin}
+                onChange={(e) => setConfirmPin(e.target.value)}
+                className="w-full px-4 py-2.5 pr-11 bg-slate-50 border border-slate-300 rounded-xl font-mono text-center text-xl text-slate-900 focus:ring-2 focus:ring-cyan-500"
+              />
+              <button
+                type="button"
+                onClick={() => setShowConfirmPin((v) => !v)}
+                tabIndex={-1}
+                className="absolute inset-y-0 right-0 flex items-center pr-3 text-slate-400 hover:text-slate-600"
+                aria-label={showConfirmPin ? 'Hide PIN' : 'Show PIN'}
+              >
+                <EyeIcon visible={showConfirmPin} />
+              </button>
+            </div>
           </div>
 
           {error && <p className="text-xs text-red-500 text-center font-medium">{error}</p>}
