@@ -49,12 +49,42 @@ export function ForceChangePinModal({ currentUser, onPinUpdated }) {
     setLoading(true);
 
     try {
-      const { error: updateError } = await supabase
+      // Capture the current PIN before overwriting it, so a failed operators
+      // update can be rolled back to exactly what it was before this attempt.
+      const { data: beforeRow, error: readError } = await supabase
+        .from('employees')
+        .select('pin')
+        .eq('employee_id', currentUser.employee_id)
+        .maybeSingle();
+
+      if (readError) throw readError;
+      const originalPin = beforeRow?.pin;
+
+      const { error: empError } = await supabase
         .from('employees')
         .update({ pin: newPin, must_change_pin: false })
         .eq('employee_id', currentUser.employee_id);
 
-      if (updateError) throw updateError;
+      if (empError) throw empError;
+
+      // Keep operators in sync - sign-off in ProductionForm checks the PIN
+      // against operators, not employees, so both must hold the new PIN.
+      const { error: opError } = await supabase
+        .from('operators')
+        .update({ pin: newPin })
+        .eq('name', `Employee ${currentUser.employee_id}`);
+
+      if (opError) {
+        // Roll employees back to its pre-update state so the two tables
+        // never end up holding different PINs for the same person - a
+        // failed attempt should look like it never happened, not leave the
+        // account half-updated.
+        await supabase
+          .from('employees')
+          .update({ pin: originalPin, must_change_pin: true })
+          .eq('employee_id', currentUser.employee_id);
+        throw opError;
+      }
 
       alert('PIN updated successfully! Please log in with your new PIN.');
       onPinUpdated();
