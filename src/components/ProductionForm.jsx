@@ -595,6 +595,8 @@ const removeAssistantOperator = (uid) => {
     wp.point2Strands = '';
     wp.tieWireSpecId = '';
     wp.tieWireStrands = '';
+    wp.tieWireSpecId2 = '';
+    wp.tieWireStrands2 = '';
 
     setJobs(updated);
   };
@@ -741,16 +743,13 @@ const removeAssistantOperator = (uid) => {
         let wireRec;
         let wireBasisNote;
         if (isString && stringingMethod === 'CHAIN_WIRE') {
-          // Ties ONE workpiece, but how many backbone chains that tie wire actually
-          // attaches to matches the selected hanging point count (1 or 2) - a 2-point
-          // backbone means each piece is wired onto both chains, so the bracket lookup
-          // must use `pts`, not be hardcoded to a single-hanger basis.
-          // "Wires per Piece" in the UI is a single combined count (not split per point),
-          // so the requirement to compare against is the bracket's TOTAL wire count for
-          // that scheme, not its per-side figure.
-          const tieWireRec = getRequiredWireCount(unitW, pts);
-          wireRec = { total: tieWireRec.total, perPoint: tieWireRec.total };
-          wireBasisNote = `tying a single workpiece (${Math.round(unitW)} lb) at ${pts} hanging point${pts === 2 ? 's' : ''}`;
+          // Tie wire secures ONE workpiece to the backbone chain(s). How many
+          // separate wire attachment points it needs matches the selected hanging
+          // point count (1 or 2) - just like the backbone chain itself - and each
+          // point is checked individually against the per-point bracket value,
+          // so there's no ambiguity about "per point" vs "combined total".
+          wireRec = getRequiredWireCount(unitW, pts);
+          wireBasisNote = `tying a single workpiece (${Math.round(unitW)} lb)`;
         } else if (isString && stringingMethod === 'PURE_WIRE') {
           // Conservative: every link's wire count is checked as if it alone carried the full string
           // weight, but still split across however many points (1 or 2) that link actually uses.
@@ -796,17 +795,15 @@ const removeAssistantOperator = (uid) => {
         if (pts === 2) {
           checkPoint(wp.point2SpecId, wp.point2Strands, 'Point 2');
         }
-checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
-      if (pts === 2) {
-        checkPoint(wp.point2SpecId, wp.point2Strands, 'Point 2');
-      }
 
-      // CHAIN_WIRE 模式下，绑丝要单独复核承载力
-      // wireRec 在 442-444 行已经按 unitW（单件重量）算好，checkPoint 内部
-      // 遇到 specObj.type === 'WIRE' 时会自动用 wireRec.perPoint 做基准，
-      // 不需要改 checkPoint 或 getRequiredWireCount 本身
+      // CHAIN_WIRE 模式下，绑丝要单独复核承载力 - 现在跟主链一样按悬挂点数分别校验，
+      // 2 个悬挂点时绑丝也拆成 Tie Wire Point 1 / Point 2 两个点分别核对，
+      // 避免"到底是每点几根还是总共几根"的歧义。
       if (stringingMethod === 'CHAIN_WIRE') {
-        checkPoint(wp.tieWireSpecId, wp.tieWireStrands, 'Tie Wire');
+        checkPoint(wp.tieWireSpecId, wp.tieWireStrands, pts === 2 ? 'Tie Wire Point 1' : 'Tie Wire');
+        if (pts === 2) {
+          checkPoint(wp.tieWireSpecId2, wp.tieWireStrands2, 'Tie Wire Point 2');
+        }
       }
       // Anchor Shackle WLL check ...
         // Anchor Shackle WLL check - the shackle attaches the chain/wire assembly to the rack at a
@@ -3533,7 +3530,8 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       )}
     </div>
 
-    {/* Piece Tie Wire — 绑丝，独立字段 tieWireSpecId/tieWireStrands，配合已加的 checkPoint(wp.tieWireSpecId, ...) 复核 */}
+    {/* Piece Tie Wire — 绑丝，2 个悬挂点时拆成 Point 1 / Point 2 两组字段，
+        跟 Main Backbone Chain 的结构保持一致，配合 checkPoint 分别复核 */}
     <div className="bg-slate-900/90 p-2.5 rounded border border-amber-900/50 space-y-2">
       <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
         <span>🪢</span> Piece Tie Wire
@@ -3541,7 +3539,9 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-[10px] text-slate-400 mb-0.5">Tie Wire Spec *</label>
+          <label className="block text-[10px] text-slate-400 mb-0.5">
+            {wp.hangingPoints === '2' ? 'Point 1 Tie Wire Spec *' : 'Tie Wire Spec *'}
+          </label>
           <select
             value={wp.tieWireSpecId || ''}
             onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'tieWireSpecId', e.target.value)}
@@ -3556,7 +3556,9 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
         </div>
 
         <div>
-          <label className="block text-[10px] text-slate-400 mb-0.5">Wires per Piece *</label>
+          <label className="block text-[10px] text-slate-400 mb-0.5">
+            {wp.hangingPoints === '2' ? 'Wires at Point 1 *' : 'Wires per Piece *'}
+          </label>
           <input
             type="number"
             min="1"
@@ -3568,6 +3570,38 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
           />
         </div>
       </div>
+
+      {wp.hangingPoints === '2' && (
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-[10px] text-slate-400 mb-0.5">Point 2 Tie Wire Spec *</label>
+            <select
+              value={wp.tieWireSpecId2 || ''}
+              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'tieWireSpecId2', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
+              required
+            >
+              <option value="">Select Wire...</option>
+              {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'WIRE').map(r => (
+                <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] text-slate-400 mb-0.5">Wires at Point 2 *</label>
+            <input
+              type="number"
+              min="1"
+              placeholder="e.g. 2"
+              value={wp.tieWireStrands2 || ''}
+              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'tieWireStrands2', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-amber-300 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              required
+            />
+          </div>
+        </div>
+      )}
     </div>
   </div>
 
