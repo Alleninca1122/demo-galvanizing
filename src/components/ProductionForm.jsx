@@ -813,16 +813,21 @@ const removeAssistantOperator = (uid) => {
           checkPoint(wp.tieWireSpecId2, wp.tieWireStrands2, 'Tie Wire Point 2');
         }
       }
-      // Anchor Shackle WLL check ...
-        // Anchor Shackle WLL check - the shackle attaches the chain/wire assembly to the rack at a
-        // single point, so it's checked against that point's share of the structural load
-        // (loadPerPt), same basis as the CHAIN check above, regardless of stringing method.
-        if (wp.anchorShackle && wp.anchorShackle !== 'NONE') {
-          const shackleSpec = ANCHOR_SHACKLE_SPECS.find(s => s.id === wp.anchorShackle);
-          if (shackleSpec && shackleSpec.wll != null && loadPerPt > shackleSpec.wll) {
-            deficiencies.push(`${label}: Anchor Shackle (${shackleSpec.label}, ${shackleSpec.wll} lb WLL) is under the ${Math.round(loadPerPt)} lb load it would carry at each point.`);
-          }
+      // Anchor Shackle WLL check - each shackle attaches ONE point's chain/wire assembly
+      // to the rack, so with 2 hanging points there are two independent shackles (one per
+      // point), each checked against that point's own share of the structural load
+      // (loadPerPt) - same basis as the CHAIN check above, regardless of stringing method.
+      const checkShackle = (shackleId, pointLabel) => {
+        if (!shackleId || shackleId === 'NONE') return;
+        const shackleSpec = ANCHOR_SHACKLE_SPECS.find(s => s.id === shackleId);
+        if (shackleSpec && shackleSpec.wll != null && loadPerPt > shackleSpec.wll) {
+          deficiencies.push(`${label}: ${pointLabel} (${shackleSpec.label}, ${shackleSpec.wll} lb WLL) is under the ${Math.round(loadPerPt)} lb load it would carry at each point.`);
         }
+      };
+      checkShackle(wp.anchorShackle, pts === 2 ? 'Anchor Shackle Point 1' : 'Anchor Shackle');
+      if (pts === 2) {
+        checkShackle(wp.anchorShackle2, 'Anchor Shackle Point 2');
+      }
       });
     });
     return deficiencies;
@@ -1056,7 +1061,10 @@ const removeAssistantOperator = (uid) => {
                   ? { point1: { spec: wp.tieWireSpecId, strands: parseInt(wp.tieWireStrands, 10) || 0 },
                       point2: wp.hangingPoints === '2' ? { spec: wp.tieWireSpecId2, strands: parseInt(wp.tieWireStrands2, 10) || 0 } : null }
                   : null,
-                anchorShackle: wp.anchorShackle && wp.anchorShackle !== 'NONE' ? wp.anchorShackle : null
+                anchorShackle: {
+                  point1: wp.anchorShackle && wp.anchorShackle !== 'NONE' ? wp.anchorShackle : null,
+                  point2: wp.hangingPoints === '2' && wp.anchorShackle2 && wp.anchorShackle2 !== 'NONE' ? wp.anchorShackle2 : null
+                }
               };
 
           return {
@@ -3784,11 +3792,13 @@ const removeAssistantOperator = (uid) => {
     )}
   </div>
 )}
-  {/* 2. Anchor Shackle */}
+  {/* 2. Anchor Shackle — 2 个悬挂点时拆成 Point 1 / Point 2，每个点各自的铁链
+      通过各自的锚定卸扣连到挂架上，跟 Main Backbone Chain / Piece Tie Wire 的
+      结构保持一致 */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-800/80">
     <div>
       <label className="block text-[10px] font-semibold text-slate-300 mb-1">
-        Anchor Shackle (Optional)
+        {wp.hangingPoints === '2' ? 'Point 1 Anchor Shackle (Optional)' : 'Anchor Shackle (Optional)'}
       </label>
       <select
         value={wp.anchorShackle || 'NONE'}
@@ -3803,6 +3813,24 @@ const removeAssistantOperator = (uid) => {
       </select>
     </div>
 
+    {wp.hangingPoints === '2' && (
+      <div>
+        <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+          Point 2 Anchor Shackle (Optional)
+        </label>
+        <select
+          value={wp.anchorShackle2 || 'NONE'}
+          onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'anchorShackle2', e.target.value)}
+          className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-cyan-500"
+        >
+          {ANCHOR_SHACKLE_SPECS.map(s => (
+            <option key={s.id} value={s.id}>
+              {s.wll != null ? `${s.label} (${s.wll.toLocaleString()} lb WLL)` : s.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    )}
   </div>
     </>
   )}
