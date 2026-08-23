@@ -467,9 +467,14 @@ const removeAssistantOperator = (uid) => {
   // Jobs List State
   const [jobs, setJobs] = useState([createNewJob()]);
 
-  const getNextDailySequence = async () => {
-    const todayStr = new Date().toISOString().split('T')[0];
-
+  // Both the sequence counter's date key AND the Load ID's visible date prefix must use
+  // the SAME calendar-day basis (local time), or they drift apart for several hours every
+  // evening once UTC crosses midnight while it's still "today" locally (Pacific Time is
+  // UTC-7/8) - during that window the counter would silently reset to 01 while the visible
+  // date prefix hadn't changed yet, producing a real duplicate Load ID if the same rack
+  // was used again before local midnight. localDateStr is passed in by regenerateLoadId,
+  // computed from the SAME `now` used for the visible dateStr, so they can never diverge.
+  const getNextDailySequence = async (localDateStr) => {
     if (!supabase) {
       return Math.floor(Math.random() * 5) + 1;
     }
@@ -478,7 +483,7 @@ const removeAssistantOperator = (uid) => {
     // callers can ever get the same sequence number for the same date.
     // Do NOT silently fall back to a fixed number on error: that would
     // reintroduce duplicate Load IDs (e.g. if the day's 99-load cap is hit).
-    const { data, error } = await supabase.rpc('get_next_daily_seq', { p_date: todayStr });
+    const { data, error } = await supabase.rpc('get_next_daily_seq', { p_date: localDateStr });
     if (error) {
       throw error;
     }
@@ -511,9 +516,10 @@ const removeAssistantOperator = (uid) => {
       const year = now.getFullYear();
       const month = String(now.getMonth() + 1).padStart(2, '0');
       const day = String(now.getDate()).padStart(2, '0');
-      const dateStr = `${year}${month}${day}`; // 8-digit, zero-padded
+      const dateStr = `${year}${month}${day}`; // 8-digit, zero-padded (shown in the Load ID)
+      const localDateKey = `${year}-${month}-${day}`; // same calendar day, for the sequence counter
 
-      const dailySeq = await getNextDailySequence();
+      const dailySeq = await getNextDailySequence(localDateKey);
       const seqStr = String(dailySeq).padStart(2, '0'); // 2-digit, zero-padded
 
       const suffix = getLoadIdSuffix(rackVal, fixtureVal);
@@ -588,6 +594,38 @@ const removeAssistantOperator = (uid) => {
   const handleWorkpieceChange = (jobIndex, wpIndex, field, value) => {
     const updated = [...jobs];
     updated[jobIndex].workpieces[wpIndex][field] = value;
+    setJobs(updated);
+  };
+
+  // Switching between 1 and 2 hanging points changes which weight-bracket table
+  // applies (WIRE_BRACKETS_SINGLE vs WIRE_BRACKETS_DOUBLE - their upper bounds don't
+  // fully overlap, e.g. 75/250/450/650 only exist in the single-point table). If the
+  // operator is in Varied-weight mode with a bracket already picked and then toggles
+  // point count, a stale bracket value that doesn't exist in the OTHER table would
+  // silently resolve to 0 lb (no match found) with no warning at all - so this reset
+  // forces a fresh, valid bracket pick under the new point count instead.
+  const handleHangingPointsChange = (jobIndex, wpIndex, value) => {
+    const updated = [...jobs];
+    const wp = updated[jobIndex].workpieces[wpIndex];
+    wp.hangingPoints = value;
+    if (wp.isUniformWeight === false) {
+      wp.weightBracketId = '';
+    }
+    setJobs(updated);
+  };
+
+  // Switching combMediumType (CHAIN <-> WIRE) changes which RIGGING_SPECS options are
+  // offered (filtered by type). Without resetting combSpecId/combStrands, a spec id of
+  // the OLD medium type stays in state - the <select> shows blank (no matching option
+  // in the new filtered list) so it looks unselected, but checkSafetyDeficiencies still
+  // reads the stale spec and compares its WLL/strand-count against the wrong kind of
+  // hardware entirely (e.g. a wire's 75 lb swl treated as a chain's WLL).
+  const handleCombMediumTypeChange = (jobIndex, wpIndex, value) => {
+    const updated = [...jobs];
+    const wp = updated[jobIndex].workpieces[wpIndex];
+    wp.combMediumType = value;
+    wp.combSpecId = '';
+    wp.combStrands = '';
     setJobs(updated);
   };
 // 切换 stringingMethod 时，联动重置该 workpiece 的规格/绑丝相关字段，
@@ -876,9 +914,12 @@ const removeAssistantOperator = (uid) => {
     if (safetyChecklist.hasEnclosedCavity && (!safetyChecklist.hasAdequateVenting && !safetyChecklist.drilledOnsite)) {
       severeErrors.push(`Enclosed cavity detected without sufficient venting/drainage holes, and not drilled on site! (Explosion Risk in Kettle)`);
     }
-    // Check 2: Rack support-frame capacity (8,000 lb net, after beam self-weight & safety factor) - hard limit, no override
+    // Check 2: Rack support-frame capacity (8,000 lb net, after beam self-weight & safety factor) - hard limit, no override.
+    // Only applies when an actual numbered rack is in use - "No Rack" (crane-direct) exists
+    // specifically for pieces too heavy or large for the rack's support frames, so a load
+    // going crane-direct isn't riding on the rack at all and shouldn't be blocked by this.
     const rackTotal = getRackTotalWeight();
-    if (rackTotal > RACK_LIMIT_LBS) {
+    if (rackNo !== NO_RACK_VALUE && rackTotal > RACK_LIMIT_LBS) {
       severeErrors.push(`Total rack load (${Math.round(rackTotal).toLocaleString()} lb) exceeds the rack's usable load capacity of ${RACK_LIMIT_LBS.toLocaleString()} lb. Remove workpieces or split onto another rack before submitting.`);
     }
     return severeErrors;
@@ -976,68 +1017,19 @@ const removeAssistantOperator = (uid) => {
       // Fixture only applies when an actual numbered rack is in use.
       const fixtureForSubmit = isCraneDirect ? null : rackFixtureType;
 
-      // 3. Create the Load record
-      const { data: loadRow, error: loadErr } = await supabase
-        .from('production_loads')
-        .insert({
-          load_id: loadId.trim(),
-          loading_method: isCraneDirect ? 'crane_direct' : 'rack',
-          rack_no: rackNoInt,
-          rack_fixture_type: fixtureForSubmit,
-          current_location: isCraneDirect ? 'n_a_crane_direct' : 'on_rack',
-          current_stage_code: 'stage_01',
-          workflow_status: 'in_progress'
-        })
-        .select()
-        .single();
-      if (loadErr) throw loadErr;
-
-      // 4. Log the Rack assignment event (only when an actual rack is used)
-      // A DB trigger (enforce_rack_exclusive_assignment) rejects this insert if
-      // someone else's submission already claimed this rack_no in the meantime
-      // (two people opening the form around the same time, both seeing the
-      // rack as free). If that happens, the Load row from step 3 above is now
-      // an orphan — it was never actually assigned this rack — so it must be
-      // deleted rather than left behind with a rack_no it doesn't really hold.
-      if (!isCraneDirect) {
-        const { error: rackEventErr } = await supabase
-          .from('production_rack_events')
-          .insert({
-            rack_no: rackNoInt,
-            load_id: loadRow.id,
-            event_type: 'assigned',
-            operator_id: primaryCheck.operator.id
-          });
-        if (rackEventErr) {
-          await supabase.from('production_loads').delete().eq('id', loadRow.id);
-          await refreshOccupiedRacks();
-          const takenByOther = (rackEventErr.message || '').includes('already assigned');
-          alert(
-            takenByOther
-              ? `⚠️ Rack #${rackNo} was just taken by someone else. Please pick a different rack and try again.`
-              : `⚠️ Could not assign Rack #${rackNo}: ${rackEventErr.message}`
-          );
-          isSubmittingRef.current = false;
-        setIsSubmitting(false);
-          return;
-        }
-      }
-
-      // 5. Create Job + Workpiece records
-      for (const job of jobs) {
-        const { data: jobRow, error: jobErr } = await supabase
-          .from('production_jobs')
-          .insert({
-            load_id: loadRow.id,
-            customer_name: job.customerName,
-            customer_order_no: job.customerOrderNo,
-            customer_batch_no: job.customerBatchNo || '#1'
-          })
-          .select()
-          .single();
-        if (jobErr) throw jobErr;
-
-        const workpieceRows = job.workpieces.map(wp => {
+      // 3. Build the full payload and submit it as ONE atomic call. Previously this was
+      // 5 separate sequential inserts (Load -> Rack Event -> Jobs/Workpieces -> Stage
+      // Log -> Signatures) with only the rack-event step having manual rollback - any
+      // later step failing (e.g. a workpiece insert) left an orphaned production_loads
+      // row (and possibly production_jobs rows) behind permanently. The
+      // submit_production_load Postgres function runs all of this as a single
+      // transaction: if anything fails partway through, everything in this call rolls
+      // back together, so there's nothing left to clean up client-side.
+      const jobsPayload = jobs.map(job => ({
+        customer_name: job.customerName,
+        customer_order_no: job.customerOrderNo,
+        customer_batch_no: job.customerBatchNo || '#1',
+        workpieces: job.workpieces.map(wp => {
           const { totalW, unitW } = getWorkpieceTotalWeight(wp);
           const qty = parseInt(wp.quantity, 10) || 0;
           const rigging = wp.useRailingCombRack
@@ -1068,7 +1060,6 @@ const removeAssistantOperator = (uid) => {
               };
 
           return {
-            job_id: jobRow.id,
             workpiece_type: wp.workpieceType === 'Others' ? (wp.workpieceTypeOther || 'Others') : wp.workpieceType,
             quantity: qty,
             unit: wp.unit || 'pcs',
@@ -1076,55 +1067,61 @@ const removeAssistantOperator = (uid) => {
             unit_weight_lb: Math.round(unitW),
             rigging
           };
-        });
-
-        const { error: wpErr } = await supabase.from('production_workpieces').insert(workpieceRows);
-        if (wpErr) throw wpErr;
-      }
-
-      // 6. Create the Stage 01 log entry (the actual SOP data captured on this form)
-      const { data: stageLogRow, error: stageLogErr } = await supabase
-        .from('production_stage_logs')
-        .insert({
-          load_id: loadRow.id,
-          stage_code: 'stage_01',
-          operator_id: primaryCheck.operator.id,
-          attempt_no: 1,
-          is_final_for_stage: true,
-          status: 'completed',
-          data: {
-            shift: getShiftDisplay(),
-            entryDate: currentDateFormatted,
-            safetyChecklist: { ...safetyChecklist },
-            rackCapacityCheck: {
-              totalLoadLb: Math.round(rackTotalWeight),
-              limitLb: RACK_LIMIT_LBS
-            },
-            surfaceAssessmentSummary: {
-              oilPaint: {
-                min: surfaceAssessmentSummary.oilPaint.min?.value || null,
-                max: surfaceAssessmentSummary.oilPaint.max?.value || null,
-                mixedBatchWarning: surfaceAssessmentSummary.oilPaint.hasWarning
-              },
-              rust: {
-                min: surfaceAssessmentSummary.rust.min?.value || null,
-                max: surfaceAssessmentSummary.rust.max?.value || null,
-                mixedBatchWarning: surfaceAssessmentSummary.rust.hasWarning
-              }
-            }
-          }
         })
-        .select()
-        .single();
-      if (stageLogErr) throw stageLogErr;
+      }));
 
-      // 7. Record signatures: primary operator + any assistants
-      const signatureRows = [
-        { stage_log_id: stageLogRow.id, operator_id: primaryCheck.operator.id },
-        ...assistantOperators.map(op => ({ stage_log_id: stageLogRow.id, operator_id: op.id }))
-      ];
-      const { error: sigErr } = await supabase.from('production_stage_signatures').insert(signatureRows);
-      if (sigErr) throw sigErr;
+      const stageLogData = {
+        shift: getShiftDisplay(),
+        entryDate: currentDateFormatted,
+        safetyChecklist: { ...safetyChecklist },
+        rackCapacityCheck: {
+          totalLoadLb: Math.round(rackTotalWeight),
+          limitLb: RACK_LIMIT_LBS
+        },
+        surfaceAssessmentSummary: {
+          oilPaint: {
+            min: surfaceAssessmentSummary.oilPaint.min?.value || null,
+            max: surfaceAssessmentSummary.oilPaint.max?.value || null,
+            mixedBatchWarning: surfaceAssessmentSummary.oilPaint.hasWarning
+          },
+          rust: {
+            min: surfaceAssessmentSummary.rust.min?.value || null,
+            max: surfaceAssessmentSummary.rust.max?.value || null,
+            mixedBatchWarning: surfaceAssessmentSummary.rust.hasWarning
+          }
+        }
+      };
+
+      const signatureOperatorIds = [primaryCheck.operator.id, ...assistantOperators.map(op => op.id)];
+
+      const { error: submitErr } = await supabase.rpc('submit_production_load', {
+        payload: {
+          load_id: loadId.trim(),
+          loading_method: isCraneDirect ? 'crane_direct' : 'rack',
+          is_crane_direct: isCraneDirect,
+          rack_no: rackNoInt,
+          rack_fixture_type: fixtureForSubmit,
+          current_location: isCraneDirect ? 'n_a_crane_direct' : 'on_rack',
+          operator_id: primaryCheck.operator.id,
+          jobs: jobsPayload,
+          stage_log_data: stageLogData,
+          signature_operator_ids: signatureOperatorIds
+        }
+      });
+
+      if (submitErr) {
+        // Same rack-race-condition message as before - the enforce_rack_exclusive_assignment
+        // trigger still raises this exact wording from inside the function.
+        const takenByOther = (submitErr.message || '').includes('already assigned');
+        if (takenByOther) {
+          await refreshOccupiedRacks();
+          alert(`⚠️ Rack #${rackNo} was just taken by someone else. Please pick a different rack and try again.`);
+          isSubmittingRef.current = false;
+          setIsSubmitting(false);
+          return;
+        }
+        throw submitErr;
+      }
 
       alert(`✅ Load [${loadId.trim()}] recorded and signed off by ID [${primaryOperatorId.trim()}] successfully!`);
       refreshOccupiedRacks();
@@ -1152,6 +1149,8 @@ const removeAssistantOperator = (uid) => {
         maxRustLevel: ''
       });
       setJobs([createNewJob()]);
+      isSubmittingRef.current = false;
+      setIsSubmitting(false);
     } catch (err) {
       console.error('Failed to submit production load:', err);
 
@@ -1178,28 +1177,6 @@ const removeAssistantOperator = (uid) => {
       setIsSubmitting(false);
       return;
     }
-    isSubmittingRef.current = false;
-    setIsSubmitting(false);
-
-    // Reset Form
-    setRackNo('');
-    setLoadId('');
-    setAutoLoadId('');
-    setPrimaryOperatorId('');
-    setPrimaryPin('');
-    setAssistants([{ uid: Date.now(), employeeId: '', pin: '' }]);
-    setSafetyChecklist({
-      hasEnclosedCavity: false,
-      hasAdequateVenting: true,
-      drilledOnsite: true
-    });
-    setSurfaceAssessment({
-      minOilPaintLevel: '',
-      maxOilPaintLevel: '',
-      minRustLevel: '',
-      maxRustLevel: ''
-    });
-    setJobs([createNewJob()]);
   };
 
   return (
@@ -2866,8 +2843,10 @@ const removeAssistantOperator = (uid) => {
             </div>
           )}
 
-          {/* Rack Support Frame Capacity Gauge - live total across every Job/Workpiece on this Load */}
-          {(() => {
+          {/* Rack Support Frame Capacity Gauge - live total across every Job/Workpiece on this Load.
+              Not applicable when going crane-direct (No Rack) - that path doesn't touch the
+              rack's support frames at all, so this limit doesn't apply to it. */}
+          {rackNo !== NO_RACK_VALUE && (() => {
             const pct = Math.min(100, (rackTotalWeight / RACK_LIMIT_LBS) * 100);
             const isOver = rackTotalWeight > RACK_LIMIT_LBS;
             const isWarn = !isOver && pct >= 70;
@@ -3309,7 +3288,7 @@ const removeAssistantOperator = (uid) => {
           <div className="inline-flex bg-slate-900 p-0.5 rounded border border-slate-800 w-full">
             <button
               type="button"
-              onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'combMediumType', 'CHAIN')}
+              onClick={() => handleCombMediumTypeChange(jobIndex, wpIndex, 'CHAIN')}
               className={`flex-1 px-2 py-1 rounded text-[10px] font-bold transition-all ${
                 wp.combMediumType !== 'WIRE' ? 'bg-cyan-600 text-slate-950 shadow' : 'text-slate-400 hover:text-slate-200'
               }`}
@@ -3318,7 +3297,7 @@ const removeAssistantOperator = (uid) => {
             </button>
             <button
               type="button"
-              onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'combMediumType', 'WIRE')}
+              onClick={() => handleCombMediumTypeChange(jobIndex, wpIndex, 'WIRE')}
               className={`flex-1 px-2 py-1 rounded text-[10px] font-bold transition-all ${
                 wp.combMediumType === 'WIRE' ? 'bg-cyan-600 text-slate-950 shadow' : 'text-slate-400 hover:text-slate-200'
               }`}
@@ -3423,7 +3402,7 @@ const removeAssistantOperator = (uid) => {
       <div className="flex gap-1">
         <button
           type="button"
-          onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'hangingPoints', '1')}
+          onClick={() => handleHangingPointsChange(jobIndex, wpIndex, '1')}
           className={`px-2 py-1 rounded text-[10px] font-bold border ${
             wp.hangingPoints === '1'
               ? 'bg-cyan-950 border-cyan-500 text-cyan-300'
@@ -3434,7 +3413,7 @@ const removeAssistantOperator = (uid) => {
         </button>
         <button
           type="button"
-          onClick={() => handleWorkpieceChange(jobIndex, wpIndex, 'hangingPoints', '2')}
+          onClick={() => handleHangingPointsChange(jobIndex, wpIndex, '2')}
           className={`px-2 py-1 rounded text-[10px] font-bold border ${
             wp.hangingPoints === '2'
               ? 'bg-cyan-950 border-cyan-500 text-cyan-300'
