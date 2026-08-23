@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // Standard Galvanizing Workpiece Types
 const WORKPIECE_TYPES = [
@@ -248,6 +248,11 @@ export default function ProductionForm({ currentUser, supabase }) {
   // production_rack_current_status so the dropdown can disable them.
   const [occupiedRacks, setOccupiedRacks] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // isSubmitting (state) drives the button's disabled/label UI, but state updates
+  // aren't synchronous - two clicks in the same tick can both read the old `false`
+  // before React commits the first setIsSubmitting(true). This ref is checked/set
+  // synchronously in handleSubmit so a genuine double-click can't both get through.
+  const isSubmittingRef = useRef(false);
 
   const refreshOccupiedRacks = async () => {
     if (!supabase) return;
@@ -895,6 +900,13 @@ const removeAssistantOperator = (uid) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Guard FIRST, before any other check - a fast double-click can fire two
+    // handleSubmit calls before React re-renders the disabled submit button.
+    // Without this, both calls can pass all the way through PIN verification
+    // and both attempt to insert the same load_id, with the second one
+    // failing on the production_loads_load_id_key unique constraint.
+    if (isSubmittingRef.current) return;
+
     if (!rackNo || !loadId.trim()) {
       alert('Please select a Rack # first.');
       return;
@@ -924,12 +936,14 @@ const removeAssistantOperator = (uid) => {
       return;
     }
 
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
     try {
       // 1. Verify the primary sign-off operator's PIN
       const primaryCheck = await verifyOperator(primaryOperatorId.trim(), primaryPin.trim());
       if (!primaryCheck.ok) {
         alert(`❌ Sign-off failed: ${primaryCheck.reason}`);
+        isSubmittingRef.current = false;
         setIsSubmitting(false);
         return;
       }
@@ -941,7 +955,8 @@ const removeAssistantOperator = (uid) => {
         const check = await verifyOperator(a.employeeId.trim(), (a.pin || '').trim());
         if (!check.ok) {
           alert(`❌ Assistant sign-off failed: ${check.reason}`);
-          setIsSubmitting(false);
+          isSubmittingRef.current = false;
+        setIsSubmitting(false);
           return;
         }
         assistantOperators.push(check.operator);
@@ -994,7 +1009,8 @@ const removeAssistantOperator = (uid) => {
               ? `⚠️ Rack #${rackNo} was just taken by someone else. Please pick a different rack and try again.`
               : `⚠️ Could not assign Rack #${rackNo}: ${rackEventErr.message}`
           );
-          setIsSubmitting(false);
+          isSubmittingRef.current = false;
+        setIsSubmitting(false);
           return;
         }
       }
@@ -1127,10 +1143,31 @@ const removeAssistantOperator = (uid) => {
       setJobs([createNewJob()]);
     } catch (err) {
       console.error('Failed to submit production load:', err);
-      alert(`❌ Submission failed: ${err.message || err}`);
+
+      // A duplicate load_id means this exact Load ID was already used by an
+      // earlier (likely successful) submission - e.g. a double-click, or a
+      // stale second tab still holding the same auto-generated ID. Give a
+      // clearer explanation than the raw Postgres error, and hand the
+      // operator a fresh Load ID right away instead of leaving the stale
+      // one in the field (which would just fail again the same way).
+      const isDuplicateLoadId = (err?.code === '23505') || /production_loads_load_id_key/.test(err?.message || '');
+      if (isDuplicateLoadId) {
+        alert(
+          `⚠️ Load ID [${loadId.trim()}] was already used by a previous submission - it looks like this one already went through.\n\n` +
+          `Please check if your data was already saved before re-entering it. A new Load ID has been generated for you below.`
+        );
+        if (rackNo) {
+          await regenerateLoadId(rackNo, rackFixtureType, false);
+        }
+      } else {
+        alert(`❌ Submission failed: ${err.message || err}`);
+      }
+
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
       return;
     }
+    isSubmittingRef.current = false;
     setIsSubmitting(false);
 
     // Reset Form
