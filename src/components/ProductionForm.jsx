@@ -741,8 +741,16 @@ const removeAssistantOperator = (uid) => {
         let wireRec;
         let wireBasisNote;
         if (isString && stringingMethod === 'CHAIN_WIRE') {
-          wireRec = getRequiredWireCount(unitW, 1); // ties ONE workpiece - always single-hanger basis
-          wireBasisNote = `tying a single workpiece (${Math.round(unitW)} lb)`;
+          // Ties ONE workpiece, but how many backbone chains that tie wire actually
+          // attaches to matches the selected hanging point count (1 or 2) - a 2-point
+          // backbone means each piece is wired onto both chains, so the bracket lookup
+          // must use `pts`, not be hardcoded to a single-hanger basis.
+          // "Wires per Piece" in the UI is a single combined count (not split per point),
+          // so the requirement to compare against is the bracket's TOTAL wire count for
+          // that scheme, not its per-side figure.
+          const tieWireRec = getRequiredWireCount(unitW, pts);
+          wireRec = { total: tieWireRec.total, perPoint: tieWireRec.total };
+          wireBasisNote = `tying a single workpiece (${Math.round(unitW)} lb) at ${pts} hanging point${pts === 2 ? 's' : ''}`;
         } else if (isString && stringingMethod === 'PURE_WIRE') {
           // Conservative: every link's wire count is checked as if it alone carried the full string
           // weight, but still split across however many points (1 or 2) that link actually uses.
