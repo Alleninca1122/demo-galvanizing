@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 
 // Standard Galvanizing Workpiece Types
 const WORKPIECE_TYPES = [
@@ -248,6 +248,11 @@ export default function ProductionForm({ currentUser, supabase }) {
   // production_rack_current_status so the dropdown can disable them.
   const [occupiedRacks, setOccupiedRacks] = useState(new Set());
   const [isSubmitting, setIsSubmitting] = useState(false);
+  // isSubmitting (state) drives the button's disabled/label UI, but state updates
+  // aren't synchronous - two clicks in the same tick can both read the old `false`
+  // before React commits the first setIsSubmitting(true). This ref is checked/set
+  // synchronously in handleSubmit so a genuine double-click can't both get through.
+  const isSubmittingRef = useRef(false);
 
   const refreshOccupiedRacks = async () => {
     if (!supabase) return;
@@ -480,15 +485,18 @@ const removeAssistantOperator = (uid) => {
     return data;
   };
 
-  // Load ID letter suffix: R = numbered Rack #01-99 with a standard beam
-  // (no fixture), H = numbered rack fitted with a permanently-mounted Hook
-  // Rack fixture, N = No Rack. The 'C' (Comb Rack) letter is retired: Comb
-  // Rack is now a per-workpiece attribute, not a whole-rack fixture, so it
-  // no longer changes what the Rack itself is identified as.
-  const getLoadIdLetter = (rackVal, fixtureVal) => {
+  // Load ID suffix: R + rack number (e.g. "R05") = numbered Rack #01-99 with a
+  // standard beam (no fixture), H + rack number (e.g. "H12") = numbered rack
+  // fitted with a permanently-mounted Hook Rack fixture, N = No Rack (no
+  // number, since crane-direct loads don't occupy a numbered rack at all).
+  // The rack number is included so the Load ID identifies exactly which rack
+  // was used, not just that "a" rack was used. The 'C' (Comb Rack) letter is
+  // retired: Comb Rack is now a per-workpiece attribute, not a whole-rack
+  // fixture, so it no longer changes what the Rack itself is identified as.
+  const getLoadIdSuffix = (rackVal, fixtureVal) => {
     if (rackVal === NO_RACK_VALUE) return 'N';
-    if (fixtureVal === RACK_FIXTURE_HOOK) return 'H';
-    return 'R';
+    const letter = fixtureVal === RACK_FIXTURE_HOOK ? 'H' : 'R';
+    return `${letter}${rackVal}`;
   };
 
   const regenerateLoadId = async (rackVal, fixtureVal, preserveManualEdit) => {
@@ -508,8 +516,8 @@ const removeAssistantOperator = (uid) => {
       const dailySeq = await getNextDailySequence();
       const seqStr = String(dailySeq).padStart(2, '0'); // 2-digit, zero-padded
 
-      const letter = getLoadIdLetter(rackVal, fixtureVal);
-      const generated = `${dateStr}-${seqStr}-${letter}`;
+      const suffix = getLoadIdSuffix(rackVal, fixtureVal);
+      const generated = `${dateStr}-${seqStr}-${suffix}`;
 
       // Always refresh the "auto" value (so Reset Auto ID offers the latest
       // one), but don't stomp on a Load ID the operator already typed by
@@ -595,6 +603,8 @@ const removeAssistantOperator = (uid) => {
     wp.point2Strands = '';
     wp.tieWireSpecId = '';
     wp.tieWireStrands = '';
+    wp.tieWireSpecId2 = '';
+    wp.tieWireStrands2 = '';
 
     setJobs(updated);
   };
@@ -741,7 +751,12 @@ const removeAssistantOperator = (uid) => {
         let wireRec;
         let wireBasisNote;
         if (isString && stringingMethod === 'CHAIN_WIRE') {
-          wireRec = getRequiredWireCount(unitW, 1); // ties ONE workpiece - always single-hanger basis
+          // Tie wire secures ONE workpiece to the backbone chain(s). How many
+          // separate wire attachment points it needs matches the selected hanging
+          // point count (1 or 2) - just like the backbone chain itself - and each
+          // point is checked individually against the per-point bracket value,
+          // so there's no ambiguity about "per point" vs "combined total".
+          wireRec = getRequiredWireCount(unitW, pts);
           wireBasisNote = `tying a single workpiece (${Math.round(unitW)} lb)`;
         } else if (isString && stringingMethod === 'PURE_WIRE') {
           // Conservative: every link's wire count is checked as if it alone carried the full string
@@ -788,28 +803,31 @@ const removeAssistantOperator = (uid) => {
         if (pts === 2) {
           checkPoint(wp.point2SpecId, wp.point2Strands, 'Point 2');
         }
-checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
-      if (pts === 2) {
-        checkPoint(wp.point2SpecId, wp.point2Strands, 'Point 2');
-      }
 
-      // CHAIN_WIRE 模式下，绑丝要单独复核承载力
-      // wireRec 在 442-444 行已经按 unitW（单件重量）算好，checkPoint 内部
-      // 遇到 specObj.type === 'WIRE' 时会自动用 wireRec.perPoint 做基准，
-      // 不需要改 checkPoint 或 getRequiredWireCount 本身
+      // CHAIN_WIRE 模式下，绑丝要单独复核承载力 - 现在跟主链一样按悬挂点数分别校验，
+      // 2 个悬挂点时绑丝也拆成 Tie Wire Point 1 / Point 2 两个点分别核对，
+      // 避免"到底是每点几根还是总共几根"的歧义。
       if (stringingMethod === 'CHAIN_WIRE') {
-        checkPoint(wp.tieWireSpecId, wp.tieWireStrands, 'Tie Wire');
-      }
-      // Anchor Shackle WLL check ...
-        // Anchor Shackle WLL check - the shackle attaches the chain/wire assembly to the rack at a
-        // single point, so it's checked against that point's share of the structural load
-        // (loadPerPt), same basis as the CHAIN check above, regardless of stringing method.
-        if (wp.anchorShackle && wp.anchorShackle !== 'NONE') {
-          const shackleSpec = ANCHOR_SHACKLE_SPECS.find(s => s.id === wp.anchorShackle);
-          if (shackleSpec && shackleSpec.wll != null && loadPerPt > shackleSpec.wll) {
-            deficiencies.push(`${label}: Anchor Shackle (${shackleSpec.label}, ${shackleSpec.wll} lb WLL) is under the ${Math.round(loadPerPt)} lb load it would carry at each point.`);
-          }
+        checkPoint(wp.tieWireSpecId, wp.tieWireStrands, pts === 2 ? 'Tie Wire Point 1' : 'Tie Wire');
+        if (pts === 2) {
+          checkPoint(wp.tieWireSpecId2, wp.tieWireStrands2, 'Tie Wire Point 2');
         }
+      }
+      // Anchor Shackle WLL check - each shackle attaches ONE point's chain/wire assembly
+      // to the rack, so with 2 hanging points there are two independent shackles (one per
+      // point), each checked against that point's own share of the structural load
+      // (loadPerPt) - same basis as the CHAIN check above, regardless of stringing method.
+      const checkShackle = (shackleId, pointLabel) => {
+        if (!shackleId || shackleId === 'NONE') return;
+        const shackleSpec = ANCHOR_SHACKLE_SPECS.find(s => s.id === shackleId);
+        if (shackleSpec && shackleSpec.wll != null && loadPerPt > shackleSpec.wll) {
+          deficiencies.push(`${label}: ${pointLabel} (${shackleSpec.label}, ${shackleSpec.wll} lb WLL) is under the ${Math.round(loadPerPt)} lb load it would carry at each point.`);
+        }
+      };
+      checkShackle(wp.anchorShackle, pts === 2 ? 'Anchor Shackle Point 1' : 'Anchor Shackle');
+      if (pts === 2) {
+        checkShackle(wp.anchorShackle2, 'Anchor Shackle Point 2');
+      }
       });
     });
     return deficiencies;
@@ -890,6 +908,13 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    // Guard FIRST, before any other check - a fast double-click can fire two
+    // handleSubmit calls before React re-renders the disabled submit button.
+    // Without this, both calls can pass all the way through PIN verification
+    // and both attempt to insert the same load_id, with the second one
+    // failing on the production_loads_load_id_key unique constraint.
+    if (isSubmittingRef.current) return;
+
     if (!rackNo || !loadId.trim()) {
       alert('Please select a Rack # first.');
       return;
@@ -919,12 +944,14 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       return;
     }
 
+    isSubmittingRef.current = true;
     setIsSubmitting(true);
     try {
       // 1. Verify the primary sign-off operator's PIN
       const primaryCheck = await verifyOperator(primaryOperatorId.trim(), primaryPin.trim());
       if (!primaryCheck.ok) {
         alert(`❌ Sign-off failed: ${primaryCheck.reason}`);
+        isSubmittingRef.current = false;
         setIsSubmitting(false);
         return;
       }
@@ -936,7 +963,8 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
         const check = await verifyOperator(a.employeeId.trim(), (a.pin || '').trim());
         if (!check.ok) {
           alert(`❌ Assistant sign-off failed: ${check.reason}`);
-          setIsSubmitting(false);
+          isSubmittingRef.current = false;
+        setIsSubmitting(false);
           return;
         }
         assistantOperators.push(check.operator);
@@ -989,7 +1017,8 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
               ? `⚠️ Rack #${rackNo} was just taken by someone else. Please pick a different rack and try again.`
               : `⚠️ Could not assign Rack #${rackNo}: ${rackEventErr.message}`
           );
-          setIsSubmitting(false);
+          isSubmittingRef.current = false;
+        setIsSubmitting(false);
           return;
         }
       }
@@ -1025,9 +1054,17 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
                 category: 'WIRE_CHAIN',
                 hangingMode: wp.hangingMode,
                 hangingPoints: parseInt(wp.hangingPoints, 10),
+                stringingMethod: wp.hangingMode === 'STRING' ? (wp.stringingMethod || 'FULL_CHAIN') : null,
                 point1: { spec: wp.point1SpecId, strands: parseInt(wp.point1Strands, 10) || 0 },
                 point2: wp.hangingPoints === '2' ? { spec: wp.point2SpecId, strands: parseInt(wp.point2Strands, 10) || 0 } : null,
-                anchorShackle: wp.anchorShackle && wp.anchorShackle !== 'NONE' ? wp.anchorShackle : null
+                tieWire: (wp.hangingMode === 'STRING' && wp.stringingMethod === 'CHAIN_WIRE')
+                  ? { point1: { spec: wp.tieWireSpecId, strands: parseInt(wp.tieWireStrands, 10) || 0 },
+                      point2: wp.hangingPoints === '2' ? { spec: wp.tieWireSpecId2, strands: parseInt(wp.tieWireStrands2, 10) || 0 } : null }
+                  : null,
+                anchorShackle: {
+                  point1: wp.anchorShackle && wp.anchorShackle !== 'NONE' ? wp.anchorShackle : null,
+                  point2: wp.hangingPoints === '2' && wp.anchorShackle2 && wp.anchorShackle2 !== 'NONE' ? wp.anchorShackle2 : null
+                }
               };
 
           return {
@@ -1117,10 +1154,31 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       setJobs([createNewJob()]);
     } catch (err) {
       console.error('Failed to submit production load:', err);
-      alert(`❌ Submission failed: ${err.message || err}`);
+
+      // A duplicate load_id means this exact Load ID was already used by an
+      // earlier (likely successful) submission - e.g. a double-click, or a
+      // stale second tab still holding the same auto-generated ID. Give a
+      // clearer explanation than the raw Postgres error, and hand the
+      // operator a fresh Load ID right away instead of leaving the stale
+      // one in the field (which would just fail again the same way).
+      const isDuplicateLoadId = (err?.code === '23505') || /production_loads_load_id_key/.test(err?.message || '');
+      if (isDuplicateLoadId) {
+        alert(
+          `⚠️ Load ID [${loadId.trim()}] was already used by a previous submission - it looks like this one already went through.\n\n` +
+          `Please check if your data was already saved before re-entering it. A new Load ID has been generated for you below.`
+        );
+        if (rackNo) {
+          await regenerateLoadId(rackNo, rackFixtureType, false);
+        }
+      } else {
+        alert(`❌ Submission failed: ${err.message || err}`);
+      }
+
+      isSubmittingRef.current = false;
       setIsSubmitting(false);
       return;
     }
+    isSubmittingRef.current = false;
     setIsSubmitting(false);
 
     // Reset Form
@@ -3525,7 +3583,8 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       )}
     </div>
 
-    {/* Piece Tie Wire — 绑丝，独立字段 tieWireSpecId/tieWireStrands，配合已加的 checkPoint(wp.tieWireSpecId, ...) 复核 */}
+    {/* Piece Tie Wire — 绑丝，2 个悬挂点时拆成 Point 1 / Point 2 两组字段，
+        跟 Main Backbone Chain 的结构保持一致，配合 checkPoint 分别复核 */}
     <div className="bg-slate-900/90 p-2.5 rounded border border-amber-900/50 space-y-2">
       <div className="text-[10px] font-bold text-amber-400 uppercase tracking-wider flex items-center gap-1">
         <span>🪢</span> Piece Tie Wire
@@ -3533,7 +3592,9 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-[10px] text-slate-400 mb-0.5">Tie Wire Spec *</label>
+          <label className="block text-[10px] text-slate-400 mb-0.5">
+            {wp.hangingPoints === '2' ? 'Point 1 Tie Wire Spec *' : 'Tie Wire Spec *'}
+          </label>
           <select
             value={wp.tieWireSpecId || ''}
             onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'tieWireSpecId', e.target.value)}
@@ -3548,7 +3609,9 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
         </div>
 
         <div>
-          <label className="block text-[10px] text-slate-400 mb-0.5">Wires per Piece *</label>
+          <label className="block text-[10px] text-slate-400 mb-0.5">
+            {wp.hangingPoints === '2' ? 'Wires at Point 1 *' : 'Wires per Piece *'}
+          </label>
           <input
             type="number"
             min="1"
@@ -3560,6 +3623,38 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
           />
         </div>
       </div>
+
+      {wp.hangingPoints === '2' && (
+        <div className="grid grid-cols-2 gap-2">
+          <div>
+            <label className="block text-[10px] text-slate-400 mb-0.5">Point 2 Tie Wire Spec *</label>
+            <select
+              value={wp.tieWireSpecId2 || ''}
+              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'tieWireSpecId2', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] text-slate-100"
+              required
+            >
+              <option value="">Select Wire...</option>
+              {RIGGING_SPECS.filter(r => (r.type || '').toUpperCase() === 'WIRE').map(r => (
+                <option key={r.id} value={r.id}>{r.label} ({r.swl.toLocaleString()} lb WLL)</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <label className="block text-[10px] text-slate-400 mb-0.5">Wires at Point 2 *</label>
+            <input
+              type="number"
+              min="1"
+              placeholder="e.g. 2"
+              value={wp.tieWireStrands2 || ''}
+              onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'tieWireStrands2', e.target.value)}
+              className="w-full bg-slate-900 border border-slate-700 rounded px-1.5 py-1 text-[11px] font-mono text-amber-300 font-bold [appearance:textfield] [&::-webkit-outer-spin-button]:appearance-none [&::-webkit-inner-spin-button]:appearance-none"
+              required
+            />
+          </div>
+        </div>
+      )}
     </div>
   </div>
 
@@ -3697,11 +3792,13 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
     )}
   </div>
 )}
-  {/* 2. Anchor Shackle */}
+  {/* 2. Anchor Shackle — 2 个悬挂点时拆成 Point 1 / Point 2，每个点各自的铁链
+      通过各自的锚定卸扣连到挂架上，跟 Main Backbone Chain / Piece Tie Wire 的
+      结构保持一致 */}
   <div className="grid grid-cols-1 md:grid-cols-2 gap-3 pt-2 border-t border-slate-800/80">
     <div>
       <label className="block text-[10px] font-semibold text-slate-300 mb-1">
-        Anchor Shackle (Optional)
+        {wp.hangingPoints === '2' ? 'Point 1 Anchor Shackle (Optional)' : 'Anchor Shackle (Optional)'}
       </label>
       <select
         value={wp.anchorShackle || 'NONE'}
@@ -3716,6 +3813,24 @@ checkPoint(wp.point1SpecId, wp.point1Strands, 'Point 1');
       </select>
     </div>
 
+    {wp.hangingPoints === '2' && (
+      <div>
+        <label className="block text-[10px] font-semibold text-slate-300 mb-1">
+          Point 2 Anchor Shackle (Optional)
+        </label>
+        <select
+          value={wp.anchorShackle2 || 'NONE'}
+          onChange={(e) => handleWorkpieceChange(jobIndex, wpIndex, 'anchorShackle2', e.target.value)}
+          className="w-full bg-slate-900 border border-slate-700 rounded px-2 py-1.5 text-[11px] text-slate-200 focus:outline-none focus:border-cyan-500"
+        >
+          {ANCHOR_SHACKLE_SPECS.map(s => (
+            <option key={s.id} value={s.id}>
+              {s.wll != null ? `${s.label} (${s.wll.toLocaleString()} lb WLL)` : s.label}
+            </option>
+          ))}
+        </select>
+      </div>
+    )}
   </div>
     </>
   )}
