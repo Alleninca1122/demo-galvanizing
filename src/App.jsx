@@ -7,11 +7,11 @@ import { ForceChangePinModal } from './components/ForceChangePinModal';
 import { BRAND } from './config/brand';
 import { supabase } from './supabaseClient';
 
-// Mock rack registry shared by the three process stations (Pickling/Dipping/
+// Mock rack registry shared by the remaining process stations (Dipping/
 // Unloading) - each station reads/writes the same record so a rack's history
-// carries forward correctly from one station to the next. Still mock data;
-// real Supabase wiring (production_stage_logs etc.) is deferred to the
-// edit-record work.
+// carries forward correctly from one station to the next. Pickling has moved
+// to real Supabase data (see PicklingStation.jsx); Dipping/Unloading are
+// still mock, pending the same migration.
 const INITIAL_ACTIVE_RACKS = {
   '01': {
     rackNo: '01',
@@ -309,7 +309,7 @@ export default function App() {
       <main className="max-w-6xl mx-auto">
         {activeTab === 'loading' && <ProductionForm currentUser={currentUser} supabase={supabase} />}
         {activeTab === 'pickling' && (
-          <PicklingStation currentUser={currentUser} activeRacks={activeRacks} setActiveRacks={setActiveRacks} />
+          <PicklingStation currentUser={currentUser} supabase={supabase} />
         )}
         {activeTab === 'dipping' && (
           <DippingStation currentUser={currentUser} activeRacks={activeRacks} setActiveRacks={setActiveRacks} />
