@@ -1030,8 +1030,13 @@ const removeAssistantOperator = (uid) => {
                 category: 'WIRE_CHAIN',
                 hangingMode: wp.hangingMode,
                 hangingPoints: parseInt(wp.hangingPoints, 10),
+                stringingMethod: wp.hangingMode === 'STRING' ? (wp.stringingMethod || 'FULL_CHAIN') : null,
                 point1: { spec: wp.point1SpecId, strands: parseInt(wp.point1Strands, 10) || 0 },
                 point2: wp.hangingPoints === '2' ? { spec: wp.point2SpecId, strands: parseInt(wp.point2Strands, 10) || 0 } : null,
+                tieWire: (wp.hangingMode === 'STRING' && wp.stringingMethod === 'CHAIN_WIRE')
+                  ? { point1: { spec: wp.tieWireSpecId, strands: parseInt(wp.tieWireStrands, 10) || 0 },
+                      point2: wp.hangingPoints === '2' ? { spec: wp.tieWireSpecId2, strands: parseInt(wp.tieWireStrands2, 10) || 0 } : null }
+                  : null,
                 anchorShackle: wp.anchorShackle && wp.anchorShackle !== 'NONE' ? wp.anchorShackle : null
               };
 
