@@ -485,15 +485,18 @@ const removeAssistantOperator = (uid) => {
     return data;
   };
 
-  // Load ID letter suffix: R = numbered Rack #01-99 with a standard beam
-  // (no fixture), H = numbered rack fitted with a permanently-mounted Hook
-  // Rack fixture, N = No Rack. The 'C' (Comb Rack) letter is retired: Comb
-  // Rack is now a per-workpiece attribute, not a whole-rack fixture, so it
-  // no longer changes what the Rack itself is identified as.
-  const getLoadIdLetter = (rackVal, fixtureVal) => {
+  // Load ID suffix: R + rack number (e.g. "R05") = numbered Rack #01-99 with a
+  // standard beam (no fixture), H + rack number (e.g. "H12") = numbered rack
+  // fitted with a permanently-mounted Hook Rack fixture, N = No Rack (no
+  // number, since crane-direct loads don't occupy a numbered rack at all).
+  // The rack number is included so the Load ID identifies exactly which rack
+  // was used, not just that "a" rack was used. The 'C' (Comb Rack) letter is
+  // retired: Comb Rack is now a per-workpiece attribute, not a whole-rack
+  // fixture, so it no longer changes what the Rack itself is identified as.
+  const getLoadIdSuffix = (rackVal, fixtureVal) => {
     if (rackVal === NO_RACK_VALUE) return 'N';
-    if (fixtureVal === RACK_FIXTURE_HOOK) return 'H';
-    return 'R';
+    const letter = fixtureVal === RACK_FIXTURE_HOOK ? 'H' : 'R';
+    return `${letter}${rackVal}`;
   };
 
   const regenerateLoadId = async (rackVal, fixtureVal, preserveManualEdit) => {
@@ -513,8 +516,8 @@ const removeAssistantOperator = (uid) => {
       const dailySeq = await getNextDailySequence();
       const seqStr = String(dailySeq).padStart(2, '0'); // 2-digit, zero-padded
 
-      const letter = getLoadIdLetter(rackVal, fixtureVal);
-      const generated = `${dateStr}-${seqStr}-${letter}`;
+      const suffix = getLoadIdSuffix(rackVal, fixtureVal);
+      const generated = `${dateStr}-${seqStr}-${suffix}`;
 
       // Always refresh the "auto" value (so Reset Auto ID offers the latest
       // one), but don't stomp on a Load ID the operator already typed by
